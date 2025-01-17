@@ -9,33 +9,30 @@ import lombok.Setter;
 import java.time.Instant;
 
 @Entity
-@Table(name = "users")
+@Table(name = "order_details")
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class User {
+public class OrderDetail {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
-
-    private String username;
-    private String password;
-
-    private String fullName;
-    private String address;
-    private String phone;
-    private String avatar;
+    private double price;
+    private long quantity;
 
     @ManyToOne
-    @JoinColumn(name = "role_id")
-    private Role role;
+    @JoinColumn(name = "order_id")
+    Order order;
+
+    @ManyToOne
+    @JoinColumn(name = "book_id")
+    Book book;
 
     private Instant createdAt;
     private Instant updatedAt;
     private String createdBy;
     private String updatedBy;
-
 
     @PrePersist
     public void handleBeforeCreate(){

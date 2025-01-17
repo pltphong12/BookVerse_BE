@@ -1,5 +1,6 @@
 package com.example.bookverse.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -7,35 +8,37 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.Instant;
+import java.util.List;
 
 @Entity
-@Table(name = "users")
+@Table(name = "orders")
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class User {
+public class Order {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
-
-    private String username;
-    private String password;
-
-    private String fullName;
-    private String address;
-    private String phone;
-    private String avatar;
+    private double totalPrice;
+    private String receiverName;
+    private String receiverAddress;
+    private String receiverPhone;
+    private String receiverEmail;
+    private String status;
 
     @ManyToOne
-    @JoinColumn(name = "role_id")
-    private Role role;
+    @JoinColumn(name = "user_id")
+    User user;
+
+    @OneToMany(mappedBy = "order")
+    @JsonIgnore
+    List<OrderDetail> orderDetails;
 
     private Instant createdAt;
     private Instant updatedAt;
     private String createdBy;
     private String updatedBy;
-
 
     @PrePersist
     public void handleBeforeCreate(){
