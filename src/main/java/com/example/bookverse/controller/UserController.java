@@ -1,11 +1,14 @@
 package com.example.bookverse.controller;
 
 import com.example.bookverse.domain.User;
+import com.example.bookverse.domain.response.user.UserDTO;
 import com.example.bookverse.service.UserService;
+import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -13,37 +16,51 @@ import java.util.List;
 public class UserController {
 
     private final UserService userService;
+    private final ModelMapper modelMapper;
 
-    public UserController(UserService userService) {
+    public UserController(UserService userService, ModelMapper modelMapper) {
         this.userService = userService;
+        this.modelMapper = modelMapper;
     }
 
     @PostMapping("/users")
-    public ResponseEntity<User> createUser(@RequestBody User user) {
+    public ResponseEntity<UserDTO> createUser(@RequestBody User user) throws Exception {
         User newUser = userService.create(user);
-        return ResponseEntity.status(HttpStatus.CREATED).body(newUser);
+        // Convert DTO
+        UserDTO DTO = modelMapper.map(newUser, UserDTO.class);
+        return ResponseEntity.status(HttpStatus.CREATED).body(DTO);
     }
 
     @PutMapping("/users")
-    public ResponseEntity<User> updateUser(@RequestBody User user) {
+    public ResponseEntity<UserDTO> updateUser(@RequestBody User user) throws Exception {
         User updateUser = userService.update(user);
-        return ResponseEntity.status(HttpStatus.OK).body(updateUser);
+        // Convert DTO
+        UserDTO DTO = modelMapper.map(updateUser, UserDTO.class);
+        return ResponseEntity.status(HttpStatus.OK).body(DTO);
     }
 
     @GetMapping("/users/{id}")
-    public ResponseEntity<User> getUser(@PathVariable long id) {
+    public ResponseEntity<UserDTO> getUser(@PathVariable long id) throws Exception {
         User user = this.userService.fetchUserById(id);
-        return ResponseEntity.status(HttpStatus.OK).body(user);
+        // Convert DTO
+        UserDTO DTO = modelMapper.map(user, UserDTO.class);
+        return ResponseEntity.status(HttpStatus.OK).body(DTO);
     }
 
     @GetMapping("/users")
-    public ResponseEntity<List<User>> getUsers() {
+    public ResponseEntity<List<UserDTO>> getUsers() {
         List<User> users = this.userService.fetchAllUsers();
-        return ResponseEntity.status(HttpStatus.OK).body(users);
+        // Convert DTO
+        List<UserDTO> DTOs = new ArrayList<>();
+        for (User user : users) {
+            UserDTO DTO = modelMapper.map(user, UserDTO.class);
+            DTOs.add(DTO);
+        }
+        return ResponseEntity.status(HttpStatus.OK).body(DTOs);
     }
 
     @DeleteMapping("/users/{id}")
-    public ResponseEntity<Void> deleteUser(@PathVariable long id) {
+    public ResponseEntity<Void> deleteUser(@PathVariable long id) throws Exception {
         this.userService.delete(id);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
