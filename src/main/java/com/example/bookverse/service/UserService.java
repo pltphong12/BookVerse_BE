@@ -19,7 +19,7 @@ public interface UserService {
     User fetchUserByUsername(String username) throws Exception;
 
     // Find all user
-    List<User> fetchAllUsers();
+    List<User> fetchAllUsers() throws Exception;
 
     // Delete a user by id
     void delete(long id) throws Exception;

@@ -3,7 +3,7 @@ package com.example.bookverse.service.impl;
 import com.example.bookverse.domain.Role;
 import com.example.bookverse.domain.User;
 import com.example.bookverse.exception.user.ExistUsernameException;
-import com.example.bookverse.exception.user.IdInvalidException;
+import com.example.bookverse.exception.global.IdInvalidException;
 import com.example.bookverse.repository.RoleRepository;
 import com.example.bookverse.repository.UserRepository;
 import com.example.bookverse.service.UserService;
@@ -28,8 +28,8 @@ public class UserServiceImpl implements UserService {
     @Override
     public User create(User user) throws ExistUsernameException {
         // Check Username
-        if (userRepository.findByUsername(user.getUsername()) != null) {
-            throw new ExistUsernameException("User already exists");
+        if (this.userRepository.existsByUsername(user.getUsername())) {
+            throw new ExistUsernameException(user.getUsername() + " already exists");
         }
 
         // Save hashPassword
@@ -40,6 +40,8 @@ public class UserServiceImpl implements UserService {
         Role role = this.roleRepository.findById(user.getRole().getId()).orElse(null);
         if (role != null) {
             user.setRole(role);
+        }else {
+            user.setRole(null);
         }
 
         return userRepository.save(user);

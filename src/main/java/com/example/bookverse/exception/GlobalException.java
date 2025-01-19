@@ -2,7 +2,7 @@ package com.example.bookverse.exception;
 
 import com.example.bookverse.domain.response.RestResponse;
 import com.example.bookverse.exception.user.ExistUsernameException;
-import com.example.bookverse.exception.user.IdInvalidException;
+import com.example.bookverse.exception.global.IdInvalidException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;

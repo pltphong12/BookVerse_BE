@@ -1,4 +1,4 @@
-package com.example.bookverse.exception.user;
+package com.example.bookverse.exception.global;
 
 public class IdInvalidException extends Exception{
     public IdInvalidException(String message) {

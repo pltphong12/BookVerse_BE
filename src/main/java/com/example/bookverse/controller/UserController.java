@@ -48,7 +48,7 @@ public class UserController {
     }
 
     @GetMapping("/users")
-    public ResponseEntity<List<UserDTO>> getUsers() {
+    public ResponseEntity<List<UserDTO>> getUsers() throws Exception {
         List<User> users = this.userService.fetchAllUsers();
         // Convert DTO
         List<UserDTO> DTOs = new ArrayList<>();
