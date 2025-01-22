@@ -16,7 +16,7 @@ public interface UserService {
     User fetchUserById(long id) throws Exception;
 
     // Find a user by username
-    User fetchUserByUsername(String username) throws Exception;
+    User fetchUserByUsername(String username);
 
     // Find all user
     List<User> fetchAllUsers() throws Exception;

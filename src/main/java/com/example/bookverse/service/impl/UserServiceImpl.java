@@ -80,11 +80,8 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User fetchUserByUsername(String username) throws ExistUsernameException{
+    public User fetchUserByUsername(String username){
         User user = this.userRepository.findByUsername(username);
-        if (user == null) {
-            throw new ExistUsernameException("User not found");
-        }
         return this.userRepository.findByUsername(username);
     }
 
