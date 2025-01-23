@@ -1,10 +1,14 @@
 package com.example.bookverse.controller;
 
+import com.example.bookverse.domain.User;
 import com.example.bookverse.domain.request.ReqLoginDTO;
 import com.example.bookverse.domain.response.user.ResLoginDTO;
+import com.example.bookverse.domain.response.user.UserDTO;
 import com.example.bookverse.exception.global.InvalidUsernameOrPassword;
 import com.example.bookverse.service.UserService;
+import com.example.bookverse.util.SecurityUtil;
 import jakarta.validation.Valid;
+import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -21,10 +25,16 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthController {
     private final AuthenticationManagerBuilder authenticationManagerBuilder;
     private final UserService userService;
+    private final ModelMapper modelMapper;
+    private final SecurityUtil securityUtil;
 
-    public AuthController(AuthenticationManagerBuilder authenticationManagerBuilder, UserService userService) {
+    public AuthController(AuthenticationManagerBuilder authenticationManagerBuilder,
+                          UserService userService, ModelMapper modelMapper,
+                          SecurityUtil securityUtil) {
         this.authenticationManagerBuilder = authenticationManagerBuilder;
         this.userService = userService;
+        this.modelMapper = modelMapper;
+        this.securityUtil = securityUtil;
     }
 
     @PostMapping("/auth/login")
@@ -37,7 +47,10 @@ public class AuthController {
             Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
 
             SecurityContextHolder.getContext().setAuthentication(authentication);
-            resLoginDTO.setUsername(authentication.getName());
+            User user = this.userService.fetchUserByUsername(reqLoginDTO.getUsername());
+            resLoginDTO.setUser(modelMapper.map(user, UserDTO.class));
+            String accessToken = this.securityUtil.createToken(reqLoginDTO.getUsername(), resLoginDTO);
+            resLoginDTO.setAccessToken(accessToken);
             return ResponseEntity.status(HttpStatus.OK).body(resLoginDTO);
         }catch (Exception e) {
             throw new InvalidUsernameOrPassword("Invalid username or password");
