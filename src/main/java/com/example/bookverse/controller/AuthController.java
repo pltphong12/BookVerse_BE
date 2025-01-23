@@ -45,7 +45,7 @@ public class AuthController {
             UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(reqLoginDTO.getUsername(), reqLoginDTO.getPassword());
             // Xác thực người dùng => cần viết hàm loadUserByUsername
             Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
-
+            // Thông tin được thêm vào SecurityContext
             SecurityContextHolder.getContext().setAuthentication(authentication);
             User user = this.userService.fetchUserByUsername(reqLoginDTO.getUsername());
             resLoginDTO.setUser(modelMapper.map(user, UserDTO.class));
