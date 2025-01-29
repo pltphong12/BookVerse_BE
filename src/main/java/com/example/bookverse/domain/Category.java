@@ -1,5 +1,7 @@
 package com.example.bookverse.domain;
 
+import com.example.bookverse.util.SecurityUtil;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -23,6 +25,7 @@ public class Category {
     private String description;
 
     @OneToMany(mappedBy = "category")
+    @JsonIgnore
     List<Book> books;
 
     private Instant createdAt;
@@ -33,12 +36,12 @@ public class Category {
     @PrePersist
     public void handleBeforeCreate(){
         createdAt = Instant.now();
-//        createdBy = SecurityUtil.getCurrentUserLogin().isPresent() ? SecurityUtil.getCurrentUserLogin().get() : "";
+        createdBy = SecurityUtil.getCurrentUserLogin().isPresent() ? SecurityUtil.getCurrentUserLogin().get() : "";
     }
 
     @PreUpdate
     public void handleBeforeUpdate(){
         updatedAt = Instant.now();
-//        updatedBy = SecurityUtil.getCurrentUserLogin().isPresent() ? SecurityUtil.getCurrentUserLogin().get() : "";
+        updatedBy = SecurityUtil.getCurrentUserLogin().isPresent() ? SecurityUtil.getCurrentUserLogin().get() : "";
     }
 }

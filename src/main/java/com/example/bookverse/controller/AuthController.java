@@ -47,10 +47,13 @@ public class AuthController {
             Authentication authentication = authenticationManagerBuilder.getObject().authenticate(authenticationToken);
             // Thông tin được thêm vào SecurityContext
             SecurityContextHolder.getContext().setAuthentication(authentication);
+            // Lưu thông tin vào response
             User user = this.userService.fetchUserByUsername(reqLoginDTO.getUsername());
             resLoginDTO.setUser(modelMapper.map(user, UserDTO.class));
+            // Tạo accessToken
             String accessToken = this.securityUtil.createToken(reqLoginDTO.getUsername(), resLoginDTO);
             resLoginDTO.setAccessToken(accessToken);
+
             return ResponseEntity.status(HttpStatus.OK).body(resLoginDTO);
         }catch (Exception e) {
             throw new InvalidUsernameOrPassword("Invalid username or password");

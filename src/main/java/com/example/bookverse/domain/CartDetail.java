@@ -1,5 +1,6 @@
 package com.example.bookverse.domain;
 
+import com.example.bookverse.util.SecurityUtil;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -34,12 +35,12 @@ public class CartDetail {
     @PrePersist
     public void handleBeforeCreate(){
         createdAt = Instant.now();
-//        createdBy = SecurityUtil.getCurrentUserLogin().isPresent() ? SecurityUtil.getCurrentUserLogin().get() : "";
+        createdBy = SecurityUtil.getCurrentUserLogin().isPresent() ? SecurityUtil.getCurrentUserLogin().get() : "";
     }
 
     @PreUpdate
     public void handleBeforeUpdate(){
         updatedAt = Instant.now();
-//        updatedBy = SecurityUtil.getCurrentUserLogin().isPresent() ? SecurityUtil.getCurrentUserLogin().get() : "";
+        updatedBy = SecurityUtil.getCurrentUserLogin().isPresent() ? SecurityUtil.getCurrentUserLogin().get() : "";
     }
 }

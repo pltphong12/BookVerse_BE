@@ -1,5 +1,6 @@
 package com.example.bookverse.domain;
 
+import com.example.bookverse.util.SecurityUtil;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -23,11 +24,11 @@ public class OrderDetail {
 
     @ManyToOne
     @JoinColumn(name = "order_id")
-    Order order;
+    private Order order;
 
     @ManyToOne
     @JoinColumn(name = "book_id")
-    Book book;
+    private Book book;
 
     private Instant createdAt;
     private Instant updatedAt;
@@ -37,12 +38,12 @@ public class OrderDetail {
     @PrePersist
     public void handleBeforeCreate(){
         createdAt = Instant.now();
-//        createdBy = SecurityUtil.getCurrentUserLogin().isPresent() ? SecurityUtil.getCurrentUserLogin().get() : "";
+        createdBy = SecurityUtil.getCurrentUserLogin().isPresent() ? SecurityUtil.getCurrentUserLogin().get() : "";
     }
 
     @PreUpdate
     public void handleBeforeUpdate(){
         updatedAt = Instant.now();
-//        updatedBy = SecurityUtil.getCurrentUserLogin().isPresent() ? SecurityUtil.getCurrentUserLogin().get() : "";
+        updatedBy = SecurityUtil.getCurrentUserLogin().isPresent() ? SecurityUtil.getCurrentUserLogin().get() : "";
     }
 }

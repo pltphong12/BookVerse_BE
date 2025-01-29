@@ -1,6 +1,8 @@
 package com.example.bookverse.exception;
 
 import com.example.bookverse.domain.response.RestResponse;
+import com.example.bookverse.exception.book.ExistTitleException;
+import com.example.bookverse.exception.category.ExistCategoryNameException;
 import com.example.bookverse.exception.role.ExistRoleNameException;
 import com.example.bookverse.exception.user.ExistUsernameException;
 import com.example.bookverse.exception.global.IdInvalidException;
@@ -54,10 +56,33 @@ public class GlobalException {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(res);
     }
 
-    // Handle Validation Exception
+    // Handle Category Exception
+    @ExceptionHandler(value = {
+            ExistCategoryNameException.class,
+    })
+    public ResponseEntity<RestResponse<Object>> handleExistCategoryNameException(Exception ex) {
+        RestResponse<Object> res = new RestResponse<>();
+        res.setStatus(HttpStatus.BAD_REQUEST.value());
+        res.setMessage(ex.getMessage());
+        res.setError("CategoryName already exist");
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(res);
+    }
+
+    // Handle BookException
+    @ExceptionHandler(value = {
+            ExistTitleException.class,
+    })
+    public ResponseEntity<RestResponse<Object>> handleExistTitleException(Exception ex) {
+        RestResponse<Object> res = new RestResponse<>();
+        res.setStatus(HttpStatus.BAD_REQUEST.value());
+        res.setMessage(ex.getMessage());
+        res.setError("Title already exist");
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(res);
+    }
+
+    // Handle Validation Exception when Login
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<RestResponse<Object>> validationError(MethodArgumentNotValidException ex) {
-        //
         BindingResult result = ex.getBindingResult();
         final List<FieldError> fieldErrors = result.getFieldErrors();
 

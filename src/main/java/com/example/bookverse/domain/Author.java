@@ -1,5 +1,7 @@
 package com.example.bookverse.domain;
 
+import com.example.bookverse.util.SecurityUtil;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -26,12 +28,9 @@ public class Author {
     private Date birthday;
     private String nationality;
 
-    @ManyToMany(fetch = FetchType.LAZY)
-    @JsonIgnoreProperties(value = "authors")
-    @JoinTable(name = "author_book",
-            joinColumns = @JoinColumn(name = "author_id"),
-            inverseJoinColumns = @JoinColumn(name = "book_id"))
-    List<Book> books;
+    @ManyToMany(fetch = FetchType.LAZY, mappedBy = "authors")
+    @JsonIgnore
+    private List<Book> books;
 
     private Instant createdAt;
     private Instant updatedAt;
@@ -41,12 +40,12 @@ public class Author {
     @PrePersist
     public void handleBeforeCreate(){
         createdAt = Instant.now();
-//        createdBy = SecurityUtil.getCurrentUserLogin().isPresent() ? SecurityUtil.getCurrentUserLogin().get() : "";
+        createdBy = SecurityUtil.getCurrentUserLogin().isPresent() ? SecurityUtil.getCurrentUserLogin().get() : "";
     }
 
     @PreUpdate
     public void handleBeforeUpdate(){
         updatedAt = Instant.now();
-//        updatedBy = SecurityUtil.getCurrentUserLogin().isPresent() ? SecurityUtil.getCurrentUserLogin().get() : "";
+        updatedBy = SecurityUtil.getCurrentUserLogin().isPresent() ? SecurityUtil.getCurrentUserLogin().get() : "";
     }
 }
