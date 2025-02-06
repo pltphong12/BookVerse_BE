@@ -3,6 +3,7 @@ package com.example.bookverse.controller;
 import com.example.bookverse.domain.Book;
 import com.example.bookverse.domain.response.book.ResBookDTO;
 import com.example.bookverse.service.BookService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -21,7 +22,7 @@ public class BookController {
 
     // Create a book
     @PostMapping("/books")
-    public ResponseEntity<Book> createBook(@RequestBody Book book) throws Exception{
+    public ResponseEntity<Book> createBook(@Valid @RequestBody Book book) throws Exception{
         Book newBook = this.bookService.create(book);
         return ResponseEntity.status(HttpStatus.CREATED).body(newBook);
     }

@@ -4,6 +4,7 @@ import com.example.bookverse.domain.Book;
 import com.example.bookverse.domain.Category;
 import com.example.bookverse.domain.response.category.ResCategoryDTO;
 import com.example.bookverse.service.CategoryService;
+import jakarta.validation.Valid;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,7 +26,7 @@ public class CategoryController {
 
     // Create category
     @PostMapping("/categories")
-    public ResponseEntity<Category> createCategory(@RequestBody Category category) throws Exception {
+    public ResponseEntity<Category> createCategory(@Valid @RequestBody Category category) throws Exception {
         Category newCategory = this.categoryService.create(category);
         return ResponseEntity.status(HttpStatus.CREATED).body(newCategory);
     }

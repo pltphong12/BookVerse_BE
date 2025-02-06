@@ -3,6 +3,7 @@ package com.example.bookverse.controller;
 import com.example.bookverse.domain.User;
 import com.example.bookverse.domain.response.user.UserDTO;
 import com.example.bookverse.service.UserService;
+import jakarta.validation.Valid;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,7 +25,7 @@ public class UserController {
     }
 
     @PostMapping("/users")
-    public ResponseEntity<UserDTO> createUser(@RequestBody User user) throws Exception {
+    public ResponseEntity<UserDTO> createUser(@Valid @RequestBody User user) throws Exception {
         User newUser = userService.create(user);
         // Convert DTO
         UserDTO DTO = modelMapper.map(newUser, UserDTO.class);

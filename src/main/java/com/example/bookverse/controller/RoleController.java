@@ -2,6 +2,7 @@ package com.example.bookverse.controller;
 
 import com.example.bookverse.domain.Role;
 import com.example.bookverse.service.RoleService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -19,7 +20,7 @@ public class RoleController {
 
     // Create a role
     @PostMapping("/roles")
-    public ResponseEntity<Role> createRole(@RequestBody Role role) throws Exception {
+    public ResponseEntity<Role> createRole(@Valid @RequestBody Role role) throws Exception {
         Role newRole = this.roleService.create(role);
         return ResponseEntity.status(HttpStatus.CREATED).body(newRole);
     }

@@ -1,9 +1,9 @@
 package com.example.bookverse.domain;
 
 import com.example.bookverse.util.SecurityUtil;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -22,11 +22,13 @@ public class Book {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
+    @NotBlank(message = "title isn't blank")
     private String title;
-
+    @NotBlank(message = "publisher isn't blank")
     private String publisher;
     private double price;
     private long quantity;
+    @NotBlank(message = "description isn't blank")
     private String description;
     private String image;
 

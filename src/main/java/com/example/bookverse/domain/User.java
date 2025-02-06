@@ -1,7 +1,9 @@
 package com.example.bookverse.domain;
 
 import com.example.bookverse.util.SecurityUtil;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -21,9 +23,13 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
+    @NotBlank(message = "username isn't blank")
     private String username;
+
+    @NotBlank(message = "password isn't blank")
     private String password;
 
+    @NotBlank(message = "fullName isn't blank")
     private String fullName;
     private String address;
     private String phone;
@@ -34,9 +40,11 @@ public class User {
     private Role role;
 
     @OneToMany(mappedBy = "user")
+    @JsonIgnore
     private List<Order> orders;
 
     @OneToOne(mappedBy = "user")
+    @JsonIgnore
     private Cart cart;
 
     private Instant createdAt;

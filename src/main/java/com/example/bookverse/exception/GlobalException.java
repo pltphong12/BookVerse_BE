@@ -1,6 +1,7 @@
 package com.example.bookverse.exception;
 
 import com.example.bookverse.domain.response.RestResponse;
+import com.example.bookverse.exception.author.ExistAuthorNameException;
 import com.example.bookverse.exception.book.ExistTitleException;
 import com.example.bookverse.exception.category.ExistCategoryNameException;
 import com.example.bookverse.exception.role.ExistRoleNameException;
@@ -77,6 +78,18 @@ public class GlobalException {
         res.setStatus(HttpStatus.BAD_REQUEST.value());
         res.setMessage(ex.getMessage());
         res.setError("Title already exist");
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(res);
+    }
+
+    // Handle Author Exception
+    @ExceptionHandler(value = {
+            ExistAuthorNameException.class,
+    })
+    public ResponseEntity<RestResponse<Object>> handleExistAuthorNameException(Exception ex) {
+        RestResponse<Object> res = new RestResponse<>();
+        res.setStatus(HttpStatus.BAD_REQUEST.value());
+        res.setMessage(ex.getMessage());
+        res.setError("AuthorName already exist");
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(res);
     }
 
