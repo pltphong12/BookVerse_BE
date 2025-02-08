@@ -33,7 +33,7 @@ public class Order {
     User user;
 
     @OneToMany(mappedBy = "order")
-    @JsonIgnore
+//    @JsonIgnore
     List<OrderDetail> orderDetails;
 
     private Instant createdAt;
