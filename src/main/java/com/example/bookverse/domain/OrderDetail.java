@@ -28,6 +28,7 @@ public class OrderDetail {
     @JsonIgnore
     private Order order;
 
+
     @ManyToOne
     @JoinColumn(name = "book_id")
     private Book book;

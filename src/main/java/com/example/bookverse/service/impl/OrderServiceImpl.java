@@ -123,7 +123,6 @@ public class OrderServiceImpl implements OrderService {
         if (!this.orderRepository.existsById(id)) {
             throw new IdInvalidException("Order not found");
         }
-        Order order = this.orderRepository.findById(id).orElse(null);
         return this.orderRepository.findById(id).orElse(null);
     }
 

@@ -97,6 +97,7 @@ public class ResOrderDTO {
         return resOrderDTO;
     }
 
+
     public static InfoOrderDetailInOrder getInfoOrderDetailInOrder(OrderDetail orderDetail) {
         InfoOrderDetailInOrder infoOrderDetailInOrder = new InfoOrderDetailInOrder();
         infoOrderDetailInOrder.setId(orderDetail.getId());
