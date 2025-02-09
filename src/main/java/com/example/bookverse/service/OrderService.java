@@ -22,6 +22,7 @@ public interface OrderService {
     // Get all order
     List<Order> fetchAllOrders() throws Exception;
 
+
     // Delete an order
     void delete(long id) throws Exception;
     // Delete order detail
