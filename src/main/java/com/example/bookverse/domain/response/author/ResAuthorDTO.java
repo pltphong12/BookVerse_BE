@@ -62,7 +62,7 @@ public class ResAuthorDTO {
             InfoBookInAuthorDTO bookDTO = new InfoBookInAuthorDTO();
             bookDTO.setId(book.getId());
             bookDTO.setTitle(book.getTitle());
-            bookDTO.setPublisher(book.getPublisher());
+            bookDTO.setPublisher(book.getPublisher().getName());
             bookDTO.setPrice(book.getPrice());
             bookDTO.setQuantity(book.getQuantity());
             bookDTO.setDescription(book.getDescription());

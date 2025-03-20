@@ -53,7 +53,7 @@ public class ResBookDTO {
         ResBookDTO resBookDTO = new ResBookDTO();
         resBookDTO.setId(book.getId());
         resBookDTO.setTitle(book.getTitle());
-        resBookDTO.setPublisher(book.getPublisher());
+        resBookDTO.setPublisher(book.getPublisher().getName());
         resBookDTO.setPrice(book.getPrice());
         resBookDTO.setQuantity(book.getQuantity());
         resBookDTO.setDescription(book.getDescription());

@@ -1,9 +1,7 @@
 package com.example.bookverse.domain;
 
 import com.example.bookverse.util.SecurityUtil;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -13,36 +11,24 @@ import java.time.Instant;
 import java.util.List;
 
 @Entity
-@Table(name = "books")
+@Table(name = "publishers")
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class Book {
+public class Publisher {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
-    @NotBlank(message = "title isn't blank")
-    private String title;
-    private double price;
-    private long quantity;
-    @NotBlank(message = "description isn't blank")
+    private String name;
+    private String address;
+    private String phone;
+    private String email;
     private String description;
     private String image;
 
-    @ManyToMany(fetch = FetchType.LAZY)
-    @JsonIgnoreProperties(value = {"books"})
-    @JoinTable(name = "author_book",
-            joinColumns = @JoinColumn(name = "book_id"),
-            inverseJoinColumns = @JoinColumn(name = "author_id"))
-    private List<Author> authors;
-
-    @ManyToOne
-    @JoinColumn(name = "category_id")
-    private Category category;
-    @ManyToOne
-    @JoinColumn(name = "publisher_id")
-    private Publisher publisher;
+    @OneToMany(mappedBy = "publisher")
+    private List<Book> books;
 
     private Instant createdAt;
     private Instant updatedAt;

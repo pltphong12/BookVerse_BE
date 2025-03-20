@@ -46,6 +46,7 @@ public class ResOrderDTO {
     }
 
 
+
     @Getter
     @Setter
     @AllArgsConstructor
@@ -112,7 +113,7 @@ public class ResOrderDTO {
         InfoBookInOrder infoBookInOrder = new InfoBookInOrder();
         infoBookInOrder.setId(orderDetail.getBook().getId());
         infoBookInOrder.setTitle(orderDetail.getBook().getTitle());
-        infoBookInOrder.setPublisher(orderDetail.getBook().getPublisher());
+        infoBookInOrder.setPublisher(orderDetail.getBook().getPublisher().getName());
         infoBookInOrder.setPrice(orderDetail.getBook().getPrice());
         infoBookInOrder.setQuantity(orderDetail.getBook().getQuantity());
         infoBookInOrder.setDescription(orderDetail.getBook().getDescription());

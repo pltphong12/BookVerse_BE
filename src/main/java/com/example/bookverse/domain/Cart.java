@@ -1,7 +1,6 @@
 package com.example.bookverse.domain;
 
 import com.example.bookverse.util.SecurityUtil;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -28,7 +27,7 @@ public class Cart {
     private User user;
 
     @OneToMany(mappedBy = "cart")
-    @JsonIgnore
+//    @JsonIgnore
     List<CartDetail> cartDetails;
 
     private Instant createdAt;

@@ -57,7 +57,7 @@ public class ResCategoryDTO {
             ResCategoryDTO.InfoBookInCategory bookInCategoryDTO = new ResCategoryDTO.InfoBookInCategory();
             bookInCategoryDTO.setId(book.getId());
             bookInCategoryDTO.setTitle(book.getTitle());
-            bookInCategoryDTO.setPublisher(book.getPublisher());
+            bookInCategoryDTO.setPublisher(book.getPublisher().getName());
             bookInCategoryDTO.setPrice(book.getPrice());
             bookInCategoryDTO.setQuantity(book.getQuantity());
             bookInCategoryDTO.setDescription(book.getDescription());
