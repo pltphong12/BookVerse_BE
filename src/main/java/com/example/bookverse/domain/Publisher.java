@@ -1,6 +1,7 @@
 package com.example.bookverse.domain;
 
 import com.example.bookverse.util.SecurityUtil;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -28,6 +29,7 @@ public class Publisher {
     private String image;
 
     @OneToMany(mappedBy = "publisher")
+    @JsonIgnore
     private List<Book> books;
 
     private Instant createdAt;

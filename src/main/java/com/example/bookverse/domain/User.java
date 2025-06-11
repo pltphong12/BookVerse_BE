@@ -35,6 +35,9 @@ public class User {
     private String phone;
     private String avatar;
 
+    @Column(columnDefinition = "MEDIUMTEXT")
+    private String refreshToken;
+
     @ManyToOne
     @JoinColumn(name = "role_id")
     private Role role;

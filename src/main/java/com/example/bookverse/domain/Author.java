@@ -25,7 +25,6 @@ public class Author {
     private long id;
     @NotBlank(message = "name isn't blank")
     private String name;
-    private int age;
     private Date birthday;
     private String nationality;
 

@@ -123,7 +123,6 @@ public class ResOrderDTO {
             InfoAuthorInOrder infoAuthorInOrder = new InfoAuthorInOrder();
             infoAuthorInOrder.setId(author.getId());
             infoAuthorInOrder.setName(author.getName());
-            infoAuthorInOrder.setAge(author.getAge());
             infoAuthorInOrder.setBirthday(author.getBirthday());
             infoAuthorInOrder.setNationality(author.getNationality());
             authorInOrders.add(infoAuthorInOrder);

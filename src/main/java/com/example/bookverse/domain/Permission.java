@@ -28,8 +28,6 @@ public class Permission {
     private String apiPath;
     @NotBlank(message = "Method isn't blank")
     private String method;
-    @NotBlank(message = "Module isn't blank")
-    private String module;
 
     private Instant createdAt;
     private Instant updatedAt;

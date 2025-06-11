@@ -38,11 +38,12 @@ public class SecurityUtil {
     @Value("${bookverse.jwt.refresh-token-validity-in-seconds}")
     private long refreshTokenExpiration;
 
-    public String createToken(String email, ResLoginDTO userDTO) {
+    public String createAccessToken(String username, ResLoginDTO userDTO) {
         ResLoginDTO.UserInSideToken token = new ResLoginDTO.UserInSideToken();
         token.setId(userDTO.getUser().getId());
         token.setUsername(userDTO.getUser().getUsername());
         token.setFullName(userDTO.getUser().getFullName());
+        token.setRole(userDTO.getUser().getRole().getName());
         // Lay thoi gian thuc
         Instant now = Instant.now();
         // Tinh thoi gian het han token
@@ -55,9 +56,31 @@ public class SecurityUtil {
         JwtClaimsSet claims = JwtClaimsSet.builder()
                 .issuedAt(now)
                 .expiresAt(validity)
-                .subject(email)
+                .subject(username)
                 .claim("user", token)
                 .claim("permissions", listAuthority)
+                .build();
+        // Thuat toan ma hoa
+        JwsHeader jwsHeader = JwsHeader.with(JWT_ALGORITHM).build();
+        return this.jwtEncoder.encode(JwtEncoderParameters.from(jwsHeader,
+                claims)).getTokenValue();
+    }
+
+    public String createRefreshToken(String username, ResLoginDTO userDTO) {
+        ResLoginDTO.UserInSideToken token = new ResLoginDTO.UserInSideToken();
+        token.setId(userDTO.getUser().getId());
+        token.setUsername(userDTO.getUser().getUsername());
+        token.setFullName(userDTO.getUser().getFullName());
+        // Lay thoi gian thuc
+        Instant now = Instant.now();
+        // Tinh thoi gian het han token
+        Instant validity = now.plus(this.refreshTokenExpiration, ChronoUnit.SECONDS);
+        // @formatter:off
+        JwtClaimsSet claims = JwtClaimsSet.builder()
+                .issuedAt(now)
+                .expiresAt(validity)
+                .subject(username)
+                .claim("user", token)
                 .build();
         // Thuat toan ma hoa
         JwsHeader jwsHeader = JwsHeader.with(JWT_ALGORITHM).build();
@@ -66,45 +89,21 @@ public class SecurityUtil {
 
     }
 
-//    public String refreshToken(String email, ResLoginDTO userDTO) {
-//        ResLoginDTO.UserInsideToken userInsideToken = new ResLoginDTO.UserInsideToken();
-//        userInsideToken.setId(userDTO.getUser().getId());
-//        userInsideToken.setEmail(userDTO.getUser().getEmail());
-//        userInsideToken.setName(userDTO.getUser().getName());
-//        // Lay thoi gian thuc
-//        Instant now = Instant.now();
-//        // Tinh thoi gian het han token
-//        Instant validity = now.plus(this.refreshTokenExpiration, ChronoUnit.SECONDS);
-//
-//        // @formatter:off
-//        JwtClaimsSet claims = JwtClaimsSet.builder()
-//                .issuedAt(now)
-//                .expiresAt(validity)
-//                .subject(email)
-//                .claim("user", userInsideToken)
-//                .build();
-//        // Thuat toan ma hoa
-//        JwsHeader jwsHeader = JwsHeader.with(JWT_ALGORITHM).build();
-//        return this.jwtEncoder.encode(JwtEncoderParameters.from(jwsHeader,
-//                claims)).getTokenValue();
-//
-//    }
-
     private SecretKey getSecretKey() {
         byte[] keyBytes = Base64.from(jwtKey).decode();
         return new SecretKeySpec(keyBytes, 0, keyBytes.length, JWT_ALGORITHM.getName());
     }
 
-//    public Jwt checkValidRefreshToken(String refreshToken) {
-//        NimbusJwtDecoder jwtDecoder = NimbusJwtDecoder.withSecretKey(
-//                getSecretKey()).macAlgorithm(SecurityUtil.JWT_ALGORITHM).build();
-//        try {
-//            return jwtDecoder.decode(refreshToken);
-//        } catch (Exception e) {
-//            System.out.println(">>> JWT error: " + e.getMessage());
-//            throw e;
-//        }
-//    }
+    public Jwt checkValidRefreshToken(String refreshToken) {
+        NimbusJwtDecoder jwtDecoder = NimbusJwtDecoder.withSecretKey(
+                getSecretKey()).macAlgorithm(SecurityUtil.JWT_ALGORITHM).build();
+        try {
+            return jwtDecoder.decode(refreshToken);
+        } catch (Exception e) {
+            System.out.println(">>> JWT error: " + e.getMessage());
+            throw e;
+        }
+    }
     /**
      * Get the login of the current user.
      *

@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.modelmapper.ModelMapper;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -19,7 +20,6 @@ import java.util.List;
 public class ResAuthorDTO {
     private long id;
     private String name;
-    private int age;
     private Date birthday;
     private String nationality;
     private List<InfoBookInAuthorDTO> books;
@@ -49,7 +49,6 @@ public class ResAuthorDTO {
         ResAuthorDTO dto = new ResAuthorDTO();
         dto.setId(author.getId());
         dto.setName(author.getName());
-        dto.setAge(author.getAge());
         dto.setBirthday(author.getBirthday());
         dto.setNationality(author.getNationality());
         dto.setCreatedAt(author.getCreatedAt());

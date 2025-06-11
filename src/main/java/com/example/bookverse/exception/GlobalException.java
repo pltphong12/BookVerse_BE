@@ -4,6 +4,8 @@ import com.example.bookverse.domain.response.RestResponse;
 import com.example.bookverse.exception.author.ExistAuthorNameException;
 import com.example.bookverse.exception.book.ExistTitleException;
 import com.example.bookverse.exception.category.ExistCategoryNameException;
+import com.example.bookverse.exception.publisher.ExistPublisherNameException;
+import com.example.bookverse.exception.role.ExistPermissionNameException;
 import com.example.bookverse.exception.role.ExistRoleNameException;
 import com.example.bookverse.exception.user.ExistUsernameException;
 import com.example.bookverse.exception.global.IdInvalidException;
@@ -36,60 +38,18 @@ public class GlobalException {
     // Handle User Exception
     @ExceptionHandler(value = {
             ExistUsernameException.class,
-    })
-    public ResponseEntity<RestResponse<Object>> handleExistUsernameException(Exception ex) {
-        RestResponse<Object> res = new RestResponse<>();
-        res.setStatus(HttpStatus.BAD_REQUEST.value());
-        res.setMessage(ex.getMessage());
-        res.setError("Username already exist");
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(res);
-    }
-
-    // Handle Role Exception
-    @ExceptionHandler(value = {
             ExistRoleNameException.class,
-    })
-    public ResponseEntity<RestResponse<Object>> handleExistRoleNameException(Exception ex) {
-        RestResponse<Object> res = new RestResponse<>();
-        res.setStatus(HttpStatus.BAD_REQUEST.value());
-        res.setMessage(ex.getMessage());
-        res.setError("RoleName already exist");
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(res);
-    }
-
-    // Handle Category Exception
-    @ExceptionHandler(value = {
             ExistCategoryNameException.class,
-    })
-    public ResponseEntity<RestResponse<Object>> handleExistCategoryNameException(Exception ex) {
-        RestResponse<Object> res = new RestResponse<>();
-        res.setStatus(HttpStatus.BAD_REQUEST.value());
-        res.setMessage(ex.getMessage());
-        res.setError("CategoryName already exist");
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(res);
-    }
-
-    // Handle BookException
-    @ExceptionHandler(value = {
+            ExistPublisherNameException.class,
             ExistTitleException.class,
-    })
-    public ResponseEntity<RestResponse<Object>> handleExistTitleException(Exception ex) {
-        RestResponse<Object> res = new RestResponse<>();
-        res.setStatus(HttpStatus.BAD_REQUEST.value());
-        res.setMessage(ex.getMessage());
-        res.setError("Title already exist");
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(res);
-    }
-
-    // Handle Author Exception
-    @ExceptionHandler(value = {
             ExistAuthorNameException.class,
+            ExistPermissionNameException.class,
     })
-    public ResponseEntity<RestResponse<Object>> handleExistAuthorNameException(Exception ex) {
+    public ResponseEntity<RestResponse<Object>> handleExistNameException(Exception ex) {
         RestResponse<Object> res = new RestResponse<>();
         res.setStatus(HttpStatus.BAD_REQUEST.value());
         res.setMessage(ex.getMessage());
-        res.setError("AuthorName already exist");
+        res.setError("Name already exist");
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(res);
     }
 
@@ -115,9 +75,9 @@ public class GlobalException {
     })
     public ResponseEntity<RestResponse<Object>> handleInvalidUsernameOrPasswordException(Exception ex) {
         RestResponse<Object> res = new RestResponse<>();
-        res.setStatus(HttpStatus.UNAUTHORIZED.value());
+        res.setStatus(HttpStatus.BAD_REQUEST.value());
         res.setMessage(ex.getMessage());
         res.setError("Username or password invalid");
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(res);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(res);
     }
 }

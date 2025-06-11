@@ -99,8 +99,6 @@ public class ResCartDTO {
         return cartDetailInCart;
     }
 
-
-
     public static InfoBookInCart getInfoBookInCart(CartDetail cartDetail) {
         InfoBookInCart infoBookInCart = new InfoBookInCart();
         infoBookInCart.setId(cartDetail.getId());
@@ -115,7 +113,6 @@ public class ResCartDTO {
             InfoAuthorInCart infoAuthorInCart = new InfoAuthorInCart();
             infoAuthorInCart.setId(author.getId());
             infoAuthorInCart.setName(author.getName());
-            infoAuthorInCart.setAge(author.getAge());
             infoAuthorInCart.setBirthday(author.getBirthday());
             infoAuthorInCart.setNationality(author.getNationality());
             authors.add(infoAuthorInCart);

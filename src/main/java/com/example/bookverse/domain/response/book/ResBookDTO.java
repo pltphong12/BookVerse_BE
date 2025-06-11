@@ -44,7 +44,6 @@ public class ResBookDTO {
     public static class InfoAuthorInBook{
         private long id;
         private String name;
-        private int age;
         private Date birthday;
         private String nationality;
     }
@@ -68,7 +67,6 @@ public class ResBookDTO {
             InfoAuthorInBook infoAuthorInBook = new InfoAuthorInBook();
             infoAuthorInBook.setId(author.getId());
             infoAuthorInBook.setName(author.getName());
-            infoAuthorInBook.setAge(author.getAge());
             infoAuthorInBook.setBirthday(author.getBirthday());
             infoAuthorInBook.setNationality(author.getNationality());
             infoAuthorInBookList.add(infoAuthorInBook);

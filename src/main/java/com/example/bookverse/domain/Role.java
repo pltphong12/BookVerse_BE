@@ -2,6 +2,7 @@ package com.example.bookverse.domain;
 
 import com.example.bookverse.util.SecurityUtil;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
@@ -29,6 +30,13 @@ public class Role {
     @OneToMany(mappedBy = "role")
     @JsonIgnore
     List<User> users;
+
+    @ManyToMany
+    @JsonIgnoreProperties(value = {"roles"})
+    @JoinTable(name = "permission_role",
+            joinColumns = @JoinColumn(name = "role_id"),
+            inverseJoinColumns = @JoinColumn(name = "permission_id"))
+    private List<Permission> permissions;
 
     private Instant createdAt;
     private Instant updatedAt;

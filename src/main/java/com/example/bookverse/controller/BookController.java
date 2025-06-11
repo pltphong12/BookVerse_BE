@@ -22,16 +22,18 @@ public class BookController {
 
     // Create a book
     @PostMapping("/books")
-    public ResponseEntity<Book> createBook(@Valid @RequestBody Book book) throws Exception{
+    public ResponseEntity<ResBookDTO> createBook(@Valid @RequestBody Book book) throws Exception{
         Book newBook = this.bookService.create(book);
-        return ResponseEntity.status(HttpStatus.CREATED).body(newBook);
+        ResBookDTO resBookDTO = ResBookDTO.from(newBook);
+        return ResponseEntity.status(HttpStatus.CREATED).body(resBookDTO);
     }
 
     // Update a books
     @PutMapping("/books")
-    public ResponseEntity<Book> updateBook(@RequestBody Book book) throws Exception{
+    public ResponseEntity<ResBookDTO> updateBook(@RequestBody Book book) throws Exception{
         Book updatedBook = this.bookService.update(book);
-        return ResponseEntity.status(HttpStatus.OK).body(updatedBook);
+        ResBookDTO resBookDTO = ResBookDTO.from(updatedBook);
+        return ResponseEntity.status(HttpStatus.OK).body(resBookDTO);
     }
 
     // Fetch a book by id

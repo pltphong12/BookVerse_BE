@@ -1,10 +1,13 @@
 package com.example.bookverse.service.impl;
 
+import com.example.bookverse.domain.Author;
 import com.example.bookverse.domain.Book;
 import com.example.bookverse.exception.book.ExistTitleException;
 import com.example.bookverse.exception.global.IdInvalidException;
+import com.example.bookverse.repository.AuthorRepository;
 import com.example.bookverse.repository.BookRepository;
 import com.example.bookverse.service.BookService;
+import com.example.bookverse.util.EntityValidator;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -12,15 +15,24 @@ import java.util.List;
 @Service
 public class BookServiceImpl implements BookService {
     private final BookRepository bookRepository;
+    private final AuthorRepository authorRepository;
 
-    public BookServiceImpl(BookRepository bookRepository) {
+    public BookServiceImpl(BookRepository bookRepository, AuthorRepository authorRepository) {
         this.bookRepository = bookRepository;
+        this.authorRepository = authorRepository;
     }
 
     @Override
     public Book create(Book book) throws Exception {
         if (bookRepository.existsByTitle(book.getTitle())) {
             throw new ExistTitleException(book.getTitle() + " already exists");
+        }
+        if (book.getAuthors() != null){
+            List<Long> authorIds = book.getAuthors().stream()
+                    .map(Author::getId)
+                    .toList();
+            EntityValidator.validateIdsExist(authorIds,authorRepository,"Author");
+            book.setAuthors(book.getAuthors());
         }
         return this.bookRepository.save(book);
     }
@@ -58,6 +70,14 @@ public class BookServiceImpl implements BookService {
             }
             if (book.getImage() != null && !bookInDB.getImage().equals(book.getImage())) {
                 bookInDB.setImage(book.getImage());
+            }
+            if (book.getAuthors() != null && !bookInDB.getAuthors().equals(book.getAuthors())) {
+
+                List<Long> authorIds = book.getAuthors().stream()
+                        .map(Author::getId)
+                        .toList();
+                EntityValidator.validateIdsExist(authorIds,authorRepository,"Author");
+                bookInDB.setAuthors(book.getAuthors());
             }
             return this.bookRepository.save(bookInDB);
         }

@@ -17,11 +17,9 @@ import java.util.List;
 @RestController
 public class CategoryController {
     private final CategoryService categoryService;
-    private final ModelMapper modelMapper;
 
-    public CategoryController(CategoryService categoryService, ModelMapper modelMapper) {
+    public CategoryController(CategoryService categoryService) {
         this.categoryService = categoryService;
-        this.modelMapper = modelMapper;
     }
 
     // Create category

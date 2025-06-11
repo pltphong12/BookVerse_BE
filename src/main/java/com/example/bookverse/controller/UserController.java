@@ -1,16 +1,20 @@
 package com.example.bookverse.controller;
 
 import com.example.bookverse.domain.User;
+import com.example.bookverse.domain.response.ResPagination;
 import com.example.bookverse.domain.response.user.UserDTO;
 import com.example.bookverse.service.UserService;
 import jakarta.validation.Valid;
 import org.modelmapper.ModelMapper;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/v1")
@@ -49,16 +53,22 @@ public class UserController {
     }
 
     @GetMapping("/users")
-    public ResponseEntity<List<UserDTO>> getUsers() throws Exception {
-        List<User> users = this.userService.fetchAllUsers();
-        // Convert DTO
-        List<UserDTO> DTOs = new ArrayList<>();
-        for (User user : users) {
-            UserDTO DTO = modelMapper.map(user, UserDTO.class);
-            DTOs.add(DTO);
-        }
-        return ResponseEntity.status(HttpStatus.OK).body(DTOs);
+    public ResponseEntity<ResPagination> getUsersWithPagination(Pageable pageable) throws Exception {
+        ResPagination users = this.userService.fetchAllUsersWithPagination(pageable);
+        return ResponseEntity.status(HttpStatus.OK).body(users);
     }
+
+//    @GetMapping("/users")
+//    public ResponseEntity<List<UserDTO>> getUsers() throws Exception {
+//        List<User> users = this.userService.fetchAllUsers();
+//        // Convert DTO
+//        List<UserDTO> DTOs = new ArrayList<>();
+//        for (User user : users) {
+//            UserDTO DTO = modelMapper.map(user, UserDTO.class);
+//            DTOs.add(DTO);
+//        }
+//        return ResponseEntity.status(HttpStatus.OK).body(DTOs);
+//    }
 
     @DeleteMapping("/users/{id}")
     public ResponseEntity<Void> deleteUser(@PathVariable long id) throws Exception {

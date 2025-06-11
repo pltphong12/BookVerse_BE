@@ -43,9 +43,6 @@ public class AuthorServiceImpl implements AuthorService {
                 }
                 authorInDB.setName(author.getName());
             }
-            if (author.getAge() != 0){
-                authorInDB.setAge(author.getAge());
-            }
             if (author.getBirthday() != null) {
                 authorInDB.setBirthday(author.getBirthday());
             }

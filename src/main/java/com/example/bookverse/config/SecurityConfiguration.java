@@ -21,10 +21,13 @@ public class SecurityConfiguration {
     }
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http, CustomAuthenticationEntryPoint customAuthenticationEntryPoint) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http, CustomAuthenticationEntryPoint customAuthenticationEntryPoint, CustomBearerTokenResolver customBearerTokenResolver) throws Exception {
         String[] whiteList = {
                 "/",
-                "/api/v1/auth/login"
+                "/api/v1/auth/login",
+                "/api/v1/auth/register",
+                "/api/v1/auth/refresh",
+                "/api/v1/users/**"
         };
         http
                 .csrf(AbstractHttpConfigurer::disable)
@@ -34,6 +37,7 @@ public class SecurityConfiguration {
                         .anyRequest().authenticated())
                 .formLogin(AbstractHttpConfigurer::disable)
                 .oauth2ResourceServer((oauth2 -> oauth2.jwt(Customizer.withDefaults())
+                        .bearerTokenResolver(customBearerTokenResolver)
                         // Handle Jwt in Header Exception
                         .authenticationEntryPoint(customAuthenticationEntryPoint)))
 

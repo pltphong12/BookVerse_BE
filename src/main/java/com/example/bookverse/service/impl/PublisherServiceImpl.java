@@ -1,4 +1,83 @@
 package com.example.bookverse.service.impl;
 
-public class PublisherServiceImpl {
+import com.example.bookverse.domain.Publisher;
+import com.example.bookverse.exception.global.IdInvalidException;
+import com.example.bookverse.exception.publisher.ExistPublisherNameException;
+import com.example.bookverse.repository.PublisherRepository;
+import com.example.bookverse.service.PublisherService;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+
+@Service
+public class PublisherServiceImpl implements PublisherService {
+    private final PublisherRepository publisherRepository;
+
+    public PublisherServiceImpl(PublisherRepository publisherRepository) {
+        this.publisherRepository = publisherRepository;
+    }
+
+    // Create
+    @Override
+    public Publisher create(Publisher publisher) throws Exception {
+        if (this.publisherRepository.existsByName(publisher.getName())) {
+            throw new ExistPublisherNameException(publisher.getName() + " already exists");
+        }
+        return publisherRepository.save(publisher);
+    }
+
+    // Update
+    @Override
+    public Publisher update(Publisher publisher) throws Exception {
+        if (!this.publisherRepository.existsById(publisher.getId())) {
+            throw new IdInvalidException("Id invalid");
+        }
+        Publisher publisherInDB = this.publisherRepository.findById(publisher.getId()).orElse(null);
+        if (publisherInDB != null) {
+            if (publisher.getName() != null && !publisher.getName().equals(publisherInDB.getName())) {
+                publisherInDB.setName(publisher.getName());
+            }
+            if (publisher.getAddress() != null && !publisher.getAddress().equals(publisherInDB.getAddress())) {
+                publisherInDB.setAddress(publisher.getAddress());
+            }
+            if (publisher.getEmail() != null && !publisher.getEmail().equals(publisherInDB.getEmail())) {
+                publisherInDB.setEmail(publisher.getEmail());
+            }
+            if (publisher.getPhone() != null && !publisher.getPhone().equals(publisherInDB.getPhone())) {
+                publisherInDB.setPhone(publisher.getPhone());
+            }
+            if (publisher.getDescription() != null && !publisher.getDescription().equals(publisherInDB.getDescription())) {
+                publisherInDB.setDescription(publisher.getDescription());
+            }
+            if (publisher.getImage() != null && !publisher.getImage().equals(publisherInDB.getImage())) {
+                publisherInDB.setImage(publisher.getImage());
+            }
+            return publisherRepository.save(publisherInDB);
+        }
+        return null;
+    }
+
+    //Fetch
+    @Override
+    public Publisher fetchPublisherById(long id) throws Exception {
+        if (!this.publisherRepository.existsById(id)) {
+            throw new IdInvalidException("Id invalid");
+        }
+        return this.publisherRepository.findById(id).orElse(null);
+    }
+
+    // Fetch all
+    @Override
+    public List<Publisher> fetchAllPublisher() throws Exception {
+        return this.publisherRepository.findAll();
+    }
+
+    // Delete
+    @Override
+    public void delete(long id) throws Exception {
+        if (!this.publisherRepository.existsById(id)) {
+            throw new IdInvalidException("Id invalid");
+        }
+        this.publisherRepository.deleteById(id);
+    }
 }
