@@ -4,7 +4,7 @@ import com.example.bookverse.domain.User;
 import com.example.bookverse.domain.response.ResPagination;
 import org.springframework.data.domain.Pageable;
 
-import java.util.List;
+import java.time.LocalDate;
 
 public interface UserService {
 
@@ -22,6 +22,9 @@ public interface UserService {
 
     // Find all user with pagination
     ResPagination fetchAllUsersWithPagination(Pageable pageable) throws Exception;
+
+    // Find all user with pagination and filter
+    ResPagination fetchAllUsersWithPaginationAndFilter(String username, long roleId, LocalDate dateFrom, Pageable pageable) throws Exception;
 
     // Delete a user by id
     void delete(long id) throws Exception;

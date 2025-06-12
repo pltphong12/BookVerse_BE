@@ -8,12 +8,15 @@ import jakarta.validation.Valid;
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RestController
@@ -52,9 +55,20 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.OK).body(DTO);
     }
 
+//    @GetMapping("/users")
+//    public ResponseEntity<ResPagination> getUsersWithPagination(Pageable pageable) throws Exception {
+//        ResPagination users = this.userService.fetchAllUsersWithPagination(pageable);
+//        return ResponseEntity.status(HttpStatus.OK).body(users);
+//    }
+
     @GetMapping("/users")
-    public ResponseEntity<ResPagination> getUsersWithPagination(Pageable pageable) throws Exception {
-        ResPagination users = this.userService.fetchAllUsersWithPagination(pageable);
+    public ResponseEntity<ResPagination> getUsersWithPaginationAndFilter(
+            @RequestParam(required = false) String name,
+            @RequestParam(name = "role_id",defaultValue = "0") long roleId,
+            @RequestParam(name = "date_from", required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateFrom,
+            Pageable pageable) throws Exception {
+        ResPagination users = this.userService.fetchAllUsersWithPaginationAndFilter(name, roleId, dateFrom, pageable);
         return ResponseEntity.status(HttpStatus.OK).body(users);
     }
 

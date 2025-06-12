@@ -15,6 +15,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -99,6 +100,32 @@ public class UserServiceImpl implements UserService {
     @Override
     public ResPagination fetchAllUsersWithPagination(Pageable pageable) {
         Page<User> pageUser = this.userRepository.findAll(pageable);
+        ResPagination rs = new ResPagination();
+        ResPagination.Meta mt = new ResPagination.Meta();
+
+        mt.setPage(pageable.getPageNumber() + 1);
+        mt.setPageSize(pageUser.getSize());
+
+        mt.setPages(pageUser.getTotalPages());
+        mt.setTotal(pageUser.getTotalElements());
+
+        rs.setMeta(mt);
+
+        List<User> users = pageUser.getContent();
+        List<UserDTO> userDTOS = new ArrayList<>();
+        for (User user : users) {
+            UserDTO userDTO = modelMapper.map(user, UserDTO.class);
+            userDTOS.add(userDTO);
+        }
+
+        rs.setResult(userDTOS);
+
+        return rs;
+    }
+
+    @Override
+    public ResPagination fetchAllUsersWithPaginationAndFilter(String username, long roleId, LocalDate dateFrom, Pageable pageable) {
+        Page<User> pageUser = this.userRepository.filterUsersName(username, roleId, dateFrom, pageable);
         ResPagination rs = new ResPagination();
         ResPagination.Meta mt = new ResPagination.Meta();
 
