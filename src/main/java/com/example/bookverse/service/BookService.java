@@ -1,6 +1,8 @@
 package com.example.bookverse.service;
 
 import com.example.bookverse.domain.Book;
+import com.example.bookverse.domain.response.ResPagination;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 
@@ -16,6 +18,9 @@ public interface BookService {
 
     // Fetch all book
     List<Book> fetchAllBooks() throws Exception;
+
+    // Fetch all book with pagination and filter
+    ResPagination fetchAllBooksWithPaginationAndFilter(Pageable pageable) throws Exception;
 
     // Delete a book by id
     void delete(long id) throws Exception;

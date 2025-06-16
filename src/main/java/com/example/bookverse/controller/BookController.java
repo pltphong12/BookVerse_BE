@@ -1,9 +1,12 @@
 package com.example.bookverse.controller;
 
 import com.example.bookverse.domain.Book;
+import com.example.bookverse.domain.response.ResPagination;
 import com.example.bookverse.domain.response.book.ResBookDTO;
 import com.example.bookverse.service.BookService;
+import com.mysql.cj.x.protobuf.Mysqlx;
 import jakarta.validation.Valid;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -45,15 +48,21 @@ public class BookController {
     }
 
     // Fetch all books
+//    @GetMapping("/books")
+//    public ResponseEntity<List<ResBookDTO>> getAllBooks() throws Exception{
+//        List<Book> books = this.bookService.fetchAllBooks();
+//        List<ResBookDTO> resBookDTOS = new ArrayList<>();
+//        for (Book book : books) {
+//            ResBookDTO resBookDTO = ResBookDTO.from(book);
+//            resBookDTOS.add(resBookDTO);
+//        }
+//        return ResponseEntity.status(HttpStatus.OK).body(resBookDTOS);
+//    }
+
     @GetMapping("/books")
-    public ResponseEntity<List<ResBookDTO>> getAllBooks() throws Exception{
-        List<Book> books = this.bookService.fetchAllBooks();
-        List<ResBookDTO> resBookDTOS = new ArrayList<>();
-        for (Book book : books) {
-            ResBookDTO resBookDTO = ResBookDTO.from(book);
-            resBookDTOS.add(resBookDTO);
-        }
-        return ResponseEntity.status(HttpStatus.OK).body(resBookDTOS);
+    public ResponseEntity<ResPagination> getAllBooksWithPagination(Pageable pageable) throws Exception{
+        ResPagination resPagination = this.bookService.fetchAllBooksWithPaginationAndFilter(pageable);
+        return ResponseEntity.status(HttpStatus.OK).body(resPagination);
     }
 
     // Delete a book by id
