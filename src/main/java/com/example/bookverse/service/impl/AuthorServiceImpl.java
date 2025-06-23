@@ -2,13 +2,19 @@ package com.example.bookverse.service.impl;
 
 import com.example.bookverse.domain.Author;
 import com.example.bookverse.domain.Book;
+import com.example.bookverse.domain.response.ResPagination;
+import com.example.bookverse.domain.response.author.ResAuthorDTO;
+import com.example.bookverse.domain.response.book.ResBookDTO;
 import com.example.bookverse.exception.author.ExistAuthorNameException;
 import com.example.bookverse.exception.global.IdInvalidException;
 import com.example.bookverse.repository.AuthorRepository;
 import com.example.bookverse.repository.BookRepository;
 import com.example.bookverse.service.AuthorService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -64,6 +70,32 @@ public class AuthorServiceImpl implements AuthorService {
     @Override
     public List<Author> fetchAllAuthors() throws Exception {
         return this.authorRepository.findAll();
+    }
+
+    @Override
+    public ResPagination fetchAllAuthorsWithPaginationAndFilter(String name, String nationality, LocalDate dateFrom, Pageable pageable) throws Exception {
+        Page<Author> pageAuthor = this.authorRepository.filter(name, nationality, dateFrom, pageable);
+        ResPagination rs = new ResPagination();
+        ResPagination.Meta mt = new ResPagination.Meta();
+
+        mt.setPage(pageable.getPageNumber() + 1);
+        mt.setPageSize(pageAuthor.getSize());
+
+        mt.setPages(pageAuthor.getTotalPages());
+        mt.setTotal(pageAuthor.getTotalElements());
+
+        rs.setMeta(mt);
+
+        List<Author> authors = pageAuthor.getContent();
+        List<ResAuthorDTO> authorDTOS = new ArrayList<>();
+        for (Author author : authors) {
+            ResAuthorDTO authorDTO = ResAuthorDTO.from(author);
+            authorDTOS.add(authorDTO);
+        }
+
+        rs.setResult(authorDTOS);
+
+        return rs;
     }
 
     @Override

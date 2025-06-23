@@ -22,6 +22,7 @@ public class ResAuthorDTO {
     private String name;
     private Date birthday;
     private String nationality;
+    private String avatar;
     private List<InfoBookInAuthorDTO> books;
 
     private Instant createdAt;
@@ -51,6 +52,7 @@ public class ResAuthorDTO {
         dto.setName(author.getName());
         dto.setBirthday(author.getBirthday());
         dto.setNationality(author.getNationality());
+        dto.setAvatar(author.getAvatar());
         dto.setCreatedAt(author.getCreatedAt());
         dto.setUpdatedAt(author.getUpdatedAt());
         dto.setCreatedBy(author.getCreatedBy());

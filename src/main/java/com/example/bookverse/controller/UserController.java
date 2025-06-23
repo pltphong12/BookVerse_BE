@@ -55,13 +55,13 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.OK).body(DTO);
     }
 
-//    @GetMapping("/users")
-//    public ResponseEntity<ResPagination> getUsersWithPagination(Pageable pageable) throws Exception {
-//        ResPagination users = this.userService.fetchAllUsersWithPagination(pageable);
-//        return ResponseEntity.status(HttpStatus.OK).body(users);
-//    }
-
     @GetMapping("/users")
+    public ResponseEntity<ResPagination> getUsersWithPagination(Pageable pageable) throws Exception {
+        ResPagination users = this.userService.fetchAllUsersWithPagination(pageable);
+        return ResponseEntity.status(HttpStatus.OK).body(users);
+    }
+
+    @GetMapping("/users/search")
     public ResponseEntity<ResPagination> getUsersWithPaginationAndFilter(
             @RequestParam(required = false) String name,
             @RequestParam(name = "role_id",defaultValue = "0") long roleId,

@@ -27,6 +27,7 @@ public class Author {
     private String name;
     private Date birthday;
     private String nationality;
+    private String avatar;
 
     @ManyToMany(fetch = FetchType.LAZY, mappedBy = "authors")
     @JsonIgnore

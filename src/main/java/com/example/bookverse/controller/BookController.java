@@ -7,10 +7,12 @@ import com.example.bookverse.service.BookService;
 import com.mysql.cj.x.protobuf.Mysqlx;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Pageable;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -47,21 +49,28 @@ public class BookController {
         return ResponseEntity.status(HttpStatus.OK).body(resBookDTO);
     }
 
-    // Fetch all books
-//    @GetMapping("/books")
-//    public ResponseEntity<List<ResBookDTO>> getAllBooks() throws Exception{
-//        List<Book> books = this.bookService.fetchAllBooks();
-//        List<ResBookDTO> resBookDTOS = new ArrayList<>();
-//        for (Book book : books) {
-//            ResBookDTO resBookDTO = ResBookDTO.from(book);
-//            resBookDTOS.add(resBookDTO);
-//        }
-//        return ResponseEntity.status(HttpStatus.OK).body(resBookDTOS);
-//    }
-
+//     Fetch all books
     @GetMapping("/books")
-    public ResponseEntity<ResPagination> getAllBooksWithPagination(Pageable pageable) throws Exception{
-        ResPagination resPagination = this.bookService.fetchAllBooksWithPaginationAndFilter(pageable);
+    public ResponseEntity<List<ResBookDTO>> getAllBooks() throws Exception{
+        List<Book> books = this.bookService.fetchAllBooks();
+        List<ResBookDTO> resBookDTOS = new ArrayList<>();
+        for (Book book : books) {
+            ResBookDTO resBookDTO = ResBookDTO.from(book);
+            resBookDTOS.add(resBookDTO);
+        }
+        return ResponseEntity.status(HttpStatus.OK).body(resBookDTOS);
+    }
+
+    @GetMapping("/books/search")
+    public ResponseEntity<ResPagination> getAllBooksWithPagination(
+            @RequestParam(required = false) String title,
+            @RequestParam(name = "publisher_id",defaultValue = "0") long publisherId,
+            @RequestParam(name = "author_id",defaultValue = "0") long authorId,
+            @RequestParam(name = "category_id",defaultValue = "0") long categoryId,
+            @RequestParam(name = "date_from", required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateFrom,
+            Pageable pageable) throws Exception{
+        ResPagination resPagination = this.bookService.fetchAllBooksWithPaginationAndFilter(title, publisherId, authorId, categoryId, dateFrom, pageable);
         return ResponseEntity.status(HttpStatus.OK).body(resPagination);
     }
 

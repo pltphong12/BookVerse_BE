@@ -4,6 +4,7 @@ import com.example.bookverse.domain.Book;
 import com.example.bookverse.domain.response.ResPagination;
 import org.springframework.data.domain.Pageable;
 
+import java.time.LocalDate;
 import java.util.List;
 
 public interface BookService {
@@ -20,7 +21,7 @@ public interface BookService {
     List<Book> fetchAllBooks() throws Exception;
 
     // Fetch all book with pagination and filter
-    ResPagination fetchAllBooksWithPaginationAndFilter(Pageable pageable) throws Exception;
+    ResPagination fetchAllBooksWithPaginationAndFilter(String title, long publisherId, long authorId, long categoryId, LocalDate dateFrom, Pageable pageable) throws Exception;
 
     // Delete a book by id
     void delete(long id) throws Exception;

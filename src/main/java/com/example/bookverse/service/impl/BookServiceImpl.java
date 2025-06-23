@@ -16,6 +16,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -104,8 +105,8 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
-    public ResPagination fetchAllBooksWithPaginationAndFilter(Pageable pageable){
-        Page<Book> pageBook = this.bookRepository.filter(pageable);
+    public ResPagination fetchAllBooksWithPaginationAndFilter(String title, long publisherId, long authorId, long categoryId, LocalDate dateFrom, Pageable pageable){
+        Page<Book> pageBook = this.bookRepository.filter(title, publisherId, authorId, categoryId, dateFrom, pageable);
         ResPagination rs = new ResPagination();
         ResPagination.Meta mt = new ResPagination.Meta();
 
