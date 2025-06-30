@@ -1,11 +1,15 @@
 package com.example.bookverse.controller;
 
 import com.example.bookverse.domain.Publisher;
+import com.example.bookverse.domain.response.ResPagination;
 import com.example.bookverse.service.PublisherService;
+import org.springframework.data.domain.Pageable;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -41,9 +45,19 @@ public class PublisherController {
         return ResponseEntity.status(HttpStatus.OK).body(publishers);
     }
 
+    @GetMapping("/publishers/search")
+    public ResponseEntity<ResPagination> getAllWithPaginationAndFilter(
+            @RequestParam(required = false) String name,
+            @RequestParam(name = "date_from", required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateFrom,
+            Pageable pageable) throws Exception {
+        ResPagination resPagination = this.publisherService.fetchAllPublisherWithPaginationAndFilter(name, dateFrom, pageable);
+        return ResponseEntity.status(HttpStatus.OK).body(resPagination);
+    }
+
     @DeleteMapping("/publishers/{id}")
     public ResponseEntity<Void> delete(@PathVariable long id) throws Exception {
-        this.publisherService.fetchPublisherById(id);
+        this.publisherService.delete(id);
         return ResponseEntity.noContent().build();
     }
 }

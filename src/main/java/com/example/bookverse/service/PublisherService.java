@@ -1,7 +1,10 @@
 package com.example.bookverse.service;
 
 import com.example.bookverse.domain.Publisher;
+import com.example.bookverse.domain.response.ResPagination;
+import org.springframework.data.domain.Pageable;
 
+import java.time.LocalDate;
 import java.util.List;
 
 public interface PublisherService {
@@ -16,6 +19,8 @@ public interface PublisherService {
 
     // Fetch all
     List<Publisher> fetchAllPublisher() throws Exception;
+
+    ResPagination fetchAllPublisherWithPaginationAndFilter(String name, LocalDate dataFrom, Pageable pageable) throws Exception;
 
     // Delete
     void delete(long id) throws Exception;

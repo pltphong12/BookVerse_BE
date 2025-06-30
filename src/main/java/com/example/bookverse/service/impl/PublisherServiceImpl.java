@@ -1,12 +1,16 @@
 package com.example.bookverse.service.impl;
 
 import com.example.bookverse.domain.Publisher;
+import com.example.bookverse.domain.response.ResPagination;
 import com.example.bookverse.exception.global.IdInvalidException;
 import com.example.bookverse.exception.publisher.ExistPublisherNameException;
 import com.example.bookverse.repository.PublisherRepository;
 import com.example.bookverse.service.PublisherService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -70,6 +74,32 @@ public class PublisherServiceImpl implements PublisherService {
     @Override
     public List<Publisher> fetchAllPublisher() throws Exception {
         return this.publisherRepository.findAll();
+    }
+
+    @Override
+    public ResPagination fetchAllPublisherWithPaginationAndFilter(String name, LocalDate dateFrom, Pageable pageable) throws Exception {
+        Page<Publisher> pagePublisher = this.publisherRepository.filter(name, dateFrom, pageable);
+        ResPagination rs = new ResPagination();
+        ResPagination.Meta mt = new ResPagination.Meta();
+
+        mt.setPage(pageable.getPageNumber() + 1);
+        mt.setPageSize(pagePublisher.getSize());
+
+        mt.setPages(pagePublisher.getTotalPages());
+        mt.setTotal(pagePublisher.getTotalElements());
+
+        rs.setMeta(mt);
+
+        List<Publisher> publishers = pagePublisher.getContent();
+//        List<ResAuthorDTO> authorDTOS = new ArrayList<>();
+//        for (Author author : authors) {
+//            ResAuthorDTO authorDTO = ResAuthorDTO.from(author);
+//            authorDTOS.add(authorDTO);
+//        }
+
+        rs.setResult(publishers);
+
+        return rs;
     }
 
     // Delete
