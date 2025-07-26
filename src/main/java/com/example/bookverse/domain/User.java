@@ -1,7 +1,6 @@
 package com.example.bookverse.domain;
 
 import com.example.bookverse.util.SecurityUtil;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
@@ -10,7 +9,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.Instant;
-import java.util.List;
 
 @Entity
 @Table(name = "users")
@@ -42,13 +40,12 @@ public class User {
     @JoinColumn(name = "role_id")
     private Role role;
 
-    @OneToMany(mappedBy = "user")
-    @JsonIgnore
-    private List<Order> orders;
-
-    @OneToOne(mappedBy = "user")
-    @JsonIgnore
-    private Cart cart;
+//    @OneToMany(mappedBy = "user")
+//    @JsonIgnore
+//    private List<Order> orders;
+//    @OneToOne(mappedBy = "user")
+//    @JsonIgnore
+//    private Cart cart;
 
     private Instant createdAt;
     private Instant updatedAt;

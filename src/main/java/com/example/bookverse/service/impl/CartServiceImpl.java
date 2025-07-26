@@ -26,10 +26,10 @@ public class CartServiceImpl implements CartService {
 
     @Override
     public Cart create(Cart cart) throws Exception {
-        if (cart.getUser() != null){
-            User user = this.userRepository.findById(cart.getUser().getId()).orElse(null);
-            cart.setUser(user);
-        }
+//        if (cart.getCustomer() != null){
+//            User user = this.userRepository.findById(cart.getCustomer().getId()).orElse(null);
+//            cart.setCustomer(user);
+//        }
         Cart cart1 = this.cartRepository.save(cart);
         for (CartDetail cartDetail : cart.getCartDetails()) {
             CartDetail cartDetailInDB = this.cartDetailRepository.findById(cartDetail.getId()).orElse(null);
@@ -57,10 +57,10 @@ public class CartServiceImpl implements CartService {
             throw new IdInvalidException("Cart not found");
         }
         else {
-            if (cart.getUser() != null){
-                User user = this.userRepository.findById(cart.getUser().getId()).orElse(null);
-                cartInDB.setUser(user);
-            }
+//            if (cart.getCustomer() != null){
+//                User user = this.userRepository.findById(cart.getCustomer().getId()).orElse(null);
+//                cartInDB.setCustomer(user);
+//            }
             if (cart.getSum() != 0){
                 cartInDB.setSum(cart.getSum());
             }

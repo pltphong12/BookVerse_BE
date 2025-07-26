@@ -30,10 +30,10 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public Order create(Order order) throws Exception {
-        if (order.getUser() != null){
-            User user = this.userRepository.findById(order.getUser().getId()).orElse(null);
-            order.setUser(user);
-        }
+//        if (order.getUser() != null){
+//            User user = this.userRepository.findById(order.getUser().getId()).orElse(null);
+//            order.setUser(user);
+//        }
         Order newOrder = this.orderRepository.save(order);
         for (OrderDetail orderDetail : order.getOrderDetails()) {
             OrderDetail orderDetailInDB = this.orderDetailRepository.findById(orderDetail.getId()).orElse(null);
@@ -89,10 +89,10 @@ public class OrderServiceImpl implements OrderService {
                     }
                 }
             }
-            if (order.getUser() != null){
-                User user = this.userRepository.findById(order.getUser().getId()).orElse(null);
-                orderInDB.setUser(user);
-            }
+//            if (order.getUser() != null){
+//                User user = this.userRepository.findById(order.getUser().getId()).orElse(null);
+//                orderInDB.setUser(user);
+//            }
             return this.orderRepository.save(orderInDB);
         }
     }

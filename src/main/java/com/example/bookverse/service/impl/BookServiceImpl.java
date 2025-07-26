@@ -76,7 +76,7 @@ public class BookServiceImpl implements BookService {
             if (book.getAuthors() != null) {
                 bookInDB.setAuthors(book.getAuthors());
             }
-            if (book.getImage() != null && !bookInDB.getImage().equals(book.getImage())) {
+            if (book.getImage() != null) {
                 bookInDB.setImage(book.getImage());
             }
             if (book.getAuthors() != null && !bookInDB.getAuthors().equals(book.getAuthors())) {

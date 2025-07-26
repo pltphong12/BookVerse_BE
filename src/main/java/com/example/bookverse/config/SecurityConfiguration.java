@@ -24,10 +24,10 @@ public class SecurityConfiguration {
     public SecurityFilterChain securityFilterChain(HttpSecurity http, CustomAuthenticationEntryPoint customAuthenticationEntryPoint, CustomBearerTokenResolver customBearerTokenResolver) throws Exception {
         String[] whiteList = {
                 "/",
+                "/storage/**",
                 "/api/v1/auth/login",
                 "/api/v1/auth/register",
                 "/api/v1/auth/refresh",
-                "/api/v1/users/**"
         };
         http
                 .csrf(AbstractHttpConfigurer::disable)

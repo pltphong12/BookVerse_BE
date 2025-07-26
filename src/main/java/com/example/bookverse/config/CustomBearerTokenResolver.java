@@ -11,6 +11,7 @@ public class CustomBearerTokenResolver implements BearerTokenResolver {
 
     private final List<String> whitelist = List.of(
             "/api/v1/auth/login",
+            "/storage/**",
             "/api/v1/auth/register",
             "/",
             "/api/v1/auth/refresh"

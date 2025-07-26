@@ -55,6 +55,9 @@ public class AuthorServiceImpl implements AuthorService {
             if (author.getNationality() != null && !author.getNationality().equals(authorInDB.getNationality())) {
                 authorInDB.setNationality(author.getNationality());
             }
+            if (author.getAvatar() != null && !author.getAvatar().equals(authorInDB.getAvatar())) {
+                authorInDB.setAvatar(author.getAvatar());
+            }
             return this.authorRepository.save(authorInDB);
         }
     }

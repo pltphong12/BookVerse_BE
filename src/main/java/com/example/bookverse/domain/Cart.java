@@ -23,11 +23,10 @@ public class Cart {
     private int sum;
 
     @OneToOne()
-    @JoinColumn(name = "user_id")
-    private User user;
+    @JoinColumn(name = "customer_id")
+    private Customer customer;
 
     @OneToMany(mappedBy = "cart")
-//    @JsonIgnore
     List<CartDetail> cartDetails;
 
     private Instant createdAt;
