@@ -1,13 +1,7 @@
 package com.example.bookverse.exception;
 
 import com.example.bookverse.domain.response.RestResponse;
-import com.example.bookverse.exception.author.ExistAuthorNameException;
-import com.example.bookverse.exception.book.ExistTitleException;
-import com.example.bookverse.exception.category.ExistCategoryNameException;
-import com.example.bookverse.exception.publisher.ExistPublisherNameException;
-import com.example.bookverse.exception.role.ExistPermissionNameException;
-import com.example.bookverse.exception.role.ExistRoleNameException;
-import com.example.bookverse.exception.user.ExistUsernameException;
+import com.example.bookverse.exception.global.ExistDataException;
 import com.example.bookverse.exception.global.IdInvalidException;
 import com.example.bookverse.exception.global.InvalidUsernameOrPassword;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
@@ -24,6 +18,7 @@ import java.util.stream.Collectors;
 
 @RestControllerAdvice
 public class GlobalException {
+    // Handle IdInvalid
     @ExceptionHandler(value = {
             IdInvalidException.class,
     })
@@ -35,21 +30,15 @@ public class GlobalException {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(res);
     }
 
-    // Handle User Exception
+    // Handle ExistDataException
     @ExceptionHandler(value = {
-            ExistUsernameException.class,
-            ExistRoleNameException.class,
-            ExistCategoryNameException.class,
-            ExistPublisherNameException.class,
-            ExistTitleException.class,
-            ExistAuthorNameException.class,
-            ExistPermissionNameException.class,
+            ExistDataException.class
     })
-    public ResponseEntity<RestResponse<Object>> handleExistNameException(Exception ex) {
+    public ResponseEntity<RestResponse<Object>> handleExistDataException(Exception ex) {
         RestResponse<Object> res = new RestResponse<>();
         res.setStatus(HttpStatus.BAD_REQUEST.value());
         res.setMessage(ex.getMessage());
-        res.setError("Name already exist");
+        res.setError("Data already exist");
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(res);
     }
 

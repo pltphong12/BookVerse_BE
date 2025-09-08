@@ -2,16 +2,16 @@ package com.example.bookverse.service.impl;
 
 import com.example.bookverse.domain.Permission;
 import com.example.bookverse.domain.Role;
+import com.example.bookverse.exception.global.ExistDataException;
 import com.example.bookverse.exception.global.IdInvalidException;
-import com.example.bookverse.exception.role.ExistRoleNameException;
 import com.example.bookverse.repository.PermissionRepository;
 import com.example.bookverse.repository.RoleRepository;
 import com.example.bookverse.service.RoleService;
 import com.example.bookverse.util.EntityValidator;
+import com.example.bookverse.util.FindObjectInDataBase;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class RoleServiceImpl implements RoleService {
@@ -25,9 +25,9 @@ public class RoleServiceImpl implements RoleService {
     }
 
     @Override
-    public Role create(Role role) throws ExistRoleNameException, IdInvalidException {
+    public Role create(Role role) throws Exception {
         if (this.roleRepository.existsByName(role.getName())) {
-            throw new ExistRoleNameException(role.getName() + " already exist");
+            throw new ExistDataException(role.getName() + " already exist");
         }
         if (role.getPermissions() != null) {
             List<Long> permissionIds = role.getPermissions().stream()
@@ -41,31 +41,23 @@ public class RoleServiceImpl implements RoleService {
 
     @Override
     public Role update(Role role) throws IdInvalidException {
-        Role roleInDB = this.roleRepository.findById(role.getId()).orElse(null);
-        if (roleInDB == null) {
-            throw new IdInvalidException("Role not found");
+        Role roleInDB = FindObjectInDataBase.findByIdOrThrow(roleRepository, role.getId());
+        if (role.getDescription() != null && !role.getDescription().equals(roleInDB.getDescription())) {
+            roleInDB.setDescription(role.getDescription());
         }
-        else {
-            if (role.getDescription() != null && !role.getDescription().equals(roleInDB.getDescription())) {
-                roleInDB.setDescription(role.getDescription());
-            }
-            if (role.getPermissions() != null && !role.getPermissions().equals(roleInDB.getPermissions())) {
-                List<Long> permissionIds = role.getPermissions().stream()
-                        .map(Permission::getId) // Get ID of all permission
-                        .toList(); // Convert List<Long>
-                EntityValidator.validateIdsExist(permissionIds,permissionRepository,"Permission");
-                roleInDB.setPermissions(role.getPermissions());
-            }
-            return roleRepository.save(roleInDB);
+        if (role.getPermissions() != null && !role.getPermissions().equals(roleInDB.getPermissions())) {
+            List<Long> permissionIds = role.getPermissions().stream()
+                    .map(Permission::getId) // Get ID of all permission
+                    .toList(); // Convert List<Long>
+            EntityValidator.validateIdsExist(permissionIds,permissionRepository,"Permission");
+            roleInDB.setPermissions(role.getPermissions());
         }
+        return roleRepository.save(roleInDB);
     }
 
     @Override
     public Role fetchRoleById(long id) throws IdInvalidException {
-        if (!this.roleRepository.existsById(id)) {
-            throw new IdInvalidException("Role not found");
-        }
-        return this.roleRepository.findById(id).orElse(null);
+        return FindObjectInDataBase.findByIdOrThrow(roleRepository, id);
     }
 
     @Override
@@ -75,9 +67,7 @@ public class RoleServiceImpl implements RoleService {
 
     @Override
     public void delete(long id) throws IdInvalidException {
-        if (!this.roleRepository.existsById(id)) {
-            throw new IdInvalidException("Role not found");
-        }
+        FindObjectInDataBase.findByIdOrThrow(roleRepository, id);
         this.roleRepository.deleteById(id);
     }
 }

@@ -2,16 +2,14 @@ package com.example.bookverse.service.impl;
 
 import com.example.bookverse.domain.Author;
 import com.example.bookverse.domain.Book;
-import com.example.bookverse.domain.User;
 import com.example.bookverse.domain.response.ResPagination;
 import com.example.bookverse.domain.response.book.ResBookDTO;
-import com.example.bookverse.domain.response.user.UserDTO;
-import com.example.bookverse.exception.book.ExistTitleException;
-import com.example.bookverse.exception.global.IdInvalidException;
+import com.example.bookverse.exception.global.ExistDataException;
 import com.example.bookverse.repository.AuthorRepository;
 import com.example.bookverse.repository.BookRepository;
 import com.example.bookverse.service.BookService;
 import com.example.bookverse.util.EntityValidator;
+import com.example.bookverse.util.FindObjectInDataBase;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -33,7 +31,7 @@ public class BookServiceImpl implements BookService {
     @Override
     public Book create(Book book) throws Exception {
         if (bookRepository.existsByTitle(book.getTitle())) {
-            throw new ExistTitleException(book.getTitle() + " already exists");
+            throw new ExistDataException(book.getTitle() + " already exists");
         }
         if (book.getAuthors() != null){
             List<Long> authorIds = book.getAuthors().stream()
@@ -47,56 +45,48 @@ public class BookServiceImpl implements BookService {
 
     @Override
     public Book update(Book book) throws Exception {
-        Book bookInDB = this.bookRepository.findById(book.getId()).orElse(null);
-        if ( bookInDB == null) {
-            throw new IdInvalidException("Book not found");
+        Book bookInDB = FindObjectInDataBase.findByIdOrThrow(bookRepository, book.getId());
+        if (book.getTitle() != null && !bookInDB.getTitle().equals(book.getTitle())) {
+            if (bookRepository.existsByTitle(book.getTitle())) {
+                throw new ExistDataException(book.getTitle() + " already exists");
+            }
+            bookInDB.setTitle(book.getTitle());
         }
-        else {
-            if (book.getTitle() != null && !bookInDB.getTitle().equals(book.getTitle())) {
-                if (bookRepository.existsByTitle(book.getTitle())) {
-                    throw new ExistTitleException(book.getTitle() + " already exists");
-                }
-                bookInDB.setTitle(book.getTitle());
-            }
-            if (book.getDescription() != null && !bookInDB.getDescription().equals(book.getDescription())) {
-                bookInDB.setDescription(book.getDescription());
-            }
-            if (book.getPublisher() != null && !bookInDB.getPublisher().equals(book.getPublisher())) {
-                bookInDB.setPublisher(book.getPublisher());
-            }
-            if (book.getCategory() != null && !bookInDB.getCategory().equals(book.getCategory())) {
-                bookInDB.setCategory(book.getCategory());
-            }
-            if (book.getPrice() != 0) {
-                bookInDB.setPrice(book.getPrice());
-            }
-            if (book.getQuantity() != 0) {
-                bookInDB.setQuantity(book.getQuantity());
-            }
-            if (book.getAuthors() != null) {
-                bookInDB.setAuthors(book.getAuthors());
-            }
-            if (book.getImage() != null) {
-                bookInDB.setImage(book.getImage());
-            }
-            if (book.getAuthors() != null && !bookInDB.getAuthors().equals(book.getAuthors())) {
+        if (book.getDescription() != null && !bookInDB.getDescription().equals(book.getDescription())) {
+            bookInDB.setDescription(book.getDescription());
+        }
+        if (book.getPublisher() != null && !bookInDB.getPublisher().equals(book.getPublisher())) {
+            bookInDB.setPublisher(book.getPublisher());
+        }
+        if (book.getCategory() != null && !bookInDB.getCategory().equals(book.getCategory())) {
+            bookInDB.setCategory(book.getCategory());
+        }
+        if (book.getPrice() != 0) {
+            bookInDB.setPrice(book.getPrice());
+        }
+        if (book.getQuantity() != 0) {
+            bookInDB.setQuantity(book.getQuantity());
+        }
+        if (book.getAuthors() != null) {
+            bookInDB.setAuthors(book.getAuthors());
+        }
+        if (book.getImage() != null) {
+            bookInDB.setImage(book.getImage());
+        }
+        if (book.getAuthors() != null && !bookInDB.getAuthors().equals(book.getAuthors())) {
 
-                List<Long> authorIds = book.getAuthors().stream()
-                        .map(Author::getId)
-                        .toList();
-                EntityValidator.validateIdsExist(authorIds,authorRepository,"Author");
-                bookInDB.setAuthors(book.getAuthors());
-            }
-            return this.bookRepository.save(bookInDB);
+            List<Long> authorIds = book.getAuthors().stream()
+                    .map(Author::getId)
+                    .toList();
+            EntityValidator.validateIdsExist(authorIds,authorRepository,"Author");
+            bookInDB.setAuthors(book.getAuthors());
         }
+        return this.bookRepository.save(bookInDB);
     }
 
     @Override
     public Book fetchBookById(long id) throws Exception {
-        if (!this.bookRepository.existsById(id)) {
-            throw new IdInvalidException("Book not found");
-        }
-        return this.bookRepository.findById(id).orElse(null);
+        return FindObjectInDataBase.findByIdOrThrow(this.bookRepository, id);
     }
 
     @Override
@@ -132,9 +122,7 @@ public class BookServiceImpl implements BookService {
 
     @Override
     public void delete(long id) throws Exception {
-        if (!this.bookRepository.existsById(id)) {
-            throw new IdInvalidException("Book not found");
-        }
+        FindObjectInDataBase.findByIdOrThrow(this.bookRepository, id);
         this.bookRepository.deleteById(id);
     }
 }

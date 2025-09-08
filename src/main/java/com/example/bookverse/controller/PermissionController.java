@@ -1,11 +1,15 @@
 package com.example.bookverse.controller;
 
 import com.example.bookverse.domain.Permission;
+import com.example.bookverse.domain.response.ResPagination;
 import com.example.bookverse.service.PermissionService;
+import org.springframework.data.domain.Pageable;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -39,6 +43,17 @@ public class PermissionController {
     public ResponseEntity<List<Permission>> getAllPermissions() throws Exception {
         List<Permission> permissions = this.permissionService.fetchAllPermissions();
         return ResponseEntity.status(HttpStatus.OK).body(permissions);
+    }
+
+    @GetMapping("/permissions/search")
+    public ResponseEntity<ResPagination> getAllWithPaginationAndFilter(
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) String method,
+            @RequestParam(name = "date_from", required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateFrom,
+            Pageable pageable)throws Exception {
+        ResPagination resPagination = this.permissionService.fetchAllPermissionWithPaginationAndFilter(name, method, dateFrom, pageable);
+        return ResponseEntity.status(HttpStatus.OK).body(resPagination);
     }
 
     @DeleteMapping("/permissions/{id}")

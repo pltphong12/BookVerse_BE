@@ -4,12 +4,12 @@ import com.example.bookverse.domain.Author;
 import com.example.bookverse.domain.Book;
 import com.example.bookverse.domain.response.ResPagination;
 import com.example.bookverse.domain.response.author.ResAuthorDTO;
-import com.example.bookverse.domain.response.book.ResBookDTO;
-import com.example.bookverse.exception.author.ExistAuthorNameException;
+import com.example.bookverse.exception.global.ExistDataException;
 import com.example.bookverse.exception.global.IdInvalidException;
 import com.example.bookverse.repository.AuthorRepository;
 import com.example.bookverse.repository.BookRepository;
 import com.example.bookverse.service.AuthorService;
+import com.example.bookverse.util.FindObjectInDataBase;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -31,43 +31,35 @@ public class AuthorServiceImpl implements AuthorService {
     @Override
     public Author create(Author author) throws Exception {
         if (this.authorRepository.existsByName(author.getName())) {
-            throw new ExistAuthorNameException(author.getName() + " already exist");
+            throw new ExistDataException(author.getName() + " already exist");
         }
         return this.authorRepository.save(author);
     }
 
     @Override
     public Author update(Author author) throws Exception {
-        Author authorInDB = this.authorRepository.findById(author.getId()).orElse(null);
-        if (authorInDB == null) {
-            throw new IdInvalidException("Author not found");
+        Author authorInDB = FindObjectInDataBase.findByIdOrThrow(authorRepository, author.getId());
+        if (author.getName() != null && !author.getName().equals(authorInDB.getName())) {
+            if (this.authorRepository.existsByName(author.getName())) {
+                throw new ExistDataException(author.getName() + " already exist");
+            }
+            authorInDB.setName(author.getName());
         }
-        else {
-            if (author.getName() != null && !author.getName().equals(authorInDB.getName())) {
-                if (this.authorRepository.existsByName(author.getName())) {
-                    throw new ExistAuthorNameException(author.getName() + " already exist");
-                }
-                authorInDB.setName(author.getName());
-            }
-            if (author.getBirthday() != null) {
-                authorInDB.setBirthday(author.getBirthday());
-            }
-            if (author.getNationality() != null && !author.getNationality().equals(authorInDB.getNationality())) {
-                authorInDB.setNationality(author.getNationality());
-            }
-            if (author.getAvatar() != null && !author.getAvatar().equals(authorInDB.getAvatar())) {
-                authorInDB.setAvatar(author.getAvatar());
-            }
-            return this.authorRepository.save(authorInDB);
+        if (author.getBirthday() != null) {
+            authorInDB.setBirthday(author.getBirthday());
         }
+        if (author.getNationality() != null && !author.getNationality().equals(authorInDB.getNationality())) {
+            authorInDB.setNationality(author.getNationality());
+        }
+        if (author.getAvatar() != null && !author.getAvatar().equals(authorInDB.getAvatar())) {
+            authorInDB.setAvatar(author.getAvatar());
+        }
+        return this.authorRepository.save(authorInDB);
     }
 
     @Override
     public Author fetchAuthorById(long id) throws Exception {
-        if (!this.authorRepository.existsById(id)) {
-            throw new IdInvalidException("Author not found");
-        }
-        return this.authorRepository.findById(id).orElse(null);
+        return FindObjectInDataBase.findByIdOrThrow(authorRepository, id);
     }
 
     @Override
@@ -103,9 +95,7 @@ public class AuthorServiceImpl implements AuthorService {
 
     @Override
     public void delete(long id) throws Exception {
-        if (!this.authorRepository.existsById(id)) {
-            throw new IdInvalidException("Author not found");
-        }
+        FindObjectInDataBase.findByIdOrThrow(authorRepository, id);
         List<Author> author = new ArrayList<>();
         author.add(this.fetchAuthorById(id));
         List<Book> books = this.bookRepository.findByAuthors(author);

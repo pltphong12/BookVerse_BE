@@ -1,14 +1,13 @@
 package com.example.bookverse.service.impl;
 
-import com.example.bookverse.domain.Author;
 import com.example.bookverse.domain.Category;
 import com.example.bookverse.domain.response.ResPagination;
-import com.example.bookverse.domain.response.author.ResAuthorDTO;
 import com.example.bookverse.domain.response.category.ResCategoryDTO;
-import com.example.bookverse.exception.category.ExistCategoryNameException;
+import com.example.bookverse.exception.global.ExistDataException;
 import com.example.bookverse.exception.global.IdInvalidException;
 import com.example.bookverse.repository.CategoryRepository;
 import com.example.bookverse.service.CategoryService;
+import com.example.bookverse.util.FindObjectInDataBase;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -29,34 +28,26 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     public Category create(Category category) throws Exception {
         if (this.categoryRepository.existsByName(category.getName())) {
-            throw new ExistCategoryNameException(category.getName() + " already exist");
+            throw new ExistDataException(category.getName() + " already exist");
         }
         return this.categoryRepository.save(category);
     }
 
     @Override
     public Category update(Category category) throws Exception {
-        Category categoryInDB = this.categoryRepository.findById(category.getId()).orElse(null);
-        if (categoryInDB == null) {
-            throw new IdInvalidException("Category not found");
+        Category categoryInDB = FindObjectInDataBase.findByIdOrThrow(categoryRepository, category.getId());
+        if (category.getName() != null && !category.getName().equals(categoryInDB.getName())) {
+            categoryInDB.setName(category.getName());
         }
-        else {
-            if (category.getName() != null && !category.getName().equals(categoryInDB.getName())) {
-                categoryInDB.setName(category.getName());
-            }
-            if (category.getDescription() != null && !category.getDescription().equals(categoryInDB.getDescription())) {
-                categoryInDB.setDescription(category.getDescription());
-            }
-            return categoryRepository.save(categoryInDB);
+        if (category.getDescription() != null && !category.getDescription().equals(categoryInDB.getDescription())) {
+            categoryInDB.setDescription(category.getDescription());
         }
+        return categoryRepository.save(categoryInDB);
     }
 
     @Override
     public Category fetchCategoryById(long id) throws Exception {
-        if (!this.categoryRepository.existsById(id)) {
-            throw new IdInvalidException("Category not found");
-        }
-        return this.categoryRepository.findById(id).orElse(null);
+        return FindObjectInDataBase.findByIdOrThrow(categoryRepository, id);
     }
 
     @Override
@@ -92,9 +83,7 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public void delete(long id) throws Exception {
-        if (!this.categoryRepository.existsById(id)) {
-            throw new IdInvalidException("Category not found");
-        }
+        FindObjectInDataBase.findByIdOrThrow(categoryRepository, id);
         this.categoryRepository.deleteById(id);
     }
 }
