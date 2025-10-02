@@ -1,10 +1,11 @@
 package com.example.bookverse.service.impl;
 
 import com.example.bookverse.domain.Permission;
+import com.example.bookverse.domain.Role;
 import com.example.bookverse.domain.response.ResPagination;
 import com.example.bookverse.exception.global.ExistDataException;
-import com.example.bookverse.exception.global.IdInvalidException;
 import com.example.bookverse.repository.PermissionRepository;
+import com.example.bookverse.repository.RoleRepository;
 import com.example.bookverse.service.PermissionService;
 import com.example.bookverse.util.FindObjectInDataBase;
 import org.springframework.data.domain.Page;
@@ -12,14 +13,17 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
 public class PermissionServiceImpl implements PermissionService {
     final private PermissionRepository permissionRepository;
+    final private RoleRepository roleRepository;
 
-    public PermissionServiceImpl(PermissionRepository permissionRepository) {
+    public PermissionServiceImpl(PermissionRepository permissionRepository, RoleRepository roleRepository) {
         this.permissionRepository = permissionRepository;
+        this.roleRepository = roleRepository;
     }
 
     @Override
@@ -70,11 +74,6 @@ public class PermissionServiceImpl implements PermissionService {
         rs.setMeta(mt);
 
         List<Permission> permissions = permissionPage.getContent();
-//        List<ResAuthorDTO> authorDTOS = new ArrayList<>();
-//        for (Author author : authors) {
-//            ResAuthorDTO authorDTO = ResAuthorDTO.from(author);
-//            authorDTOS.add(authorDTO);
-//        }
 
         rs.setResult(permissions);
 
@@ -83,7 +82,13 @@ public class PermissionServiceImpl implements PermissionService {
 
     @Override
     public void delete(long id) throws Exception {
-        FindObjectInDataBase.findByIdOrThrow(permissionRepository, id);
+        Permission permission = FindObjectInDataBase.findByIdOrThrow(permissionRepository, id);
+        List<Permission> permissions = new ArrayList<>();
+        permissions.add(permission);
+        List<Role> roles = this.roleRepository.findAllByPermissions(permissions);
+        for (Role role : roles) {
+            role.getPermissions().remove(permissions.getFirst());
+        }
         this.permissionRepository.deleteById(id);
     }
 }

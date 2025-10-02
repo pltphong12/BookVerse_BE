@@ -1,7 +1,10 @@
 package com.example.bookverse.service;
 
 import com.example.bookverse.domain.Role;
+import com.example.bookverse.domain.response.ResPagination;
+import org.springframework.data.domain.Pageable;
 
+import java.time.LocalDate;
 import java.util.List;
 
 public interface RoleService {
@@ -16,6 +19,9 @@ public interface RoleService {
 
     // Fetch all role
     List<Role> fetchAllRole() throws Exception;
+
+    // Fetch all filter
+    ResPagination fetchAllRoleWithPaginationAndFilter(String name, LocalDate dataFrom, Pageable pageable) throws Exception;
 
     // Delete a role
     void delete(long id) throws Exception;

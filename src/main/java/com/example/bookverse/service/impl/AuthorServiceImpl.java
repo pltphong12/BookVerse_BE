@@ -95,12 +95,12 @@ public class AuthorServiceImpl implements AuthorService {
 
     @Override
     public void delete(long id) throws Exception {
-        FindObjectInDataBase.findByIdOrThrow(authorRepository, id);
-        List<Author> author = new ArrayList<>();
-        author.add(this.fetchAuthorById(id));
-        List<Book> books = this.bookRepository.findByAuthors(author);
+        Author author = FindObjectInDataBase.findByIdOrThrow(authorRepository, id);
+        List<Author> authors = new ArrayList<>();
+        authors.add(author);
+        List<Book> books = this.bookRepository.findByAuthors(authors);
         for (Book book : books) {
-            book.getAuthors().remove(author.getFirst());
+            book.getAuthors().remove(authors.getFirst());
         }
         this.authorRepository.deleteById(id);
     }

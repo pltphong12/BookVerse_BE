@@ -2,6 +2,7 @@ package com.example.bookverse.service.impl;
 
 import com.example.bookverse.domain.Permission;
 import com.example.bookverse.domain.Role;
+import com.example.bookverse.domain.response.ResPagination;
 import com.example.bookverse.exception.global.ExistDataException;
 import com.example.bookverse.exception.global.IdInvalidException;
 import com.example.bookverse.repository.PermissionRepository;
@@ -9,8 +10,11 @@ import com.example.bookverse.repository.RoleRepository;
 import com.example.bookverse.service.RoleService;
 import com.example.bookverse.util.EntityValidator;
 import com.example.bookverse.util.FindObjectInDataBase;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -63,6 +67,27 @@ public class RoleServiceImpl implements RoleService {
     @Override
     public List<Role> fetchAllRole() {
         return this.roleRepository.findAll();
+    }
+
+    @Override
+    public ResPagination fetchAllRoleWithPaginationAndFilter(String name, LocalDate dateFrom, Pageable pageable) throws Exception {
+        Page<Role> rolePage = this.roleRepository.filter(name, dateFrom, pageable);
+        ResPagination rs = new ResPagination();
+        ResPagination.Meta mt = new ResPagination.Meta();
+
+        mt.setPage(pageable.getPageNumber() + 1);
+        mt.setPageSize(rolePage.getSize());
+
+        mt.setPages(rolePage.getTotalPages());
+        mt.setTotal(rolePage.getTotalElements());
+
+        rs.setMeta(mt);
+
+        List<Role> roles = rolePage.getContent();
+
+        rs.setResult(roles);
+
+        return rs;
     }
 
     @Override

@@ -24,6 +24,8 @@ public class Permission {
     private long id;
     @NotBlank(message = "name isn't blank")
     private String name;
+    @NotBlank(message = "domain isn't blank")
+    private String domain;
     @NotBlank(message = "ApiPath isn't blank")
     private String apiPath;
     @NotBlank(message = "Method isn't blank")
