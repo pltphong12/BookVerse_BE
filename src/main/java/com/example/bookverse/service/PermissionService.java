@@ -1,6 +1,7 @@
 package com.example.bookverse.service;
 
 import com.example.bookverse.domain.Permission;
+import com.example.bookverse.domain.criteria.CriteriaFilterPermission;
 import com.example.bookverse.domain.response.ResPagination;
 import org.springframework.data.domain.Pageable;
 
@@ -21,7 +22,7 @@ public interface PermissionService {
     List<Permission> fetchAllPermissions() throws Exception;
 
     // Fetch all filter
-    ResPagination fetchAllPermissionWithPaginationAndFilter(String name, String method, LocalDate dataFrom, Pageable pageable) throws Exception;
+    ResPagination fetchAllPermissionWithPaginationAndFilter(CriteriaFilterPermission criteriaFilterPermission, Pageable pageable) throws Exception;
 
     // Delete
     void delete(long id) throws Exception;

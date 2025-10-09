@@ -1,11 +1,12 @@
 package com.example.bookverse.service;
 
-import com.example.bookverse.domain.Author;
-import com.example.bookverse.domain.response.ResPagination;
+import java.util.List;
+
 import org.springframework.data.domain.Pageable;
 
-import java.time.LocalDate;
-import java.util.List;
+import com.example.bookverse.domain.Author;
+import com.example.bookverse.domain.criteria.CriteriaFilterAuthor;
+import com.example.bookverse.domain.response.ResPagination;
 
 public interface AuthorService {
     // Create an author
@@ -21,7 +22,7 @@ public interface AuthorService {
     List<Author> fetchAllAuthors() throws Exception;
 
     // Fetch all authors with pagination and filter
-    ResPagination fetchAllAuthorsWithPaginationAndFilter(String name, String nationality, LocalDate dateFrom, Pageable pageable) throws Exception;
+    ResPagination fetchAllAuthorsWithPaginationAndFilter(CriteriaFilterAuthor criteriaFilterAuthor, Pageable pageable) throws Exception;
 
     // Delete an author
     void delete(long id) throws Exception;

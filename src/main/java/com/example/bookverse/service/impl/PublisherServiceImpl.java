@@ -1,25 +1,37 @@
 package com.example.bookverse.service.impl;
 
 import com.example.bookverse.domain.Publisher;
+import com.example.bookverse.domain.QPublisher;
+import com.example.bookverse.domain.criteria.CriteriaFilterPublisher;
 import com.example.bookverse.domain.response.ResPagination;
 import com.example.bookverse.exception.global.ExistDataException;
 import com.example.bookverse.exception.global.IdInvalidException;
 import com.example.bookverse.repository.PublisherRepository;
 import com.example.bookverse.service.PublisherService;
 import com.example.bookverse.util.FindObjectInDataBase;
+import com.querydsl.core.BooleanBuilder;
+import com.querydsl.jpa.impl.JPAQueryFactory;
+
+import jakarta.persistence.EntityManager;
+
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.List;
 
 @Service
 public class PublisherServiceImpl implements PublisherService {
     private final PublisherRepository publisherRepository;
+    private final EntityManager entityManager;
 
-    public PublisherServiceImpl(PublisherRepository publisherRepository) {
+    public PublisherServiceImpl(PublisherRepository publisherRepository, EntityManager entityManager) {
         this.publisherRepository = publisherRepository;
+        this.entityManager = entityManager;
     }
 
     // Create
@@ -68,9 +80,38 @@ public class PublisherServiceImpl implements PublisherService {
         return this.publisherRepository.findAll();
     }
 
+    public Page<Publisher> filter(CriteriaFilterPublisher criteriaFilterPublisher, Pageable pageable) {
+        JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
+        QPublisher qPublisher = QPublisher.publisher;
+
+        BooleanBuilder builder = new BooleanBuilder();
+        // Filter
+        if (criteriaFilterPublisher.getName() != null && !criteriaFilterPublisher.getName().isBlank()) {
+            builder.and(qPublisher.name.containsIgnoreCase(criteriaFilterPublisher.getName()));
+        }
+
+        if (criteriaFilterPublisher.getDateFrom() != null) {
+            Instant fromInstant = criteriaFilterPublisher.getDateFrom().atStartOfDay(ZoneId.systemDefault()).toInstant();
+            builder.and(qPublisher.createdAt.goe(fromInstant));
+        }
+        // Query chính
+        List<Publisher> publishers = queryFactory.selectFrom(qPublisher)
+                .where(builder)
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .fetch();
+
+        // Đếm số lượng kết quả
+        long total = queryFactory.selectFrom(qPublisher)
+                .where(builder)
+                .fetchCount();
+
+        return new PageImpl<>(publishers, pageable, total);
+    }
+
     @Override
-    public ResPagination fetchAllPublisherWithPaginationAndFilter(String name, LocalDate dateFrom, Pageable pageable) throws Exception {
-        Page<Publisher> pagePublisher = this.publisherRepository.filter(name, dateFrom, pageable);
+    public ResPagination fetchAllPublisherWithPaginationAndFilter(CriteriaFilterPublisher criteriaFilterPublisher, Pageable pageable) throws Exception {
+        Page<Publisher> pagePublisher = this.filter(criteriaFilterPublisher, pageable);
         ResPagination rs = new ResPagination();
         ResPagination.Meta mt = new ResPagination.Meta();
 

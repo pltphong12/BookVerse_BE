@@ -1,6 +1,7 @@
 package com.example.bookverse.controller;
 
 import com.example.bookverse.domain.Author;
+import com.example.bookverse.domain.criteria.CriteriaFilterAuthor;
 import com.example.bookverse.domain.response.ResPagination;
 import com.example.bookverse.domain.response.author.ResAuthorDTO;
 import com.example.bookverse.service.AuthorService;
@@ -56,12 +57,9 @@ public class AuthorController {
 
     @GetMapping("/authors/search")
     public ResponseEntity<ResPagination> getAuthorsWithPaginationAndFilter(
-            @RequestParam(required = false) String name,
-            @RequestParam(required = false) String nationality,
-            @RequestParam(name = "date_from", required = false)
-            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateFrom,
+            @ModelAttribute CriteriaFilterAuthor criteriaFilterAuthor,
             Pageable pageable) throws Exception {
-        ResPagination resPagination = this.authorService.fetchAllAuthorsWithPaginationAndFilter(name, nationality, dateFrom, pageable);
+        ResPagination resPagination = this.authorService.fetchAllAuthorsWithPaginationAndFilter(criteriaFilterAuthor, pageable);
         return ResponseEntity.status(HttpStatus.OK).body(resPagination);
     }
 
@@ -71,4 +69,3 @@ public class AuthorController {
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
 }
-

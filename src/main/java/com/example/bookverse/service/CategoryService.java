@@ -1,6 +1,7 @@
 package com.example.bookverse.service;
 
 import com.example.bookverse.domain.Category;
+import com.example.bookverse.domain.criteria.CriteriaFilterCategory;
 import com.example.bookverse.domain.response.ResPagination;
 import org.springframework.data.domain.Pageable;
 
@@ -21,7 +22,7 @@ public interface CategoryService {
     List<Category> fetchAllCategory() throws Exception;
 
     // Fetch all category
-    ResPagination fetchAllCategoriesWithPaginationAndFilter(String name, LocalDate dateFrom, Pageable pageable) throws Exception;
+    ResPagination fetchAllCategoriesWithPaginationAndFilter(CriteriaFilterCategory criteriaFilterCategory, Pageable pageable) throws Exception;
 
     // Delete a role
     void delete(long id) throws Exception;

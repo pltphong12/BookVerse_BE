@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.bookverse.domain.User;
+import com.example.bookverse.domain.criteria.CriteriaFilterUser;
 import com.example.bookverse.domain.response.ResPagination;
 import com.example.bookverse.domain.response.user.UserDTO;
 import com.example.bookverse.service.UserService;
@@ -68,12 +70,9 @@ public class UserController {
 
     @GetMapping("/users/search")
     public ResponseEntity<ResPagination> getUsersWithPaginationAndFilter(
-            @RequestParam(required = false) String name,
-            @RequestParam(name = "role_id",defaultValue = "0") long roleId,
-            @RequestParam(name = "date_from", required = false)
-            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateFrom,
+            @ModelAttribute CriteriaFilterUser criteriaFilterUser,
             Pageable pageable) throws Exception {
-        ResPagination users = this.userService.fetchAllUsersWithPaginationAndFilter(name, roleId, dateFrom, pageable);
+        ResPagination users = this.userService.fetchAllUsersWithPaginationAndFilter(criteriaFilterUser, pageable);
         return ResponseEntity.status(HttpStatus.OK).body(users);
     }
 

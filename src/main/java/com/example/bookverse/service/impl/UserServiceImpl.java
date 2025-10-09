@@ -1,7 +1,9 @@
 package com.example.bookverse.service.impl;
 
+import com.example.bookverse.domain.QUser;
 import com.example.bookverse.domain.Role;
 import com.example.bookverse.domain.User;
+import com.example.bookverse.domain.criteria.CriteriaFilterUser;
 import com.example.bookverse.domain.response.ResPagination;
 import com.example.bookverse.domain.response.user.UserDTO;
 import com.example.bookverse.exception.global.ExistDataException;
@@ -10,13 +12,21 @@ import com.example.bookverse.repository.RoleRepository;
 import com.example.bookverse.repository.UserRepository;
 import com.example.bookverse.service.UserService;
 import com.example.bookverse.util.FindObjectInDataBase;
+import com.querydsl.core.BooleanBuilder;
+import com.querydsl.jpa.impl.JPAQueryFactory;
+
+import jakarta.persistence.EntityManager;
+
 import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,12 +37,14 @@ public class UserServiceImpl implements UserService {
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
     private final ModelMapper modelMapper;
+    private final EntityManager entityManager;
 
-    public UserServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder, RoleRepository roleRepository, ModelMapper modelMapper) {
+    public UserServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder, RoleRepository roleRepository, ModelMapper modelMapper, EntityManager entityManager) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.passwordEncoder = passwordEncoder;
         this.modelMapper = modelMapper;
+        this.entityManager = entityManager;
     }
 
     @Override
@@ -110,9 +122,40 @@ public class UserServiceImpl implements UserService {
         return rs;
     }
 
+    public Page<User> filter(CriteriaFilterUser criteriaFilterUser, Pageable pageable) {
+        JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
+        QUser qUser = QUser.user;
+
+        BooleanBuilder builder = new BooleanBuilder();
+
+        if (criteriaFilterUser.getUsername() != null && !criteriaFilterUser.getUsername().isBlank()) {
+            builder.and(qUser.username.containsIgnoreCase(criteriaFilterUser.getUsername()));
+        }
+        if (criteriaFilterUser.getRoleId() != 0) {
+            builder.and(qUser.role.id.eq(criteriaFilterUser.getRoleId()));
+        }
+        if (criteriaFilterUser.getDateFrom() != null) {
+            Instant fromInstant = criteriaFilterUser.getDateFrom().atStartOfDay(ZoneId.systemDefault()).toInstant();
+            builder.and(qUser.createdAt.goe(fromInstant));
+        }
+        // Query chính
+        List<User> users = queryFactory.selectFrom(qUser)
+                .where(builder)
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .fetch();
+
+        // Đếm số lượng kết quả
+        long total = queryFactory.selectFrom(qUser)
+                .where(builder)
+                .fetchCount();
+
+        return new PageImpl<>(users, pageable, total);
+    }
+
     @Override
-    public ResPagination fetchAllUsersWithPaginationAndFilter(String username, long roleId, LocalDate dateFrom, Pageable pageable) {
-        Page<User> pageUser = this.userRepository.filterUsersName(username, roleId, dateFrom, pageable);
+    public ResPagination fetchAllUsersWithPaginationAndFilter(CriteriaFilterUser criteriaFilterUser, Pageable pageable) {
+        Page<User> pageUser = this.filter(criteriaFilterUser, pageable);
         ResPagination rs = new ResPagination();
         ResPagination.Meta mt = new ResPagination.Meta();
 

@@ -1,6 +1,7 @@
 package com.example.bookverse.controller;
 
 import com.example.bookverse.domain.Role;
+import com.example.bookverse.domain.criteria.CriteriaFilterRole;
 import com.example.bookverse.domain.response.ResPagination;
 import com.example.bookverse.service.RoleService;
 import jakarta.validation.Valid;
@@ -53,11 +54,10 @@ public class RoleController {
     // Get roles with pagination and filter
     @GetMapping("/roles/search")
     public ResponseEntity<ResPagination> getAllWithPaginationAndFilter(
-            @RequestParam(required = false) String name,
-            @RequestParam(name = "date_from", required = false)
-            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateFrom,
-            Pageable pageable)throws Exception {
-        ResPagination resPagination = this.roleService.fetchAllRoleWithPaginationAndFilter(name, dateFrom, pageable);
+            @ModelAttribute CriteriaFilterRole criteriaFilterRole,
+            Pageable pageable) throws Exception {
+        ResPagination resPagination = this.roleService.fetchAllRoleWithPaginationAndFilter(criteriaFilterRole,
+                pageable);
         return ResponseEntity.status(HttpStatus.OK).body(resPagination);
     }
 

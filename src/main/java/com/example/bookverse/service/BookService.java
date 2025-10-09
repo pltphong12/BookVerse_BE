@@ -1,6 +1,7 @@
 package com.example.bookverse.service;
 
 import com.example.bookverse.domain.Book;
+import com.example.bookverse.domain.criteria.CriteriaFilterBook;
 import com.example.bookverse.domain.response.ResPagination;
 import org.springframework.data.domain.Pageable;
 
@@ -21,7 +22,7 @@ public interface BookService {
     List<Book> fetchAllBooks() throws Exception;
 
     // Fetch all book with pagination and filter
-    ResPagination fetchAllBooksWithPaginationAndFilter(String title, long publisherId, long authorId, long categoryId, LocalDate dateFrom, Pageable pageable) throws Exception;
+    ResPagination fetchAllBooksWithPaginationAndFilter(CriteriaFilterBook criteriaFilterBook, Pageable pageable) throws Exception;
 
     // Delete a book by id
     void delete(long id) throws Exception;

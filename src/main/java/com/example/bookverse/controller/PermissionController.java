@@ -1,6 +1,7 @@
 package com.example.bookverse.controller;
 
 import com.example.bookverse.domain.Permission;
+import com.example.bookverse.domain.criteria.CriteriaFilterPermission;
 import com.example.bookverse.domain.response.ResPagination;
 import com.example.bookverse.service.PermissionService;
 import org.springframework.data.domain.Pageable;
@@ -47,12 +48,9 @@ public class PermissionController {
 
     @GetMapping("/permissions/search")
     public ResponseEntity<ResPagination> getAllWithPaginationAndFilter(
-            @RequestParam(required = false) String name,
-            @RequestParam(required = false) String method,
-            @RequestParam(name = "date_from", required = false)
-            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateFrom,
+            @ModelAttribute CriteriaFilterPermission criteriaFilterPermission,
             Pageable pageable)throws Exception {
-        ResPagination resPagination = this.permissionService.fetchAllPermissionWithPaginationAndFilter(name, method, dateFrom, pageable);
+        ResPagination resPagination = this.permissionService.fetchAllPermissionWithPaginationAndFilter(criteriaFilterPermission, pageable);
         return ResponseEntity.status(HttpStatus.OK).body(resPagination);
     }
 

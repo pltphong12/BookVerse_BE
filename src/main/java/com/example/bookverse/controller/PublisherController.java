@@ -1,6 +1,7 @@
 package com.example.bookverse.controller;
 
 import com.example.bookverse.domain.Publisher;
+import com.example.bookverse.domain.criteria.CriteriaFilterPublisher;
 import com.example.bookverse.domain.response.ResPagination;
 import com.example.bookverse.service.PublisherService;
 import org.springframework.data.domain.Pageable;
@@ -47,11 +48,9 @@ public class PublisherController {
 
     @GetMapping("/publishers/search")
     public ResponseEntity<ResPagination> getAllWithPaginationAndFilter(
-            @RequestParam(required = false) String name,
-            @RequestParam(name = "date_from", required = false)
-            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateFrom,
+            @ModelAttribute CriteriaFilterPublisher criteriaFilterPublisher,
             Pageable pageable) throws Exception {
-        ResPagination resPagination = this.publisherService.fetchAllPublisherWithPaginationAndFilter(name, dateFrom, pageable);
+        ResPagination resPagination = this.publisherService.fetchAllPublisherWithPaginationAndFilter(criteriaFilterPublisher, pageable);
         return ResponseEntity.status(HttpStatus.OK).body(resPagination);
     }
 

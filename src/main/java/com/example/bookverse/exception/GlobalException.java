@@ -26,7 +26,7 @@ public class GlobalException {
         RestResponse<Object> res = new RestResponse<>();
         res.setStatus(HttpStatus.BAD_REQUEST.value());
         res.setMessage(ex.getMessage());
-        res.setError("ID invalid");
+        res.setError("ID không hợp lệ");
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(res);
     }
 
@@ -38,7 +38,7 @@ public class GlobalException {
         RestResponse<Object> res = new RestResponse<>();
         res.setStatus(HttpStatus.BAD_REQUEST.value());
         res.setMessage(ex.getMessage());
-        res.setError("Data already exist");
+        res.setError("Dữ liệu đã tồn tại");
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(res);
     }
 
@@ -66,7 +66,7 @@ public class GlobalException {
         RestResponse<Object> res = new RestResponse<>();
         res.setStatus(HttpStatus.BAD_REQUEST.value());
         res.setMessage(ex.getMessage());
-        res.setError("Username or password invalid");
+        res.setError("Tài khoản hoặc mật khẩu không đúng");
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(res);
     }
 }

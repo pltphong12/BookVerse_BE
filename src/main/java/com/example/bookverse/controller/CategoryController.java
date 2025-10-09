@@ -10,6 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.bookverse.domain.Category;
+import com.example.bookverse.domain.criteria.CriteriaFilterCategory;
 import com.example.bookverse.domain.response.ResPagination;
 import com.example.bookverse.domain.response.category.ResCategoryDTO;
 import com.example.bookverse.service.CategoryService;
@@ -71,11 +73,9 @@ public class CategoryController {
     // Fetch all categories with filter and pagination
     @GetMapping("/categories/search")
     public ResponseEntity<ResPagination> getAllCategoriesWithFilterAndPagination(
-            @RequestParam(required = false) String name,
-            @RequestParam(name = "date_from", required = false)
-            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateFrom,
+            @ModelAttribute CriteriaFilterCategory criteriaFilterCategory,
             Pageable pageable) throws Exception {
-        ResPagination resPagination = this.categoryService.fetchAllCategoriesWithPaginationAndFilter(name, dateFrom, pageable);
+        ResPagination resPagination = this.categoryService.fetchAllCategoriesWithPaginationAndFilter(criteriaFilterCategory, pageable);
         return ResponseEntity.status(HttpStatus.OK).body(resPagination);
     }
 

@@ -2,6 +2,8 @@ package com.example.bookverse.service.impl;
 
 import com.example.bookverse.domain.Author;
 import com.example.bookverse.domain.Book;
+import com.example.bookverse.domain.QBook;
+import com.example.bookverse.domain.criteria.CriteriaFilterBook;
 import com.example.bookverse.domain.response.ResPagination;
 import com.example.bookverse.domain.response.book.ResBookDTO;
 import com.example.bookverse.exception.global.ExistDataException;
@@ -10,11 +12,19 @@ import com.example.bookverse.repository.BookRepository;
 import com.example.bookverse.service.BookService;
 import com.example.bookverse.util.EntityValidator;
 import com.example.bookverse.util.FindObjectInDataBase;
+import com.querydsl.core.BooleanBuilder;
+import com.querydsl.jpa.impl.JPAQueryFactory;
+
+import jakarta.persistence.EntityManager;
+
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,10 +32,13 @@ import java.util.List;
 public class BookServiceImpl implements BookService {
     private final BookRepository bookRepository;
     private final AuthorRepository authorRepository;
+    private final EntityManager entityManager;
 
-    public BookServiceImpl(BookRepository bookRepository, AuthorRepository authorRepository) {
+    public BookServiceImpl(BookRepository bookRepository, AuthorRepository authorRepository,
+            EntityManager entityManager) {
         this.bookRepository = bookRepository;
         this.authorRepository = authorRepository;
+        this.entityManager = entityManager;
     }
 
     @Override
@@ -33,11 +46,11 @@ public class BookServiceImpl implements BookService {
         if (bookRepository.existsByTitle(book.getTitle())) {
             throw new ExistDataException(book.getTitle() + " already exists");
         }
-        if (book.getAuthors() != null){
+        if (book.getAuthors() != null) {
             List<Long> authorIds = book.getAuthors().stream()
                     .map(Author::getId)
                     .toList();
-            EntityValidator.validateIdsExist(authorIds,authorRepository,"Author");
+            EntityValidator.validateIdsExist(authorIds, authorRepository, "Author");
             book.setAuthors(book.getAuthors());
         }
         return this.bookRepository.save(book);
@@ -78,7 +91,7 @@ public class BookServiceImpl implements BookService {
             List<Long> authorIds = book.getAuthors().stream()
                     .map(Author::getId)
                     .toList();
-            EntityValidator.validateIdsExist(authorIds,authorRepository,"Author");
+            EntityValidator.validateIdsExist(authorIds, authorRepository, "Author");
             bookInDB.setAuthors(book.getAuthors());
         }
         return this.bookRepository.save(bookInDB);
@@ -94,9 +107,46 @@ public class BookServiceImpl implements BookService {
         return this.bookRepository.findAll();
     }
 
+    public Page<Book> filter(CriteriaFilterBook criteriaFilterBook, Pageable pageable) {
+        JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
+        QBook qBook = QBook.book;
+
+        BooleanBuilder builder = new BooleanBuilder();
+        // Filter
+        if (criteriaFilterBook.getTitle() != null && !criteriaFilterBook.getTitle().isBlank()) {
+            builder.and(qBook.title.containsIgnoreCase(criteriaFilterBook.getTitle()));
+        }
+        if (criteriaFilterBook.getPublisherId() != 0) {
+            builder.and(qBook.publisher.id.eq(criteriaFilterBook.getPublisherId()));
+        }
+        if (criteriaFilterBook.getAuthorId() != 0) {
+            builder.and(qBook.authors.any().id.eq(criteriaFilterBook.getAuthorId()));
+        }
+        if (criteriaFilterBook.getCategoryId() != 0) {
+            builder.and(qBook.category.id.eq(criteriaFilterBook.getCategoryId()));
+        }
+        if (criteriaFilterBook.getDateFrom() != null) {
+            Instant fromInstant = criteriaFilterBook.getDateFrom().atStartOfDay(ZoneId.systemDefault()).toInstant();
+            builder.and(qBook.createdAt.goe(fromInstant));
+        }
+        // Query chính
+        List<Book> books = queryFactory.selectFrom(qBook)
+                .where(builder)
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .fetch();
+
+        // Đếm số lượng kết quả
+        long total = queryFactory.selectFrom(qBook)
+                .where(builder)
+                .fetchCount();
+
+        return new PageImpl<>(books, pageable, total);
+    }
+
     @Override
-    public ResPagination fetchAllBooksWithPaginationAndFilter(String title, long publisherId, long authorId, long categoryId, LocalDate dateFrom, Pageable pageable){
-        Page<Book> pageBook = this.bookRepository.filter(title, publisherId, authorId, categoryId, dateFrom, pageable);
+    public ResPagination fetchAllBooksWithPaginationAndFilter(CriteriaFilterBook criteriaFilterBook, Pageable pageable) {
+        Page<Book> pageBook = this.filter(criteriaFilterBook, pageable);
         ResPagination rs = new ResPagination();
         ResPagination.Meta mt = new ResPagination.Meta();
 

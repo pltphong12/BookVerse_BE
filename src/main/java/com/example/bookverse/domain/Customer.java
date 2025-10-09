@@ -39,6 +39,10 @@ public class Customer {
     private String avatar;
     private Long totalOrder;
     private Long totalSpending;
+    
+    @ManyToOne
+    @JoinColumn(name = "role_id")
+    private Role role;
 
     @OneToMany(mappedBy = "customer")
     @JsonIgnore
