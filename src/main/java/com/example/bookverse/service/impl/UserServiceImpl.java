@@ -39,7 +39,8 @@ public class UserServiceImpl implements UserService {
     private final ModelMapper modelMapper;
     private final EntityManager entityManager;
 
-    public UserServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder, RoleRepository roleRepository, ModelMapper modelMapper, EntityManager entityManager) {
+    public UserServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder,
+            RoleRepository roleRepository, ModelMapper modelMapper, EntityManager entityManager) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.passwordEncoder = passwordEncoder;
@@ -87,39 +88,18 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User fetchUserById(long id) throws IdInvalidException{
+    public User fetchUserById(long id) throws IdInvalidException {
         return FindObjectInDataBase.findByIdOrThrow(userRepository, id);
     }
 
     @Override
-    public User fetchUserByUsername(String username){
+    public User fetchUserByUsername(String username) {
         return this.userRepository.findByUsername(username);
     }
 
     @Override
-    public ResPagination fetchAllUsersWithPagination(Pageable pageable) {
-        Page<User> pageUser = this.userRepository.findAll(pageable);
-        ResPagination rs = new ResPagination();
-        ResPagination.Meta mt = new ResPagination.Meta();
-
-        mt.setPage(pageable.getPageNumber() + 1);
-        mt.setPageSize(pageUser.getSize());
-
-        mt.setPages(pageUser.getTotalPages());
-        mt.setTotal(pageUser.getTotalElements());
-
-        rs.setMeta(mt);
-
-        List<User> users = pageUser.getContent();
-        List<UserDTO> userDTOS = new ArrayList<>();
-        for (User user : users) {
-            UserDTO userDTO = modelMapper.map(user, UserDTO.class);
-            userDTOS.add(userDTO);
-        }
-
-        rs.setResult(userDTOS);
-
-        return rs;
+    public List<User> fetchAllUsers() throws Exception {
+        return this.userRepository.findAll();
     }
 
     public Page<User> filter(CriteriaFilterUser criteriaFilterUser, Pageable pageable) {
@@ -154,7 +134,8 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public ResPagination fetchAllUsersWithPaginationAndFilter(CriteriaFilterUser criteriaFilterUser, Pageable pageable) {
+    public ResPagination fetchAllUsersWithPaginationAndFilter(CriteriaFilterUser criteriaFilterUser,
+            Pageable pageable) {
         Page<User> pageUser = this.filter(criteriaFilterUser, pageable);
         ResPagination rs = new ResPagination();
         ResPagination.Meta mt = new ResPagination.Meta();
@@ -180,7 +161,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void delete(long id) throws IdInvalidException{
+    public void delete(long id) throws IdInvalidException {
         FindObjectInDataBase.findByIdOrThrow(userRepository, id);
         this.userRepository.deleteById(id);
     }
@@ -207,7 +188,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public boolean checkUsernameAnhRefreshToken(String username, String refreshToken){
+    public boolean checkUsernameAnhRefreshToken(String username, String refreshToken) {
         return userRepository.existsByUsernameAndRefreshToken(username, refreshToken);
     }
 }

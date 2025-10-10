@@ -5,6 +5,7 @@ import com.example.bookverse.exception.file.StogareException;
 import com.example.bookverse.service.FileService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -29,6 +30,7 @@ public class FileController {
     }
 
     @PostMapping("/files")
+    @PreAuthorize("hasAuthority('FILE_UPLOAD')")
     public ResponseEntity<ResFileDTO> upload(
             @RequestParam(name = "file", required = false) MultipartFile file,
             @RequestParam("folder") String folder

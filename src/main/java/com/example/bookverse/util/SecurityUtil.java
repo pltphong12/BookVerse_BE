@@ -50,8 +50,12 @@ public class SecurityUtil {
         Instant validity = now.plus(this.accessTokenExpiration, ChronoUnit.SECONDS);
         // Set permission
         List<String> listAuthority = new ArrayList<>();
-        listAuthority.add("ROLE_USER_CREATE");
-        listAuthority.add("ROLE_USER_UPDATE");
+        // Add permissions từ database
+        if (userDTO.getUser().getRole() != null && userDTO.getUser().getRole().getPermissions() != null) {
+            for (var permission : userDTO.getUser().getRole().getPermissions()) {
+                listAuthority.add(permission.getName());
+            }
+        }
         // @formatter:off
         JwtClaimsSet claims = JwtClaimsSet.builder()
                 .issuedAt(now)

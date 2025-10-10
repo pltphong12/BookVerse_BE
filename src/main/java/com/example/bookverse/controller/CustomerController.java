@@ -6,6 +6,7 @@ import org.modelmapper.ModelMapper;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -36,6 +37,7 @@ public class CustomerController {
     }
 
     @PostMapping("/customers")
+    @PreAuthorize("hasAuthority('CUSTOMER_CREATE')")
     public ResponseEntity<ResCustomerDTO> createCustomer(@RequestBody Customer customer) throws Exception {
         Customer newCustomer = this.customerService.create(customer);
         ResCustomerDTO resCustomerDTO = modelMapper.map(newCustomer, ResCustomerDTO.class);
@@ -43,6 +45,7 @@ public class CustomerController {
     }
 
     @PutMapping("/customers")
+    @PreAuthorize("hasAuthority('CUSTOMER_UPDATE')")
     public ResponseEntity<ResCustomerDTO> updateCustomer(@RequestBody Customer customer) throws Exception {
         Customer updatedCustomer = this.customerService.update(customer);
         ResCustomerDTO resCustomerDTO = modelMapper.map(updatedCustomer, ResCustomerDTO.class);
@@ -50,6 +53,7 @@ public class CustomerController {
     }
 
     @GetMapping("/customers/{id}")
+    @PreAuthorize("hasAuthority('CUSTOMER_VIEW_BY_ID')")
     public ResponseEntity<ResCustomerDTO> getCustomer(@PathVariable long id) throws Exception {
         Customer customer = this.customerService.fetchCustomerById(id);
         ResCustomerDTO resCustomerDTO = modelMapper.map(customer, ResCustomerDTO.class);
@@ -57,6 +61,7 @@ public class CustomerController {
     }
 
     @GetMapping("/customers")
+    @PreAuthorize("hasAuthority('CUSTOMER_VIEW_ALL')")
     public ResponseEntity<ResPagination> getCustomersWithPagination(
             @ModelAttribute CriteriaFilterCustomer criteriaFilterCustomer,
             Pageable pageable) throws Exception {

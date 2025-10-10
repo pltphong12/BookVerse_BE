@@ -8,6 +8,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -38,6 +39,7 @@ public class CategoryController {
 
     // Create category
     @PostMapping("/categories")
+    @PreAuthorize("hasAuthority('CATEGORY_CREATE')")
     public ResponseEntity<Category> createCategory(@Valid @RequestBody Category category) throws Exception {
         Category newCategory = this.categoryService.create(category);
         return ResponseEntity.status(HttpStatus.CREATED).body(newCategory);
@@ -45,6 +47,7 @@ public class CategoryController {
 
     // Update a category
     @PutMapping("/categories")
+    @PreAuthorize("hasAuthority('CATEGORY_UPDATE')")
     public ResponseEntity<Category> updateCategory(@RequestBody Category category) throws Exception {
         Category updatedCategory = this.categoryService.update(category);
         return ResponseEntity.status(HttpStatus.OK).body(updatedCategory);
@@ -52,6 +55,7 @@ public class CategoryController {
 
     // Fetch a category
     @GetMapping("/categories/{id}")
+    @PreAuthorize("hasAuthority('CATEGORY_VIEW_BY_ID')")
     public ResponseEntity<ResCategoryDTO> getCategory(@PathVariable long id) throws Exception {
         Category category = this.categoryService.fetchCategoryById(id);
         ResCategoryDTO resCategoryDTO = ResCategoryDTO.from(category);
@@ -60,6 +64,7 @@ public class CategoryController {
 
     // Fetch all categories
     @GetMapping("/categories")
+    @PreAuthorize("hasAuthority('CATEGORY_VIEW_ALL')")
     public ResponseEntity<List<ResCategoryDTO>> getAllCategories() throws Exception {
         List<Category> categories = this.categoryService.fetchAllCategory();
         List<ResCategoryDTO> res = new ArrayList<>();
@@ -72,6 +77,7 @@ public class CategoryController {
 
     // Fetch all categories with filter and pagination
     @GetMapping("/categories/search")
+    @PreAuthorize("hasAuthority('CATEGORY_VIEW_ALL_WITH_PAGINATION_AND_FILTER')")
     public ResponseEntity<ResPagination> getAllCategoriesWithFilterAndPagination(
             @ModelAttribute CriteriaFilterCategory criteriaFilterCategory,
             Pageable pageable) throws Exception {
@@ -81,6 +87,7 @@ public class CategoryController {
 
     // Delete a category
     @DeleteMapping("/categories/{id}")
+    @PreAuthorize("hasAuthority('CATEGORY_DELETE')")
     public ResponseEntity<Void> deleteCategory(@PathVariable long id) throws Exception {
         this.categoryService.delete(id);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();

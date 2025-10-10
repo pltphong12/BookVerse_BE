@@ -35,7 +35,7 @@ public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint 
         res.setStatus(HttpStatus.UNAUTHORIZED.value());
         String errorMessage = Optional.ofNullable(authException.getCause()).map(Throwable::getMessage).orElse(authException.getMessage());
         res.setError(errorMessage);
-        res.setMessage("Token invalid (expired, malformed, or not passing JWT in header)...");
+        res.setMessage("Token không hợp lệ (hết hạn, lỗi hoặc không đi kèm JWT trong header)...");
 
         mapper.writeValue(response.getWriter(), res);
     }

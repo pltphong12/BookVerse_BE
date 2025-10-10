@@ -10,6 +10,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -26,18 +27,21 @@ public class AuthorController {
     }
 
     @PostMapping("/authors")
+    @PreAuthorize("hasAuthority('AUTHOR_CREATE')")
     public ResponseEntity<Author> createAuthor(@Valid @RequestBody Author author) throws Exception {
         Author newAuthor = this.authorService.create(author);
         return ResponseEntity.status(HttpStatus.CREATED).body(newAuthor);
     }
 
     @PutMapping("/authors")
+    @PreAuthorize("hasAuthority('AUTHOR_UPDATE')")
     public ResponseEntity<Author> updateAuthor(@RequestBody Author author) throws Exception {
         Author updatedAuthor = this.authorService.update(author);
         return ResponseEntity.status(HttpStatus.OK).body(updatedAuthor);
     }
 
     @GetMapping("/authors/{id}")
+    @PreAuthorize("hasAuthority('AUTHOR_VIEW_BY_ID')")
     public ResponseEntity<ResAuthorDTO> getAuthor(@PathVariable long id) throws Exception {
         Author author = this.authorService.fetchAuthorById(id);
         ResAuthorDTO authorDTO = ResAuthorDTO.from(author);
@@ -45,6 +49,7 @@ public class AuthorController {
     }
 
     @GetMapping("/authors")
+    @PreAuthorize("hasAuthority('AUTHOR_VIEW_ALL')")
     public ResponseEntity<List<ResAuthorDTO>> getAuthors() throws Exception {
         List<ResAuthorDTO> resAuthorDTOS = new ArrayList<>();
         List<Author> authors = this.authorService.fetchAllAuthors();
@@ -56,6 +61,7 @@ public class AuthorController {
     }
 
     @GetMapping("/authors/search")
+    @PreAuthorize("hasAuthority('AUTHOR_VIEW_ALL_WITH_PAGINATION_AND_FILTER')")
     public ResponseEntity<ResPagination> getAuthorsWithPaginationAndFilter(
             @ModelAttribute CriteriaFilterAuthor criteriaFilterAuthor,
             Pageable pageable) throws Exception {
@@ -64,6 +70,7 @@ public class AuthorController {
     }
 
     @DeleteMapping("/authors/{id}")
+    @PreAuthorize("hasAuthority('AUTHOR_DELETE')")
     public ResponseEntity<Void> deleteAuthor(@PathVariable long id) throws Exception {
         this.authorService.delete(id);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();

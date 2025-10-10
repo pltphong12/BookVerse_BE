@@ -6,6 +6,7 @@ import com.example.bookverse.domain.response.order.ResOrderDTO;
 import com.example.bookverse.service.OrderService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
@@ -22,11 +23,13 @@ public class OrderController {
 
     // Create order and order detail
     @PostMapping("/orders")
+    @PreAuthorize("hasAuthority('ORDER_CREATE')")
     public ResponseEntity<Order> createOrder(@RequestBody Order order) throws Exception {
         Order newOrder = this.orderService.create(order);
         return ResponseEntity.status(HttpStatus.CREATED).body(newOrder);
     }
     @PostMapping("/order_details")
+    @PreAuthorize("hasAuthority('ORDER_DETAIL_CREATE')")
     public ResponseEntity<ResOrderDTO.InfoOrderDetailInOrder> createOrderDetail(@RequestBody OrderDetail orderDetail) throws Exception {
         OrderDetail newOrderDetail = this.orderService.createDetail(orderDetail);
         ResOrderDTO.InfoOrderDetailInOrder orderDetailInOrder = ResOrderDTO.getInfoOrderDetailInOrder(newOrderDetail);
@@ -35,11 +38,13 @@ public class OrderController {
 
     // Update order and order detail
     @PutMapping("/orders")
+    @PreAuthorize("hasAuthority('ORDER_UPDATE')")
     public ResponseEntity<Order> updateOrder(@RequestBody Order order) throws Exception {
         Order updatedOrder = this.orderService.update(order);
         return ResponseEntity.status(HttpStatus.OK).body(updatedOrder);
     }
     @PutMapping("/order_details")
+    @PreAuthorize("hasAuthority('ORDER_DETAIL_UPDATE')")
     public ResponseEntity<ResOrderDTO.InfoOrderDetailInOrder> updateOrderDetail(@RequestBody OrderDetail orderDetail) throws Exception {
         OrderDetail updatedOrderDetail = this.orderService.updateDetail(orderDetail);
         ResOrderDTO.InfoOrderDetailInOrder orderDetailInOrder = ResOrderDTO.getInfoOrderDetailInOrder(updatedOrderDetail);
@@ -47,6 +52,7 @@ public class OrderController {
     }
 
     @GetMapping("/orders/{id}")
+    @PreAuthorize("hasAuthority('ORDER_VIEW_BY_ID')")
     public ResponseEntity<ResOrderDTO> getOrder(@PathVariable Long id) throws Exception {
         Order order = this.orderService.fetchOrderById(id);
         ResOrderDTO resOrderDTO = ResOrderDTO.from(order);
@@ -55,6 +61,7 @@ public class OrderController {
 
     
     @GetMapping("/orders")
+    @PreAuthorize("hasAuthority('ORDER_VIEW_ALL')")
     public ResponseEntity<List<ResOrderDTO>> getAllOrders() throws Exception {
         List<Order> orders = this.orderService.fetchAllOrders();
         List<ResOrderDTO> resOrderDTOS = new ArrayList<>();
@@ -67,11 +74,13 @@ public class OrderController {
 
     // Delete order and order detail
     @DeleteMapping("/orders/{id}")
+    @PreAuthorize("hasAuthority('ORDER_DELETE')")
     public ResponseEntity<Void> deleteOrder(@PathVariable Long id) throws Exception {
         this.orderService.delete(id);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
     }
     @DeleteMapping("/order_details/{id}")
+    @PreAuthorize("hasAuthority('ORDER_DETAIL_DELETE')")
     public ResponseEntity<Void> deleteOrderDetail(@PathVariable Long id) throws Exception {
         this.orderService.deleteDetail(id);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();

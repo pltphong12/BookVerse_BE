@@ -8,6 +8,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -38,6 +39,7 @@ public class BookController {
 
     // Create a book
     @PostMapping("/books")
+    @PreAuthorize("hasAuthority('BOOK_CREATE')")
     public ResponseEntity<ResBookDTO> createBook(@Valid @RequestBody Book book) throws Exception {
         Book newBook = this.bookService.create(book);
         ResBookDTO resBookDTO = ResBookDTO.from(newBook);
@@ -46,6 +48,7 @@ public class BookController {
 
     // Update a books
     @PutMapping("/books")
+    @PreAuthorize("hasAuthority('BOOK_UPDATE')")
     public ResponseEntity<ResBookDTO> updateBook(@RequestBody Book book) throws Exception {
         Book updatedBook = this.bookService.update(book);
         ResBookDTO resBookDTO = ResBookDTO.from(updatedBook);
@@ -54,6 +57,7 @@ public class BookController {
 
     // Fetch a book by id
     @GetMapping("/books/{id}")
+    @PreAuthorize("hasAuthority('BOOK_VIEW_BY_ID')")
     public ResponseEntity<ResBookDTO> getBookById(@PathVariable Long id) throws Exception {
         Book book = this.bookService.fetchBookById(id);
         ResBookDTO resBookDTO = ResBookDTO.from(book);
@@ -62,6 +66,7 @@ public class BookController {
 
     // Fetch all books
     @GetMapping("/books")
+    @PreAuthorize("hasAuthority('BOOK_VIEW_ALL')")
     public ResponseEntity<List<ResBookDTO>> getAllBooks() throws Exception {
         List<Book> books = this.bookService.fetchAllBooks();
         List<ResBookDTO> resBookDTOS = new ArrayList<>();
@@ -73,6 +78,7 @@ public class BookController {
     }
 
     @GetMapping("/books/search")
+    @PreAuthorize("hasAuthority('BOOK_VIEW_ALL_WITH_PAGINATION_AND_FILTER')")
     public ResponseEntity<ResPagination> getAllBooksWithPagination(
             @ModelAttribute CriteriaFilterBook criteriaFilterBook,
             Pageable pageable) throws Exception {
@@ -83,6 +89,7 @@ public class BookController {
 
     // Delete a book by id
     @DeleteMapping("/books/{id}")
+    @PreAuthorize("hasAuthority('BOOK_DELETE')")
     public ResponseEntity<Void> deleteBook(@PathVariable Long id) throws Exception {
         this.bookService.delete(id);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
