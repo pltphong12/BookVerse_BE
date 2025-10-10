@@ -1,12 +1,12 @@
 package com.example.bookverse.service;
 
+import java.util.List;
+
+import org.springframework.data.domain.Pageable;
+
 import com.example.bookverse.domain.User;
 import com.example.bookverse.domain.criteria.CriteriaFilterUser;
 import com.example.bookverse.domain.response.ResPagination;
-import org.springframework.data.domain.Pageable;
-
-import java.time.LocalDate;
-import java.util.List;
 
 public interface UserService {
 

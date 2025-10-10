@@ -1,19 +1,18 @@
 package com.example.bookverse.domain.response.cart;
 
-import com.example.bookverse.domain.Author;
-import com.example.bookverse.domain.Cart;
-import com.example.bookverse.domain.CartDetail;
-import com.example.bookverse.domain.OrderDetail;
-import com.example.bookverse.domain.response.order.ResOrderDTO;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+
+import com.example.bookverse.domain.Author;
+import com.example.bookverse.domain.Cart;
+import com.example.bookverse.domain.CartDetail;
+
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Getter
 @Setter

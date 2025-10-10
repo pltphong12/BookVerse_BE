@@ -1,6 +1,5 @@
 package com.example.bookverse.service;
 
-import java.time.LocalDate;
 import java.util.List;
 
 import org.springframework.data.domain.Pageable;
