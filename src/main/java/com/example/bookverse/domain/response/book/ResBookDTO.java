@@ -1,18 +1,19 @@
 package com.example.bookverse.domain.response.book;
 
-import com.example.bookverse.domain.Author;
-import com.example.bookverse.domain.Book;
-import com.example.bookverse.domain.Category;
-import com.example.bookverse.domain.Publisher;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+
+import com.example.bookverse.domain.Author;
+import com.example.bookverse.domain.Book;
+import com.example.bookverse.domain.Category;
+import com.example.bookverse.domain.Publisher;
+
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Getter
 @Setter
@@ -25,6 +26,15 @@ public class ResBookDTO {
     private Publisher publisher;
     private double price;
     private long quantity;
+    private long sold;
+    private int discount;
+
+    private int publishYear;
+    private double weight;
+    private String dimensions;
+    private int numberOfPages;
+    private String coverFormat;
+
     private String description;
     private String image;
 
@@ -37,12 +47,11 @@ public class ResBookDTO {
     private String createdBy;
     private String updatedBy;
 
-
     @Getter
     @Setter
     @AllArgsConstructor
     @NoArgsConstructor
-    public static class InfoAuthorInBook{
+    public static class InfoAuthorInBook {
         private long id;
         private String name;
         private Date birthday;
@@ -56,6 +65,13 @@ public class ResBookDTO {
         resBookDTO.setPublisher(book.getPublisher());
         resBookDTO.setPrice(book.getPrice());
         resBookDTO.setQuantity(book.getQuantity());
+        resBookDTO.setSold(book.getSold());
+        resBookDTO.setDiscount(book.getDiscount());
+        resBookDTO.setPublishYear(book.getPublishYear());
+        resBookDTO.setWeight(book.getWeight());
+        resBookDTO.setDimensions(book.getDimensions());
+        resBookDTO.setNumberOfPages(book.getNumberOfPages());
+        resBookDTO.setCoverFormat(book.getCoverFormat().getDisplayName());
         resBookDTO.setDescription(book.getDescription());
         resBookDTO.setImage(book.getImage());
         resBookDTO.setCategory(book.getCategory());
@@ -64,7 +80,7 @@ public class ResBookDTO {
         resBookDTO.setCreatedBy(book.getCreatedBy());
         resBookDTO.setUpdatedBy(book.getUpdatedBy());
         List<InfoAuthorInBook> infoAuthorInBookList = new ArrayList<>();
-        for (Author author : book.getAuthors()){
+        for (Author author : book.getAuthors()) {
             InfoAuthorInBook infoAuthorInBook = new InfoAuthorInBook();
             infoAuthorInBook.setId(author.getId());
             infoAuthorInBook.setName(author.getName());

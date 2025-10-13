@@ -34,10 +34,10 @@ public class DatabaseInitializer implements CommandLineRunner {
     public void run(String... args) throws Exception {
         // Tạo permissions
         createPermissions();
-        
+
         // Tạo roles
         createRoles();
-        
+
         // Tạo admin user
         createAdminUser();
     }
@@ -56,14 +56,16 @@ public class DatabaseInitializer implements CommandLineRunner {
         permissions.add(createPermission("BOOK_DELETE", "BOOK", "/api/v1/books/{id}", "DELETE"));
         permissions.add(createPermission("BOOK_VIEW_ALL", "BOOK", "/api/v1/books", "GET"));
         permissions.add(createPermission("BOOK_VIEW_BY_ID", "BOOK", "/api/v1/books/{id}", "GET"));
-        permissions.add(createPermission("BOOK_VIEW_ALL_WITH_PAGINATION_AND_FILTER", "BOOK", "/api/v1/books/search", "GET"));
+        permissions.add(
+                createPermission("BOOK_VIEW_ALL_WITH_PAGINATION_AND_FILTER", "BOOK", "/api/v1/books/search", "GET"));
 
         // User permissions
         permissions.add(createPermission("USER_CREATE", "USER", "/api/v1/users", "POST"));
         permissions.add(createPermission("USER_UPDATE", "USER", "/api/v1/users", "PUT"));
         permissions.add(createPermission("USER_VIEW_ALL", "USER", "/api/v1/users", "GET"));
         permissions.add(createPermission("USER_VIEW_BY_ID", "USER", "/api/v1/users/{id}", "GET"));
-        permissions.add(createPermission("USER_VIEW_ALL_WITH_PAGINATION_AND_FILTER", "USER", "/api/v1/users/search", "GET"));
+        permissions.add(
+                createPermission("USER_VIEW_ALL_WITH_PAGINATION_AND_FILTER", "USER", "/api/v1/users/search", "GET"));
 
         // Author permissions
         permissions.add(createPermission("AUTHOR_CREATE", "AUTHOR", "/api/v1/authors", "POST"));
@@ -71,7 +73,8 @@ public class DatabaseInitializer implements CommandLineRunner {
         permissions.add(createPermission("AUTHOR_DELETE", "AUTHOR", "/api/v1/authors/{id}", "DELETE"));
         permissions.add(createPermission("AUTHOR_VIEW_ALL", "AUTHOR", "/api/v1/authors", "GET"));
         permissions.add(createPermission("AUTHOR_VIEW_BY_ID", "AUTHOR", "/api/v1/authors/{id}", "GET"));
-        permissions.add(createPermission("AUTHOR_VIEW_ALL_WITH_PAGINATION_AND_FILTER", "AUTHOR", "/api/v1/authors/search", "GET"));
+        permissions.add(createPermission("AUTHOR_VIEW_ALL_WITH_PAGINATION_AND_FILTER", "AUTHOR",
+                "/api/v1/authors/search", "GET"));
 
         // Publisher permissions
         permissions.add(createPermission("PUBLISHER_CREATE", "PUBLISHER", "/api/v1/publishers", "POST"));
@@ -79,7 +82,8 @@ public class DatabaseInitializer implements CommandLineRunner {
         permissions.add(createPermission("PUBLISHER_DELETE", "PUBLISHER", "/api/v1/publishers/{id}", "DELETE"));
         permissions.add(createPermission("PUBLISHER_VIEW_ALL", "PUBLISHER", "/api/v1/publishers", "GET"));
         permissions.add(createPermission("PUBLISHER_VIEW_BY_ID", "PUBLISHER", "/api/v1/publishers/{id}", "GET"));
-        permissions.add(createPermission("PUBLISHER_VIEW_ALL_WITH_PAGINATION_AND_FILTER", "PUBLISHER", "/api/v1/publishers/search", "GET"));
+        permissions.add(createPermission("PUBLISHER_VIEW_ALL_WITH_PAGINATION_AND_FILTER", "PUBLISHER",
+                "/api/v1/publishers/search", "GET"));
 
         // Category permissions
         permissions.add(createPermission("CATEGORY_CREATE", "CATEGORY", "/api/v1/categories", "POST"));
@@ -87,7 +91,8 @@ public class DatabaseInitializer implements CommandLineRunner {
         permissions.add(createPermission("CATEGORY_DELETE", "CATEGORY", "/api/v1/categories/{id}", "DELETE"));
         permissions.add(createPermission("CATEGORY_VIEW_ALL", "CATEGORY", "/api/v1/categories", "GET"));
         permissions.add(createPermission("CATEGORY_VIEW_BY_ID", "CATEGORY", "/api/v1/categories/{id}", "GET"));
-        permissions.add(createPermission("CATEGORY_VIEW_ALL_WITH_PAGINATION_AND_FILTER", "CATEGORY", "/api/v1/categories/search", "GET"));
+        permissions.add(createPermission("CATEGORY_VIEW_ALL_WITH_PAGINATION_AND_FILTER", "CATEGORY",
+                "/api/v1/categories/search", "GET"));
 
         // Order permissions
         permissions.add(createPermission("ORDER_CREATE", "ORDER", "/api/v1/orders", "POST"));
@@ -113,7 +118,8 @@ public class DatabaseInitializer implements CommandLineRunner {
         permissions.add(createPermission("ROLE_DELETE", "ROLE", "/api/v1/roles/{id}", "DELETE"));
         permissions.add(createPermission("ROLE_VIEW_ALL", "ROLE", "/api/v1/roles", "GET"));
         permissions.add(createPermission("ROLE_VIEW_BY_ID", "ROLE", "/api/v1/roles/{id}", "GET"));
-        permissions.add(createPermission("ROLE_VIEW_ALL_WITH_PAGINATION_AND_FILTER", "ROLE", "/api/v1/roles/search", "GET"));
+        permissions.add(
+                createPermission("ROLE_VIEW_ALL_WITH_PAGINATION_AND_FILTER", "ROLE", "/api/v1/roles/search", "GET"));
 
         // Permission permissions
         permissions.add(createPermission("PERMISSION_CREATE", "PERMISSION", "/api/v1/permissions", "POST"));
@@ -121,7 +127,8 @@ public class DatabaseInitializer implements CommandLineRunner {
         permissions.add(createPermission("PERMISSION_DELETE", "PERMISSION", "/api/v1/permissions/{id}", "DELETE"));
         permissions.add(createPermission("PERMISSION_VIEW_ALL", "PERMISSION", "/api/v1/permissions", "GET"));
         permissions.add(createPermission("PERMISSION_VIEW_BY_ID", "PERMISSION", "/api/v1/permissions/{id}", "GET"));
-        permissions.add(createPermission("PERMISSION_VIEW_ALL_WITH_PAGINATION_AND_FILTER", "PERMISSION", "/api/v1/permissions/search", "GET"));
+        permissions.add(createPermission("PERMISSION_VIEW_ALL_WITH_PAGINATION_AND_FILTER", "PERMISSION",
+                "/api/v1/permissions/search", "GET"));
 
         // File permissions
         permissions.add(createPermission("FILE_UPLOAD", "FILE", "/api/v1/files", "POST"));
@@ -153,11 +160,11 @@ public class DatabaseInitializer implements CommandLineRunner {
         adminRole.setDescription("Quản trị viên với toàn quyền truy cập");
         adminRole.setCreatedAt(Instant.now());
         adminRole.setCreatedBy("system");
-        
+
         // Gán tất cả permissions cho ADMIN
         List<Permission> allPermissions = permissionRepository.findAll();
         adminRole.setPermissions(allPermissions);
-        
+
         roleRepository.save(adminRole);
 
         // Tạo USER role
@@ -166,7 +173,7 @@ public class DatabaseInitializer implements CommandLineRunner {
         userRole.setDescription("Người dùng thường với quyền truy cập giới hạn");
         userRole.setCreatedAt(Instant.now());
         userRole.setCreatedBy("system");
-        
+
         // Gán permissions cơ bản cho USER
         List<Permission> userPermissions = new ArrayList<>();
         userPermissions.add(permissionRepository.findByName("BOOK_VIEW_ALL"));
@@ -185,11 +192,11 @@ public class DatabaseInitializer implements CommandLineRunner {
         userPermissions.add(permissionRepository.findByName("CART_DETAIL_DELETE"));
         userPermissions.add(permissionRepository.findByName("ORDER_CREATE"));
         userPermissions.add(permissionRepository.findByName("ORDER_VIEW_BY_ID"));
-        
+
         // Lọc null values
         userPermissions.removeIf(permission -> permission == null);
         userRole.setPermissions(userPermissions);
-        
+
         roleRepository.save(userRole);
 
         // Tạo MANAGER role
@@ -198,7 +205,7 @@ public class DatabaseInitializer implements CommandLineRunner {
         managerRole.setDescription("Quản trị viên với quyền quản lý sách và tác giả");
         managerRole.setCreatedAt(Instant.now());
         managerRole.setCreatedBy("system");
-        
+
         // Gán permissions cho MANAGER (book và author management)
         List<Permission> managerPermissions = new ArrayList<>();
         managerPermissions.add(permissionRepository.findByName("BOOK_CREATE"));
@@ -223,11 +230,11 @@ public class DatabaseInitializer implements CommandLineRunner {
         managerPermissions.add(permissionRepository.findByName("CATEGORY_VIEW_BY_ID"));
         managerPermissions.add(permissionRepository.findByName("ORDER_VIEW_ALL"));
         managerPermissions.add(permissionRepository.findByName("ORDER_VIEW_BY_ID"));
-        
+
         // Lọc null values
         managerPermissions.removeIf(permission -> permission == null);
         managerRole.setPermissions(managerPermissions);
-        
+
         roleRepository.save(managerRole);
 
         System.out.println("Created 3 roles: ADMIN, CUSTOMER, MANAGER");
@@ -242,6 +249,7 @@ public class DatabaseInitializer implements CommandLineRunner {
         User adminUser = new User();
         adminUser.setUsername("admin");
         adminUser.setPassword(passwordEncoder.encode("123456")); // Mật khẩu đã được hash
+        adminUser.setEmail("phanlathanhphong19@gmail.com");
         adminUser.setFullName("Quản trị viên");
         adminUser.setAddress("Hồ Chí Minh");
         adminUser.setPhone("0767557431");

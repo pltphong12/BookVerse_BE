@@ -3,6 +3,7 @@ package com.example.bookverse.domain;
 import com.example.bookverse.util.SecurityUtil;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -24,7 +25,9 @@ public class Publisher {
     private String name;
     private String address;
     private String phone;
+    @Email(message = "Email không hợp lệ")
     private String email;
+    @Column(columnDefinition = "MEDIUMTEXT")
     private String description;
     private String image;
 

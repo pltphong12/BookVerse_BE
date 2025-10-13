@@ -76,6 +76,9 @@ public class BookServiceImpl implements BookService {
         if (book.getPrice() != 0) {
             bookInDB.setPrice(book.getPrice());
         }
+        if (book.getDiscount() != 0) {
+            bookInDB.setDiscount(book.getDiscount());
+        }
         if (book.getQuantity() != 0) {
             bookInDB.setQuantity(book.getQuantity());
         }
@@ -92,6 +95,21 @@ public class BookServiceImpl implements BookService {
                     .toList();
             EntityValidator.validateIdsExist(authorIds, authorRepository, "Author");
             bookInDB.setAuthors(book.getAuthors());
+        }
+        if (book.getDimensions() != null && !bookInDB.getDimensions().equals(book.getDimensions())) {
+            bookInDB.setDimensions(book.getDimensions());
+        }
+        if (book.getNumberOfPages() != 0) {
+            bookInDB.setNumberOfPages(book.getNumberOfPages());
+        }
+        if (book.getCoverFormat() != null && !bookInDB.getCoverFormat().equals(book.getCoverFormat())) {
+            bookInDB.setCoverFormat(book.getCoverFormat());
+        }
+        if (book.getPublishYear() != 0) {
+            bookInDB.setPublishYear(book.getPublishYear());
+        }
+        if (book.getWeight() != 0) {
+            bookInDB.setWeight(book.getWeight());
         }
         return this.bookRepository.save(bookInDB);
     }

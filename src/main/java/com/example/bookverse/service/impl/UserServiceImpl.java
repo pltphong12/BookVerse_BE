@@ -68,6 +68,9 @@ public class UserServiceImpl implements UserService {
     @Override
     public User update(User user) throws IdInvalidException {
         User userInDB = FindObjectInDataBase.findByIdOrThrow(userRepository, user.getId());
+        if (user.getEmail() != null && !user.getEmail().equals(userInDB.getEmail())) {
+            userInDB.setEmail(user.getEmail());
+        }
         if (user.getFullName() != null && !user.getFullName().equals(userInDB.getFullName())) {
             userInDB.setFullName(user.getFullName());
         }

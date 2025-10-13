@@ -16,6 +16,7 @@ public class UserDTO {
     private long id;
     private String username;
     private String fullName;
+    private String email;
     private String address;
     private String phone;
     private String avatar;
