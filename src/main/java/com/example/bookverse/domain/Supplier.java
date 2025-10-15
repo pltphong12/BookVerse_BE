@@ -45,6 +45,12 @@ public class Supplier {
     @Column(columnDefinition = "MEDIUMTEXT")
     private String description;
 
+    private String image;
+
+    @OneToMany(mappedBy = "supplier")
+    @JsonIgnore
+    private List<Book> books;
+
     private Instant createdAt;
     private Instant updatedAt;
     private String createdBy;

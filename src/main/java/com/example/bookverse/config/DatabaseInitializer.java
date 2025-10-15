@@ -133,6 +133,15 @@ public class DatabaseInitializer implements CommandLineRunner {
         // File permissions
         permissions.add(createPermission("FILE_UPLOAD", "FILE", "/api/v1/files", "POST"));
 
+        // Supplier permissions
+        permissions.add(createPermission("SUPPLIER_CREATE", "SUPPLIER", "/api/v1/suppliers", "POST"));
+        permissions.add(createPermission("SUPPLIER_UPDATE", "SUPPLIER", "/api/v1/suppliers", "PUT"));
+        permissions.add(createPermission("SUPPLIER_DELETE", "SUPPLIER", "/api/v1/suppliers/{id}", "DELETE"));
+        permissions.add(createPermission("SUPPLIER_VIEW_ALL", "SUPPLIER", "/api/v1/suppliers", "GET"));
+        permissions.add(createPermission("SUPPLIER_VIEW_BY_ID", "SUPPLIER", "/api/v1/suppliers/{id}", "GET"));
+        permissions.add(createPermission("SUPPLIER_VIEW_ALL_WITH_PAGINATION_AND_FILTER", "SUPPLIER",
+                "/api/v1/suppliers/search", "GET"));
+
         permissionRepository.saveAll(permissions);
         System.out.println("Created " + permissions.size() + " permissions");
     }

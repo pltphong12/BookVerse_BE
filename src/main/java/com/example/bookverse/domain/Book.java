@@ -53,7 +53,9 @@ public class Book {
     @ManyToOne
     @JoinColumn(name = "publisher_id")
     private Publisher publisher;
-
+    @ManyToOne
+    @JoinColumn(name = "supplier_id")
+    private Supplier supplier;
     private Instant createdAt;
     private Instant updatedAt;
     private String createdBy;

@@ -24,6 +24,7 @@ public class Category {
     private long id;
     @NotBlank(message = "name isn't blank")
     private String name;
+    @Column(columnDefinition = "MEDIUMTEXT")
     private String description;
 
     @OneToMany(mappedBy = "category")

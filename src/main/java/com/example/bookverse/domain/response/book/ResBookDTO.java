@@ -9,6 +9,7 @@ import com.example.bookverse.domain.Author;
 import com.example.bookverse.domain.Book;
 import com.example.bookverse.domain.Category;
 import com.example.bookverse.domain.Publisher;
+import com.example.bookverse.domain.Supplier;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -24,6 +25,7 @@ public class ResBookDTO {
     private String title;
 
     private Publisher publisher;
+    private Supplier supplier;
     private double price;
     private long quantity;
     private long sold;
@@ -63,6 +65,7 @@ public class ResBookDTO {
         resBookDTO.setId(book.getId());
         resBookDTO.setTitle(book.getTitle());
         resBookDTO.setPublisher(book.getPublisher());
+        resBookDTO.setSupplier(book.getSupplier());
         resBookDTO.setPrice(book.getPrice());
         resBookDTO.setQuantity(book.getQuantity());
         resBookDTO.setSold(book.getSold());

@@ -70,6 +70,9 @@ public class BookServiceImpl implements BookService {
         if (book.getPublisher() != null && !bookInDB.getPublisher().equals(book.getPublisher())) {
             bookInDB.setPublisher(book.getPublisher());
         }
+        if (book.getSupplier() != null && !bookInDB.getSupplier().equals(book.getSupplier())) {
+            bookInDB.setSupplier(book.getSupplier());
+        }
         if (book.getCategory() != null && !bookInDB.getCategory().equals(book.getCategory())) {
             bookInDB.setCategory(book.getCategory());
         }
