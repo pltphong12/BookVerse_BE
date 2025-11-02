@@ -9,10 +9,10 @@ import lombok.Setter;
 
 @Getter
 @Setter
-@AllArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
 public class CriteriaFilterCustomer {
-    private String username;
-    private long roleId = 0;
+    private String identityCard;
+    private String customerLevel;
     private LocalDate dateFrom;
 }

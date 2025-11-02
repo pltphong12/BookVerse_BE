@@ -1,5 +1,6 @@
 package com.example.bookverse.domain;
 
+import com.example.bookverse.domain.enums.CustomerLevel;
 import com.example.bookverse.util.SecurityUtil;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
@@ -23,10 +24,12 @@ public class Customer {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
-    private String address;
+    private String identityCard;
+    // private String address;
     private Long totalOrder;
     private BigDecimal totalSpending;
-    private String customerLevel; 
+    @Enumerated(EnumType.STRING)
+    private CustomerLevel customerLevel; 
 
     @OneToMany(mappedBy = "customer")
     @JsonIgnore

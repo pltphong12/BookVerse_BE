@@ -57,6 +57,9 @@ public class PermissionServiceImpl implements PermissionService {
         if (permission.getMethod() != null && !permission.getMethod().equals(permissionInDB.getMethod())) {
             permissionInDB.setMethod(permission.getMethod());
         }
+        if (permission.getDomain() != null && !permission.getDomain().equals(permissionInDB.getDomain())) {
+            permissionInDB.setDomain(permission.getDomain());
+        }
         return this.permissionRepository.save(permissionInDB);
     }
 

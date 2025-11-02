@@ -87,10 +87,6 @@ public class AuthorServiceImpl implements AuthorService {
             builder.and(qAuthor.name.containsIgnoreCase(criteriaFilterAuthor.getName()));
         }
 
-        if (criteriaFilterAuthor.getNationality() != null && !criteriaFilterAuthor.getNationality().isBlank()) {
-            builder.and(qAuthor.nationality.containsIgnoreCase(criteriaFilterAuthor.getNationality()));
-        }
-
         if (criteriaFilterAuthor.getDateFrom() != null) {
             Instant fromInstant = criteriaFilterAuthor.getDateFrom().atStartOfDay(ZoneId.systemDefault()).toInstant();
             builder.and(qAuthor.createdAt.goe(fromInstant));
