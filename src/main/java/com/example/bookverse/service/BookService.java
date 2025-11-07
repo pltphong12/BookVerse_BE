@@ -21,6 +21,9 @@ public interface BookService {
     // Fetch all book
     List<Book> fetchAllBooks() throws Exception;
 
+    // Fetch top 5 books by created at
+    List<Book> fetchTop5BooksByCreatedAt() throws Exception;
+
     // Fetch all book with pagination and filter
     ResPagination fetchAllBooksWithPaginationAndFilter(CriteriaFilterBook criteriaFilterBook, Pageable pageable) throws Exception;
 

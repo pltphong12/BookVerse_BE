@@ -1,4 +1,4 @@
-package com.example.bookverse.domain.response.category;
+package com.example.bookverse.domain.response;
 
 import com.example.bookverse.domain.Book;
 import com.example.bookverse.domain.Category;

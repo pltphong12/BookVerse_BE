@@ -1,4 +1,4 @@
-package com.example.bookverse.domain.response.cart;
+package com.example.bookverse.domain.response;
 
 import java.time.Instant;
 import java.util.ArrayList;

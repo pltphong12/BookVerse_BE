@@ -1,6 +1,6 @@
 package com.example.bookverse.controller;
 
-import com.example.bookverse.domain.response.file.ResFileDTO;
+import com.example.bookverse.domain.response.ResFileDTO;
 import com.example.bookverse.exception.file.StogareException;
 import com.example.bookverse.service.FileService;
 import org.springframework.beans.factory.annotation.Value;

@@ -19,8 +19,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.bookverse.domain.Book;
 import com.example.bookverse.domain.criteria.CriteriaFilterBook;
+import com.example.bookverse.domain.response.ResBookDTO;
 import com.example.bookverse.domain.response.ResPagination;
-import com.example.bookverse.domain.response.book.ResBookDTO;
 import com.example.bookverse.service.BookService;
 
 import jakarta.validation.Valid;
@@ -66,6 +66,18 @@ public class BookController {
     @PreAuthorize("hasAuthority('BOOK_VIEW_ALL')")
     public ResponseEntity<List<ResBookDTO>> getAllBooks() throws Exception {
         List<Book> books = this.bookService.fetchAllBooks();
+        List<ResBookDTO> resBookDTOS = new ArrayList<>();
+        for (Book book : books) {
+            ResBookDTO resBookDTO = ResBookDTO.from(book);
+            resBookDTOS.add(resBookDTO);
+        }
+        return ResponseEntity.status(HttpStatus.OK).body(resBookDTOS);
+    }
+
+    // Fetch top 5 books by created at
+    @GetMapping("/books/top-5-latest")
+    public ResponseEntity<List<ResBookDTO>> getTop5LatestBooks() throws Exception {
+        List<Book> books = this.bookService.fetchTop5BooksByCreatedAt();
         List<ResBookDTO> resBookDTOS = new ArrayList<>();
         for (Book book : books) {
             ResBookDTO resBookDTO = ResBookDTO.from(book);

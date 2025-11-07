@@ -12,4 +12,6 @@ import java.util.List;
 public interface BookRepository extends JpaRepository<Book, Long>, QuerydslPredicateExecutor<Book> {
     boolean existsByTitle(String title);
     List<Book> findByAuthors(List<Author> authors);
+
+    List<Book> findTop5ByOrderByCreatedAtDesc();
 }

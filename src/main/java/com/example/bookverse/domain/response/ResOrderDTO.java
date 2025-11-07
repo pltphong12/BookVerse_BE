@@ -1,4 +1,4 @@
-package com.example.bookverse.domain.response.order;
+package com.example.bookverse.domain.response;
 
 import com.example.bookverse.domain.Author;
 import com.example.bookverse.domain.Order;

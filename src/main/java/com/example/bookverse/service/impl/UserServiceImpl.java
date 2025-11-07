@@ -17,7 +17,7 @@ import com.example.bookverse.domain.Role;
 import com.example.bookverse.domain.User;
 import com.example.bookverse.domain.criteria.CriteriaFilterUser;
 import com.example.bookverse.domain.response.ResPagination;
-import com.example.bookverse.domain.response.user.UserDTO;
+import com.example.bookverse.domain.response.UserDTO;
 import com.example.bookverse.exception.global.ExistDataException;
 import com.example.bookverse.exception.global.IdInvalidException;
 import com.example.bookverse.repository.RoleRepository;

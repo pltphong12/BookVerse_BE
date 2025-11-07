@@ -1,6 +1,6 @@
 package com.example.bookverse.util;
 
-import com.example.bookverse.domain.response.user.ResLoginDTO;
+import com.example.bookverse.domain.response.ResLoginDTO;
 import com.nimbusds.jose.util.Base64;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;

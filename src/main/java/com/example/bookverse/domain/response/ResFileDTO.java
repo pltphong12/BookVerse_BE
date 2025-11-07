@@ -1,4 +1,4 @@
-package com.example.bookverse.domain.response.file;
+package com.example.bookverse.domain.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

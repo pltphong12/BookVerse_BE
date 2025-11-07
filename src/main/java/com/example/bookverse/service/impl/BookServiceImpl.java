@@ -14,8 +14,8 @@ import com.example.bookverse.domain.Author;
 import com.example.bookverse.domain.Book;
 import com.example.bookverse.domain.QBook;
 import com.example.bookverse.domain.criteria.CriteriaFilterBook;
+import com.example.bookverse.domain.response.ResBookDTO;
 import com.example.bookverse.domain.response.ResPagination;
-import com.example.bookverse.domain.response.book.ResBookDTO;
 import com.example.bookverse.exception.global.ExistDataException;
 import com.example.bookverse.repository.AuthorRepository;
 import com.example.bookverse.repository.BookRepository;
@@ -125,6 +125,11 @@ public class BookServiceImpl implements BookService {
     @Override
     public List<Book> fetchAllBooks() throws Exception {
         return this.bookRepository.findAll();
+    }
+
+    @Override
+    public List<Book> fetchTop5BooksByCreatedAt() throws Exception {
+        return this.bookRepository.findTop5ByOrderByCreatedAtDesc();
     }
 
     public Page<Book> filter(CriteriaFilterBook criteriaFilterBook, Pageable pageable) {

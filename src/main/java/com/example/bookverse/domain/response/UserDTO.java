@@ -1,4 +1,4 @@
-package com.example.bookverse.domain.response.user;
+package com.example.bookverse.domain.response;
 
 import com.example.bookverse.domain.Role;
 import lombok.AllArgsConstructor;

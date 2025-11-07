@@ -2,8 +2,8 @@ package com.example.bookverse.controller;
 
 import com.example.bookverse.domain.User;
 import com.example.bookverse.domain.request.ReqLoginDTO;
-import com.example.bookverse.domain.response.user.ResLoginDTO;
-import com.example.bookverse.domain.response.user.UserDTO;
+import com.example.bookverse.domain.response.ResLoginDTO;
+import com.example.bookverse.domain.response.UserDTO;
 import com.example.bookverse.exception.global.IdInvalidException;
 import com.example.bookverse.exception.global.InvalidUsernameOrPassword;
 import com.example.bookverse.service.UserService;

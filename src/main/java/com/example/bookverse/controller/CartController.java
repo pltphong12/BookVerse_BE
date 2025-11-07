@@ -2,7 +2,7 @@ package com.example.bookverse.controller;
 
 import com.example.bookverse.domain.Cart;
 import com.example.bookverse.domain.CartDetail;
-import com.example.bookverse.domain.response.cart.ResCartDTO;
+import com.example.bookverse.domain.response.ResCartDTO;
 import com.example.bookverse.service.CartService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

@@ -1,12 +1,10 @@
-package com.example.bookverse.domain.response.customer;
+package com.example.bookverse.domain.response;
 
 import java.math.BigDecimal;
 import java.time.Instant;
 
 import com.example.bookverse.domain.Customer;
 import com.example.bookverse.domain.User;
-import com.example.bookverse.domain.enums.CustomerLevel;
-import com.example.bookverse.domain.response.user.UserDTO;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

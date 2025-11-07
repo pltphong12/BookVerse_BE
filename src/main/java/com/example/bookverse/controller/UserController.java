@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.example.bookverse.domain.User;
 import com.example.bookverse.domain.criteria.CriteriaFilterUser;
 import com.example.bookverse.domain.response.ResPagination;
-import com.example.bookverse.domain.response.user.UserDTO;
+import com.example.bookverse.domain.response.UserDTO;
 import com.example.bookverse.service.UserService;
 
 import jakarta.validation.Valid;

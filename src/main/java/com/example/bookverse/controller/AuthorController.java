@@ -19,8 +19,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.bookverse.domain.Author;
 import com.example.bookverse.domain.criteria.CriteriaFilterAuthor;
+import com.example.bookverse.domain.response.ResAuthorDTO;
 import com.example.bookverse.domain.response.ResPagination;
-import com.example.bookverse.domain.response.author.ResAuthorDTO;
 import com.example.bookverse.service.AuthorService;
 
 import jakarta.validation.Valid;

@@ -16,8 +16,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.bookverse.domain.criteria.CriteriaFilterCustomer;
 import com.example.bookverse.domain.request.ReqCustomerDTO;
+import com.example.bookverse.domain.response.ResCustomerDTO;
 import com.example.bookverse.domain.response.ResPagination;
-import com.example.bookverse.domain.response.customer.ResCustomerDTO;
 import com.example.bookverse.service.CustomerService;
 
 @RequestMapping("/api/v1")
