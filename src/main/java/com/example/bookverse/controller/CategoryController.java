@@ -18,9 +18,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.bookverse.domain.Category;
-import com.example.bookverse.domain.criteria.CriteriaFilterCategory;
-import com.example.bookverse.domain.response.ResCategoryDTO;
-import com.example.bookverse.domain.response.ResPagination;
+import com.example.bookverse.dto.criteria.CriteriaFilterCategory;
+import com.example.bookverse.dto.response.ResCategoryDTO;
+import com.example.bookverse.dto.response.ResPagination;
 import com.example.bookverse.service.CategoryService;
 
 import jakarta.validation.Valid;

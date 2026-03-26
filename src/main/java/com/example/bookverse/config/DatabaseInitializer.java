@@ -250,15 +250,14 @@ public class DatabaseInitializer implements CommandLineRunner {
     }
 
     private void createAdminUser() {
-        if (userRepository.findByUsername("admin") != null) {
+        if (userRepository.findByEmail("admin@bookverse.com") != null) {
             System.out.println("Admin user already exists, skipping...");
             return;
         }
 
         User adminUser = new User();
-        adminUser.setUsername("admin");
-        adminUser.setPassword(passwordEncoder.encode("123456")); // Mật khẩu đã được hash
-        adminUser.setEmail("phanlathanhphong19@gmail.com");
+        adminUser.setPassword(passwordEncoder.encode("123456"));
+        adminUser.setEmail("admin@bookverse.com");
         adminUser.setFullName("Quản trị viên");
         adminUser.setAddress("Hồ Chí Minh");
         adminUser.setPhone("0767557431");
@@ -266,11 +265,10 @@ public class DatabaseInitializer implements CommandLineRunner {
         adminUser.setCreatedAt(Instant.now());
         adminUser.setCreatedBy("system");
 
-        // Gán ADMIN role
         Role adminRole = roleRepository.findByName("ADMIN");
         adminUser.setRole(adminRole);
 
         userRepository.save(adminUser);
-        System.out.println("Created admin user with username: admin, password: 123456");
+        System.out.println("Created admin user with email: admin@bookverse.com, password: 123456");
     }
 }

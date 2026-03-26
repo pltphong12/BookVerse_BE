@@ -1,7 +1,7 @@
 package com.example.bookverse.util;
 
 import jakarta.servlet.http.HttpServletResponse;
-import com.example.bookverse.domain.response.RestResponse;
+import com.example.bookverse.dto.response.RestResponse;
 import org.springframework.core.MethodParameter;
 import org.springframework.http.MediaType;
 import org.springframework.http.converter.HttpMessageConverter;

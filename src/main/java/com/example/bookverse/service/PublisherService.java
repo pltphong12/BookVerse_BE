@@ -5,8 +5,8 @@ import java.util.List;
 import org.springframework.data.domain.Pageable;
 
 import com.example.bookverse.domain.Publisher;
-import com.example.bookverse.domain.criteria.CriteriaFilterPublisher;
-import com.example.bookverse.domain.response.ResPagination;
+import com.example.bookverse.dto.criteria.CriteriaFilterPublisher;
+import com.example.bookverse.dto.response.ResPagination;
 
 public interface PublisherService {
     // Create

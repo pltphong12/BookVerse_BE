@@ -17,8 +17,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.bookverse.domain.Permission;
-import com.example.bookverse.domain.criteria.CriteriaFilterPermission;
-import com.example.bookverse.domain.response.ResPagination;
+import com.example.bookverse.dto.criteria.CriteriaFilterPermission;
+import com.example.bookverse.dto.response.ResPagination;
 import com.example.bookverse.service.PermissionService;
 
 @RestController

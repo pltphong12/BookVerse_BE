@@ -5,8 +5,8 @@ import java.util.List;
 import org.springframework.data.domain.Pageable;
 
 import com.example.bookverse.domain.Category;
-import com.example.bookverse.domain.criteria.CriteriaFilterCategory;
-import com.example.bookverse.domain.response.ResPagination;
+import com.example.bookverse.dto.criteria.CriteriaFilterCategory;
+import com.example.bookverse.dto.response.ResPagination;
 
 public interface CategoryService {
     // Create a role

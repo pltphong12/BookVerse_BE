@@ -19,9 +19,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.bookverse.domain.User;
-import com.example.bookverse.domain.criteria.CriteriaFilterUser;
-import com.example.bookverse.domain.response.ResPagination;
-import com.example.bookverse.domain.response.UserDTO;
+import com.example.bookverse.dto.criteria.CriteriaFilterUser;
+import com.example.bookverse.dto.response.ResPagination;
+import com.example.bookverse.dto.response.ResUserDTO;
 import com.example.bookverse.service.UserService;
 
 import jakarta.validation.Valid;
@@ -40,28 +40,28 @@ public class UserController {
 
     @PostMapping("/users")
     @PreAuthorize("hasAuthority('USER_CREATE')")
-    public ResponseEntity<UserDTO> createUser(@Valid @RequestBody User user) throws Exception {
+    public ResponseEntity<ResUserDTO> createUser(@Valid @RequestBody User user) throws Exception {
         User newUser = userService.create(user);
         // Convert DTO
-        UserDTO DTO = modelMapper.map(newUser, UserDTO.class);
+        ResUserDTO DTO = modelMapper.map(newUser, ResUserDTO.class);
         return ResponseEntity.status(HttpStatus.CREATED).body(DTO);
     }
 
     @PutMapping("/users")
     @PreAuthorize("hasAuthority('USER_UPDATE')")
-    public ResponseEntity<UserDTO> updateUser(@RequestBody User user) throws Exception {
+    public ResponseEntity<ResUserDTO> updateUser(@RequestBody User user) throws Exception {
         User updateUser = userService.update(user);
         // Convert DTO
-        UserDTO DTO = modelMapper.map(updateUser, UserDTO.class);
+        ResUserDTO DTO = modelMapper.map(updateUser, ResUserDTO.class);
         return ResponseEntity.status(HttpStatus.OK).body(DTO);
     }
 
     @GetMapping("/users/{id}")
     @PreAuthorize("hasAuthority('USER_VIEW_BY_ID')")
-    public ResponseEntity<UserDTO> getUser(@PathVariable long id) throws Exception {
+    public ResponseEntity<ResUserDTO> getUser(@PathVariable long id) throws Exception {
         User user = this.userService.fetchUserById(id);
         // Convert DTO
-        UserDTO DTO = modelMapper.map(user, UserDTO.class);
+        ResUserDTO DTO = modelMapper.map(user, ResUserDTO.class);
         return ResponseEntity.status(HttpStatus.OK).body(DTO);
     }
 
@@ -77,12 +77,12 @@ public class UserController {
 
    @GetMapping("/users")
    @PreAuthorize("hasAuthority('USER_VIEW_ALL')")
-   public ResponseEntity<List<UserDTO>> getUsers() throws Exception {
+   public ResponseEntity<List<ResUserDTO>> getUsers() throws Exception {
        List<User> users = this.userService.fetchAllUsers();
        // Convert DTO
-       List<UserDTO> DTOs = new ArrayList<>();
+       List<ResUserDTO> DTOs = new ArrayList<>();
        for (User user : users) {
-           UserDTO DTO = modelMapper.map(user, UserDTO.class);
+           ResUserDTO DTO = modelMapper.map(user, ResUserDTO.class);
            DTOs.add(DTO);
        }
        return ResponseEntity.status(HttpStatus.OK).body(DTOs);

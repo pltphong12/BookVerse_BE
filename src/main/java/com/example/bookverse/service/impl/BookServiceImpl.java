@@ -9,13 +9,16 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.example.bookverse.domain.Author;
 import com.example.bookverse.domain.Book;
+import com.example.bookverse.domain.BookImage;
 import com.example.bookverse.domain.QBook;
-import com.example.bookverse.domain.criteria.CriteriaFilterBook;
-import com.example.bookverse.domain.response.ResBookDTO;
-import com.example.bookverse.domain.response.ResPagination;
+import com.example.bookverse.dto.criteria.CriteriaFilterBook;
+import com.example.bookverse.dto.request.ReqBookImageDTO;
+import com.example.bookverse.dto.response.ResBookDTO;
+import com.example.bookverse.dto.response.ResPagination;
 import com.example.bookverse.exception.global.ExistDataException;
 import com.example.bookverse.repository.AuthorRepository;
 import com.example.bookverse.repository.BookRepository;
@@ -41,6 +44,7 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
+    @Transactional
     public Book create(Book book) throws Exception {
         if (bookRepository.existsByTitle(book.getTitle())) {
             throw new ExistDataException(book.getTitle() + " already exists");
@@ -50,12 +54,40 @@ public class BookServiceImpl implements BookService {
                     .map(Author::getId)
                     .toList();
             EntityValidator.validateIdsExist(authorIds, authorRepository, "Author");
-            book.setAuthors(book.getAuthors());
         }
+
+        List<ReqBookImageDTO> imageRequests = book.getImages();
+        book.setImages(null);
+
+        if (imageRequests != null && !imageRequests.isEmpty()) {
+            List<BookImage> images = new ArrayList<>();
+            boolean hasPrimary = false;
+            for (int i = 0; i < imageRequests.size(); i++) {
+                ReqBookImageDTO req = imageRequests.get(i);
+                BookImage img = new BookImage();
+                img.setBook(book);
+                img.setRelativePath(req.getRelativePath().trim().replace('\\', '/'));
+                img.setSortOrder(req.getSortOrder());
+                img.setPrimaryImage(req.isPrimary());
+                if (req.isPrimary()) {
+                    hasPrimary = true;
+                }
+                images.add(img);
+            }
+            if (!hasPrimary) {
+                images.getFirst().setPrimaryImage(true);
+            }
+            book.setBookImages(images);
+            BookImage primary = images.stream().filter(BookImage::isPrimaryImage)
+                    .findFirst().orElse(images.getFirst());
+            book.setImage(primary.getRelativePath());
+        }
+
         return this.bookRepository.save(book);
     }
 
     @Override
+    @Transactional
     public Book update(Book book) throws Exception {
         Book bookInDB = FindObjectInDataBase.findByIdOrThrow(bookRepository, book.getId());
         if (book.getTitle() != null && !bookInDB.getTitle().equals(book.getTitle())) {
@@ -85,14 +117,7 @@ public class BookServiceImpl implements BookService {
         if (book.getQuantity() != 0) {
             bookInDB.setQuantity(book.getQuantity());
         }
-        if (book.getAuthors() != null) {
-            bookInDB.setAuthors(book.getAuthors());
-        }
-        if (book.getImage() != null) {
-            bookInDB.setImage(book.getImage());
-        }
         if (book.getAuthors() != null && !bookInDB.getAuthors().equals(book.getAuthors())) {
-
             List<Long> authorIds = book.getAuthors().stream()
                     .map(Author::getId)
                     .toList();
@@ -114,7 +139,55 @@ public class BookServiceImpl implements BookService {
         if (book.getWeight() != 0) {
             bookInDB.setWeight(book.getWeight());
         }
+
+        List<ReqBookImageDTO> imageRequests = book.getImages();
+        if (imageRequests != null && !imageRequests.isEmpty()) {
+            List<BookImage> existingImages = bookInDB.getBookImages();
+
+            if (!isSameImageList(existingImages, imageRequests)) {
+                existingImages.clear();
+
+                boolean hasPrimary = false;
+                for (ReqBookImageDTO req : imageRequests) {
+                    BookImage img = new BookImage();
+                    img.setBook(bookInDB);
+                    img.setRelativePath(req.getRelativePath().trim().replace('\\', '/'));
+                    img.setSortOrder(req.getSortOrder());
+                    img.setPrimaryImage(req.isPrimary());
+                    if (req.isPrimary()) {
+                        hasPrimary = true;
+                        bookInDB.setImage(img.getRelativePath());
+                    }
+                    existingImages.add(img);
+                }
+                if (!hasPrimary && !existingImages.isEmpty()) {
+                    existingImages.getFirst().setPrimaryImage(true);
+                    bookInDB.setImage(existingImages.getFirst().getRelativePath());
+                }
+            }
+        }
+
         return this.bookRepository.save(bookInDB);
+    }
+
+    private boolean isSameImageList(List<BookImage> existing, List<ReqBookImageDTO> incoming) {
+        if (existing.size() != incoming.size()) {
+            return false;
+        }
+        for (int i = 0; i < existing.size(); i++) {
+            BookImage db = existing.get(i);
+            ReqBookImageDTO req = incoming.get(i);
+            if (!db.getRelativePath().equals(req.getRelativePath().trim().replace('\\', '/'))) {
+                return false;
+            }
+            if (db.getSortOrder() != req.getSortOrder()) {
+                return false;
+            }
+            if (db.isPrimaryImage() != req.isPrimary()) {
+                return false;
+            }
+        }
+        return true;
     }
 
     @Override
@@ -137,7 +210,6 @@ public class BookServiceImpl implements BookService {
         QBook qBook = QBook.book;
 
         BooleanBuilder builder = new BooleanBuilder();
-        // Filter
         if (criteriaFilterBook.getTitle() != null && !criteriaFilterBook.getTitle().isBlank()) {
             builder.and(qBook.title.containsIgnoreCase(criteriaFilterBook.getTitle()));
         }
@@ -154,14 +226,12 @@ public class BookServiceImpl implements BookService {
             Instant fromInstant = criteriaFilterBook.getDateFrom().atStartOfDay(ZoneId.systemDefault()).toInstant();
             builder.and(qBook.createdAt.goe(fromInstant));
         }
-        // Query chính
         List<Book> books = queryFactory.selectFrom(qBook)
                 .where(builder)
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
                 .fetch();
 
-        // Đếm số lượng kết quả
         long total = queryFactory.selectFrom(qBook)
                 .where(builder)
                 .fetchCount();
@@ -170,7 +240,8 @@ public class BookServiceImpl implements BookService {
     }
 
     @Override
-    public ResPagination fetchAllBooksWithPaginationAndFilter(CriteriaFilterBook criteriaFilterBook, Pageable pageable) {
+    public ResPagination fetchAllBooksWithPaginationAndFilter(CriteriaFilterBook criteriaFilterBook,
+            Pageable pageable) {
         Page<Book> pageBook = this.filter(criteriaFilterBook, pageable);
         ResPagination rs = new ResPagination();
         ResPagination.Meta mt = new ResPagination.Meta();

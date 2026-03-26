@@ -1,6 +1,6 @@
 package com.example.bookverse.util;
 
-import com.example.bookverse.domain.response.ResLoginDTO;
+import com.example.bookverse.dto.response.ResLoginDTO;
 import com.nimbusds.jose.util.Base64;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
@@ -38,59 +38,55 @@ public class SecurityUtil {
     @Value("${bookverse.jwt.refresh-token-validity-in-seconds}")
     private long refreshTokenExpiration;
 
-    public String createAccessToken(String username, ResLoginDTO userDTO) {
+    public String createAccessToken(String email, ResLoginDTO userDTO) {
         ResLoginDTO.UserInSideToken token = new ResLoginDTO.UserInSideToken();
         token.setId(userDTO.getUser().getId());
-        token.setUsername(userDTO.getUser().getUsername());
+        token.setEmail(userDTO.getUser().getEmail());
         token.setFullName(userDTO.getUser().getFullName());
         token.setRole(userDTO.getUser().getRole().getName());
-        // Lay thoi gian thuc
+
         Instant now = Instant.now();
-        // Tinh thoi gian het han token
         Instant validity = now.plus(this.accessTokenExpiration, ChronoUnit.SECONDS);
-        // Set permission
+
         List<String> listAuthority = new ArrayList<>();
-        // Add permissions từ database
         if (userDTO.getUser().getRole() != null && userDTO.getUser().getRole().getPermissions() != null) {
             for (var permission : userDTO.getUser().getRole().getPermissions()) {
                 listAuthority.add(permission.getName());
             }
         }
-        // @formatter:off
+
         JwtClaimsSet claims = JwtClaimsSet.builder()
                 .issuedAt(now)
                 .expiresAt(validity)
-                .subject(username)
+                .subject(email)
                 .claim("user", token)
                 .claim("permissions", listAuthority)
                 .build();
-        // Thuat toan ma hoa
+
         JwsHeader jwsHeader = JwsHeader.with(JWT_ALGORITHM).build();
         return this.jwtEncoder.encode(JwtEncoderParameters.from(jwsHeader,
                 claims)).getTokenValue();
     }
 
-    public String createRefreshToken(String username, ResLoginDTO userDTO) {
+    public String createRefreshToken(String email, ResLoginDTO userDTO) {
         ResLoginDTO.UserInSideToken token = new ResLoginDTO.UserInSideToken();
         token.setId(userDTO.getUser().getId());
-        token.setUsername(userDTO.getUser().getUsername());
+        token.setEmail(userDTO.getUser().getEmail());
         token.setFullName(userDTO.getUser().getFullName());
-        // Lay thoi gian thuc
+
         Instant now = Instant.now();
-        // Tinh thoi gian het han token
         Instant validity = now.plus(this.refreshTokenExpiration, ChronoUnit.SECONDS);
-        // @formatter:off
+
         JwtClaimsSet claims = JwtClaimsSet.builder()
                 .issuedAt(now)
                 .expiresAt(validity)
-                .subject(username)
+                .subject(email)
                 .claim("user", token)
                 .build();
-        // Thuat toan ma hoa
+
         JwsHeader jwsHeader = JwsHeader.with(JWT_ALGORITHM).build();
         return this.jwtEncoder.encode(JwtEncoderParameters.from(jwsHeader,
                 claims)).getTokenValue();
-
     }
 
     private SecretKey getSecretKey() {

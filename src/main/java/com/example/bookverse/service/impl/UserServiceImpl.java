@@ -15,9 +15,9 @@ import org.springframework.stereotype.Service;
 import com.example.bookverse.domain.QUser;
 import com.example.bookverse.domain.Role;
 import com.example.bookverse.domain.User;
-import com.example.bookverse.domain.criteria.CriteriaFilterUser;
-import com.example.bookverse.domain.response.ResPagination;
-import com.example.bookverse.domain.response.UserDTO;
+import com.example.bookverse.dto.criteria.CriteriaFilterUser;
+import com.example.bookverse.dto.response.ResPagination;
+import com.example.bookverse.dto.response.ResUserDTO;
 import com.example.bookverse.exception.global.ExistDataException;
 import com.example.bookverse.exception.global.IdInvalidException;
 import com.example.bookverse.repository.RoleRepository;
@@ -49,16 +49,13 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User create(User user) throws Exception {
-        // Check Username
-        if (this.userRepository.existsByUsername(user.getUsername())) {
-            throw new ExistDataException(user.getUsername() + " already exists");
+        if (this.userRepository.existsByEmail(user.getEmail())) {
+            throw new ExistDataException("Email " + user.getEmail() + " đã tồn tại");
         }
 
-        // Save hashPassword
         String hashedPassword = passwordEncoder.encode(user.getPassword());
         user.setPassword(hashedPassword);
 
-        // Save role
         Role role = this.roleRepository.findById(user.getRole().getId()).orElse(null);
         user.setRole(role);
 
@@ -95,8 +92,8 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User fetchUserByUsername(String username) {
-        return this.userRepository.findByUsername(username);
+    public User fetchUserByEmail(String email) {
+        return this.userRepository.findByEmail(email);
     }
 
     @Override
@@ -110,8 +107,8 @@ public class UserServiceImpl implements UserService {
 
         BooleanBuilder builder = new BooleanBuilder();
 
-        if (criteriaFilterUser.getUsername() != null && !criteriaFilterUser.getUsername().isBlank()) {
-            builder.and(qUser.username.containsIgnoreCase(criteriaFilterUser.getUsername()));
+        if (criteriaFilterUser.getEmail() != null && !criteriaFilterUser.getEmail().isBlank()) {
+            builder.and(qUser.email.containsIgnoreCase(criteriaFilterUser.getEmail()));
         }
         if (criteriaFilterUser.getRoleId() != 0) {
             builder.and(qUser.role.id.eq(criteriaFilterUser.getRoleId()));
@@ -151,9 +148,9 @@ public class UserServiceImpl implements UserService {
         rs.setMeta(mt);
 
         List<User> users = pageUser.getContent();
-        List<UserDTO> userDTOS = new ArrayList<>();
+        List<ResUserDTO> userDTOS = new ArrayList<>();
         for (User user : users) {
-            UserDTO userDTO = modelMapper.map(user, UserDTO.class);
+            ResUserDTO userDTO = modelMapper.map(user, ResUserDTO.class);
             userDTOS.add(userDTO);
         }
 
@@ -169,8 +166,8 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void updateRefreshToken(String username, String refreshToken) {
-        User userInDB = this.userRepository.findByUsername(username);
+    public void updateRefreshToken(String email, String refreshToken) {
+        User userInDB = this.userRepository.findByEmail(email);
         if (userInDB != null) {
             userInDB.setRefreshToken(refreshToken);
             this.userRepository.save(userInDB);
@@ -179,10 +176,10 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User register(User user) throws Exception {
-        if (this.userRepository.existsByUsername(user.getUsername())) {
-            throw new ExistDataException("Username already exists");
+        if (this.userRepository.existsByEmail(user.getEmail())) {
+            throw new ExistDataException("Email đã tồn tại");
         }
-        Role role = this.roleRepository.findByName("user");
+        Role role = this.roleRepository.findByName("CUSTOMER");
         user.setRole(role);
         String hashedPassword = passwordEncoder.encode(user.getPassword());
         user.setPassword(hashedPassword);
@@ -190,7 +187,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public boolean checkUsernameAnhRefreshToken(String username, String refreshToken) {
-        return userRepository.existsByUsernameAndRefreshToken(username, refreshToken);
+    public boolean checkEmailAndRefreshToken(String email, String refreshToken) {
+        return userRepository.existsByEmailAndRefreshToken(email, refreshToken);
     }
 }

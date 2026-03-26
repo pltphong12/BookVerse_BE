@@ -2,10 +2,10 @@ package com.example.bookverse.service;
 
 import org.springframework.data.domain.Pageable;
 
-import com.example.bookverse.domain.criteria.CriteriaFilterCustomer;
-import com.example.bookverse.domain.request.ReqCustomerDTO;
-import com.example.bookverse.domain.response.ResCustomerDTO;
-import com.example.bookverse.domain.response.ResPagination;
+import com.example.bookverse.dto.criteria.CriteriaFilterCustomer;
+import com.example.bookverse.dto.request.ReqCustomerDTO;
+import com.example.bookverse.dto.response.ResCustomerDTO;
+import com.example.bookverse.dto.response.ResPagination;
 
 public interface CustomerService {
     // Create a customer

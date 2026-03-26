@@ -22,15 +22,13 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
-    @NotBlank(message = "username isn't blank")
-    private String username;
-
     @NotBlank(message = "password isn't blank")
     private String password;
 
     @NotBlank(message = "fullName isn't blank")
     private String fullName;
     private String address;
+    @NotBlank(message = "Email không được để trống")
     @Email(message = "Email không hợp lệ")
     private String email;
     private String phone;

@@ -14,10 +14,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.example.bookverse.domain.criteria.CriteriaFilterCustomer;
-import com.example.bookverse.domain.request.ReqCustomerDTO;
-import com.example.bookverse.domain.response.ResCustomerDTO;
-import com.example.bookverse.domain.response.ResPagination;
+import com.example.bookverse.dto.criteria.CriteriaFilterCustomer;
+import com.example.bookverse.dto.request.ReqCustomerDTO;
+import com.example.bookverse.dto.response.ResCustomerDTO;
+import com.example.bookverse.dto.response.ResPagination;
 import com.example.bookverse.service.CustomerService;
 
 @RequestMapping("/api/v1")

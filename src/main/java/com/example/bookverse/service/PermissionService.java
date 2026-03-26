@@ -5,8 +5,8 @@ import java.util.List;
 import org.springframework.data.domain.Pageable;
 
 import com.example.bookverse.domain.Permission;
-import com.example.bookverse.domain.criteria.CriteriaFilterPermission;
-import com.example.bookverse.domain.response.ResPagination;
+import com.example.bookverse.dto.criteria.CriteriaFilterPermission;
+import com.example.bookverse.dto.response.ResPagination;
 
 public interface PermissionService {
     // Create

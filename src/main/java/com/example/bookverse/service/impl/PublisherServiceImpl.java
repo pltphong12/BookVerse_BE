@@ -11,8 +11,8 @@ import org.springframework.stereotype.Service;
 
 import com.example.bookverse.domain.Publisher;
 import com.example.bookverse.domain.QPublisher;
-import com.example.bookverse.domain.criteria.CriteriaFilterPublisher;
-import com.example.bookverse.domain.response.ResPagination;
+import com.example.bookverse.dto.criteria.CriteriaFilterPublisher;
+import com.example.bookverse.dto.response.ResPagination;
 import com.example.bookverse.exception.global.ExistDataException;
 import com.example.bookverse.repository.PublisherRepository;
 import com.example.bookverse.service.PublisherService;

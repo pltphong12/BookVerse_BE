@@ -5,8 +5,8 @@ import java.util.List;
 import org.springframework.data.domain.Pageable;
 
 import com.example.bookverse.domain.User;
-import com.example.bookverse.domain.criteria.CriteriaFilterUser;
-import com.example.bookverse.domain.response.ResPagination;
+import com.example.bookverse.dto.criteria.CriteriaFilterUser;
+import com.example.bookverse.dto.response.ResPagination;
 
 public interface UserService {
 
@@ -19,8 +19,8 @@ public interface UserService {
     // Find a user by id
     User fetchUserById(long id) throws Exception;
 
-    // Find a user by username
-    User fetchUserByUsername(String username);
+    // Find a user by email
+    User fetchUserByEmail(String email);
 
     // Find all user 
     List<User> fetchAllUsers() throws Exception;
@@ -31,12 +31,12 @@ public interface UserService {
     // Delete a user by id
     void delete(long id) throws Exception;
 
-    // Update refreshToken
-    void updateRefreshToken(String username, String refreshToken) throws Exception;
+    // Update refreshToken by email
+    void updateRefreshToken(String email, String refreshToken) throws Exception;
 
     // Register
     User register(User user) throws Exception;
 
-    // Check username and RefreshToken
-    boolean checkUsernameAnhRefreshToken(String username, String refreshToken) throws Exception;
+    // Check email and RefreshToken
+    boolean checkEmailAndRefreshToken(String email, String refreshToken) throws Exception;
 }

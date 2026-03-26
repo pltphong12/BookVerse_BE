@@ -5,8 +5,8 @@ import java.util.List;
 import org.springframework.data.domain.Pageable;
 
 import com.example.bookverse.domain.Supplier;
-import com.example.bookverse.domain.criteria.CriteriaFilterSupplier;
-import com.example.bookverse.domain.response.ResPagination;
+import com.example.bookverse.dto.criteria.CriteriaFilterSupplier;
+import com.example.bookverse.dto.response.ResPagination;
 
 public interface SupplierService {
     // Create

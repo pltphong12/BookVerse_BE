@@ -5,8 +5,8 @@ import java.util.List;
 import org.springframework.data.domain.Pageable;
 
 import com.example.bookverse.domain.Author;
-import com.example.bookverse.domain.criteria.CriteriaFilterAuthor;
-import com.example.bookverse.domain.response.ResPagination;
+import com.example.bookverse.dto.criteria.CriteriaFilterAuthor;
+import com.example.bookverse.dto.response.ResPagination;
 
 public interface AuthorService {
     // Create an author

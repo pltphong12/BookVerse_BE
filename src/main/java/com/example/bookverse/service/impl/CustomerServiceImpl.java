@@ -14,11 +14,11 @@ import org.springframework.stereotype.Service;
 import com.example.bookverse.domain.Customer;
 import com.example.bookverse.domain.QCustomer;
 import com.example.bookverse.domain.User;
-import com.example.bookverse.domain.criteria.CriteriaFilterCustomer;
-import com.example.bookverse.domain.enums.CustomerLevel;
-import com.example.bookverse.domain.request.ReqCustomerDTO;
-import com.example.bookverse.domain.response.ResCustomerDTO;
-import com.example.bookverse.domain.response.ResPagination;
+import com.example.bookverse.dto.criteria.CriteriaFilterCustomer;
+import com.example.bookverse.dto.enums.CustomerLevel;
+import com.example.bookverse.dto.request.ReqCustomerDTO;
+import com.example.bookverse.dto.response.ResCustomerDTO;
+import com.example.bookverse.dto.response.ResPagination;
 import com.example.bookverse.repository.CustomerRepository;
 import com.example.bookverse.repository.RoleRepository;
 import com.example.bookverse.repository.UserRepository;
@@ -63,7 +63,6 @@ public class CustomerServiceImpl implements CustomerService {
         customer.setCustomerLevel(CustomerLevel.BRONZE);
 
         User user = new User();
-        user.setUsername(reqCustomerDTO.getUsername());
         user.setPassword(reqCustomerDTO.getPassword());
         user.setFullName(reqCustomerDTO.getFullName());
         user.setEmail(reqCustomerDTO.getEmail());

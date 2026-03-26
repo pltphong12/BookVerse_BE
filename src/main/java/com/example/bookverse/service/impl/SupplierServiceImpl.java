@@ -11,8 +11,8 @@ import org.springframework.stereotype.Service;
 
 import com.example.bookverse.domain.QSupplier;
 import com.example.bookverse.domain.Supplier;
-import com.example.bookverse.domain.criteria.CriteriaFilterSupplier;
-import com.example.bookverse.domain.response.ResPagination;
+import com.example.bookverse.dto.criteria.CriteriaFilterSupplier;
+import com.example.bookverse.dto.response.ResPagination;
 import com.example.bookverse.exception.global.ExistDataException;
 import com.example.bookverse.repository.SupplierRepository;
 import com.example.bookverse.service.SupplierService;

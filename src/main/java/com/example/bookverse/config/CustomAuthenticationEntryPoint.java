@@ -1,6 +1,6 @@
 package com.example.bookverse.config;
 
-import com.example.bookverse.domain.response.RestResponse;
+import com.example.bookverse.dto.response.RestResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

@@ -12,9 +12,9 @@ import org.springframework.stereotype.Service;
 
 import com.example.bookverse.domain.Category;
 import com.example.bookverse.domain.QCategory;
-import com.example.bookverse.domain.criteria.CriteriaFilterCategory;
-import com.example.bookverse.domain.response.ResCategoryDTO;
-import com.example.bookverse.domain.response.ResPagination;
+import com.example.bookverse.dto.criteria.CriteriaFilterCategory;
+import com.example.bookverse.dto.response.ResCategoryDTO;
+import com.example.bookverse.dto.response.ResPagination;
 import com.example.bookverse.exception.global.ExistDataException;
 import com.example.bookverse.repository.CategoryRepository;
 import com.example.bookverse.service.CategoryService;

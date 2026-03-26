@@ -1,7 +1,8 @@
 package com.example.bookverse.domain;
 
-import com.example.bookverse.domain.enums.CoverFormat;
+import com.example.bookverse.dto.enums.CoverFormat;
 import com.example.bookverse.util.SecurityUtil;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
@@ -10,7 +11,10 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import com.example.bookverse.dto.request.ReqBookImageDTO;
+
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -41,6 +45,14 @@ public class Book {
     @Column(columnDefinition = "MEDIUMTEXT")
     private String description;
     private String image;
+
+    @OneToMany(mappedBy = "book", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OrderBy("sortOrder ASC, id ASC")
+    @JsonIgnore
+    private List<BookImage> bookImages = new ArrayList<>();
+
+    @Transient
+    private List<ReqBookImageDTO> images;
 
     @ManyToMany(fetch = FetchType.LAZY)
     @JsonIgnoreProperties(value = { "books" })

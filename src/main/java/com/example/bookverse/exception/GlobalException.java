@@ -1,9 +1,9 @@
 package com.example.bookverse.exception;
 
-import com.example.bookverse.domain.response.RestResponse;
+import com.example.bookverse.dto.response.RestResponse;
 import com.example.bookverse.exception.global.ExistDataException;
 import com.example.bookverse.exception.global.IdInvalidException;
-import com.example.bookverse.exception.global.InvalidUsernameOrPassword;
+import com.example.bookverse.exception.global.InvalidEmailOrPassword;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -58,11 +58,10 @@ public class GlobalException {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(res);
     }
 
-    // Handle Invalid Username or Password
     @ExceptionHandler(value = {
-            InvalidUsernameOrPassword.class
+            InvalidEmailOrPassword.class
     })
-    public ResponseEntity<RestResponse<Object>> handleInvalidUsernameOrPasswordException(Exception ex) {
+    public ResponseEntity<RestResponse<Object>> handleInvalidEmailOrPasswordException(Exception ex) {
         RestResponse<Object> res = new RestResponse<>();
         res.setStatus(HttpStatus.BAD_REQUEST.value());
         res.setMessage(ex.getMessage());

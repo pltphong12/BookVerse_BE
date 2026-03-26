@@ -20,13 +20,13 @@ public class UserDetailsCustom implements UserDetailsService {
     }
 
     @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        com.example.bookverse.domain.User user = this.userService.fetchUserByUsername(username);
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        com.example.bookverse.domain.User user = this.userService.fetchUserByEmail(email);
         if (user == null) {
-            throw new UsernameNotFoundException("User isn't found");
+            throw new UsernameNotFoundException("Không tìm thấy người dùng với email: " + email);
         }
         return new User(
-                user.getUsername(),
+                user.getEmail(),
                 user.getPassword(),
                 Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER")));
     }
