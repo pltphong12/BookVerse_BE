@@ -17,6 +17,7 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @Service
@@ -44,6 +45,7 @@ public class SecurityUtil {
         token.setEmail(userDTO.getUser().getEmail());
         token.setFullName(userDTO.getUser().getFullName());
         token.setRole(userDTO.getUser().getRole().getName());
+        token.setCustomerId(userDTO.getUser().getCustomerId());
 
         Instant now = Instant.now();
         Instant validity = now.plus(this.accessTokenExpiration, ChronoUnit.SECONDS);
@@ -73,6 +75,7 @@ public class SecurityUtil {
         token.setId(userDTO.getUser().getId());
         token.setEmail(userDTO.getUser().getEmail());
         token.setFullName(userDTO.getUser().getFullName());
+        token.setCustomerId(userDTO.getUser().getCustomerId());
 
         Instant now = Instant.now();
         Instant validity = now.plus(this.refreshTokenExpiration, ChronoUnit.SECONDS);
@@ -126,5 +129,28 @@ public class SecurityUtil {
         }
         return null;
 
+    }
+
+    /**
+     * {@code customerId} trong claim {@code user} của access token (sau đăng nhập / refresh).
+     */
+    public static Optional<Long> getCurrentCustomerId() {
+        SecurityContext securityContext = SecurityContextHolder.getContext();
+        Authentication authentication = securityContext.getAuthentication();
+        if (authentication == null || !(authentication.getPrincipal() instanceof Jwt jwt)) {
+            return Optional.empty();
+        }
+        Object userClaim = jwt.getClaim("user");
+        if (!(userClaim instanceof Map<?, ?> map)) {
+            return Optional.empty();
+        }
+        Object raw = map.get("customerId");
+        if (raw == null) {
+            return Optional.empty();
+        }
+        if (raw instanceof Number n) {
+            return Optional.of(n.longValue());
+        }
+        return Optional.empty();
     }
 }

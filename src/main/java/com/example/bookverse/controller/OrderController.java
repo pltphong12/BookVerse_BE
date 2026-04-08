@@ -1,19 +1,24 @@
 package com.example.bookverse.controller;
 
-import com.example.bookverse.domain.Order;
-import com.example.bookverse.domain.OrderDetail;
+import com.example.bookverse.dto.criteria.CriteriaFilterOrder;
+import com.example.bookverse.dto.request.ReqCreateOrderDTO;
+import com.example.bookverse.dto.request.ReqUpdateOrderDTO;
 import com.example.bookverse.dto.response.ResOrderDTO;
+import com.example.bookverse.dto.response.ResPagination;
 import com.example.bookverse.service.OrderService;
+import jakarta.validation.Valid;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1")
+@Validated
 public class OrderController {
     private final OrderService orderService;
 
@@ -21,68 +26,46 @@ public class OrderController {
         this.orderService = orderService;
     }
 
-    // Create order and order detail
     @PostMapping("/orders")
     @PreAuthorize("hasAuthority('ORDER_CREATE')")
-    public ResponseEntity<Order> createOrder(@RequestBody Order order) throws Exception {
-        Order newOrder = this.orderService.create(order);
-        return ResponseEntity.status(HttpStatus.CREATED).body(newOrder);
-    }
-    @PostMapping("/order_details")
-    @PreAuthorize("hasAuthority('ORDER_DETAIL_CREATE')")
-    public ResponseEntity<ResOrderDTO.InfoOrderDetailInOrder> createOrderDetail(@RequestBody OrderDetail orderDetail) throws Exception {
-        OrderDetail newOrderDetail = this.orderService.createDetail(orderDetail);
-        ResOrderDTO.InfoOrderDetailInOrder orderDetailInOrder = ResOrderDTO.getInfoOrderDetailInOrder(newOrderDetail);
-        return ResponseEntity.status(HttpStatus.CREATED).body(orderDetailInOrder);
+    public ResponseEntity<ResOrderDTO> createOrder(@Valid @RequestBody ReqCreateOrderDTO req) throws Exception {
+        ResOrderDTO created = orderService.create(req);
+        return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
-    // Update order and order detail
     @PutMapping("/orders")
     @PreAuthorize("hasAuthority('ORDER_UPDATE')")
-    public ResponseEntity<Order> updateOrder(@RequestBody Order order) throws Exception {
-        Order updatedOrder = this.orderService.update(order);
-        return ResponseEntity.status(HttpStatus.OK).body(updatedOrder);
-    }
-    @PutMapping("/order_details")
-    @PreAuthorize("hasAuthority('ORDER_DETAIL_UPDATE')")
-    public ResponseEntity<ResOrderDTO.InfoOrderDetailInOrder> updateOrderDetail(@RequestBody OrderDetail orderDetail) throws Exception {
-        OrderDetail updatedOrderDetail = this.orderService.updateDetail(orderDetail);
-        ResOrderDTO.InfoOrderDetailInOrder orderDetailInOrder = ResOrderDTO.getInfoOrderDetailInOrder(updatedOrderDetail);
-        return ResponseEntity.status(HttpStatus.OK).body(orderDetailInOrder);
+    public ResponseEntity<ResOrderDTO> updateOrder(@Valid @RequestBody ReqUpdateOrderDTO req) throws Exception {
+        return ResponseEntity.ok(orderService.update(req));
     }
 
     @GetMapping("/orders/{id}")
     @PreAuthorize("hasAuthority('ORDER_VIEW_BY_ID')")
     public ResponseEntity<ResOrderDTO> getOrder(@PathVariable Long id) throws Exception {
-        Order order = this.orderService.fetchOrderById(id);
-        ResOrderDTO resOrderDTO = ResOrderDTO.from(order);
-        return ResponseEntity.status(HttpStatus.OK).body(resOrderDTO);
+        return ResponseEntity.ok(orderService.getById(id));
     }
 
-    
-    @GetMapping("/orders")
-    @PreAuthorize("hasAuthority('ORDER_VIEW_ALL')")
-    public ResponseEntity<List<ResOrderDTO>> getAllOrders() throws Exception {
-        List<Order> orders = this.orderService.fetchAllOrders();
-        List<ResOrderDTO> resOrderDTOS = new ArrayList<>();
-        for (Order order : orders) {
-            ResOrderDTO resOrderDTO = ResOrderDTO.from(order);
-            resOrderDTOS.add(resOrderDTO);
-        }
-        return ResponseEntity.status(HttpStatus.OK).body(resOrderDTOS);
+    @GetMapping("/orders/me")
+    @PreAuthorize("hasAuthority('ORDER_VIEW_MINE')")
+    public ResponseEntity<List<ResOrderDTO>> listMyOrders() throws Exception {
+        return ResponseEntity.ok(orderService.listMine());
     }
 
-    // Delete order and order detail
+    @GetMapping("/orders/search")
+    @PreAuthorize("hasAuthority('ORDER_VIEW_ALL_WITH_PAGINATION_AND_FILTER')")
+    public ResponseEntity<ResPagination> searchOrders(
+            @ModelAttribute CriteriaFilterOrder criteriaFilterOrder,
+            Pageable pageable) throws Exception {
+        return ResponseEntity.ok(orderService.fetchAllOrdersWithPaginationAndFilter(criteriaFilterOrder, pageable));
+    }
+
+    /**
+     * Hủy đơn: cập nhật {@code status = CANCELLED} (không xóa bản ghi).
+     */
     @DeleteMapping("/orders/{id}")
-    @PreAuthorize("hasAuthority('ORDER_DELETE')")
-    public ResponseEntity<Void> deleteOrder(@PathVariable Long id) throws Exception {
-        this.orderService.delete(id);
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
-    }
-    @DeleteMapping("/order_details/{id}")
-    @PreAuthorize("hasAuthority('ORDER_DETAIL_DELETE')")
-    public ResponseEntity<Void> deleteOrderDetail(@PathVariable Long id) throws Exception {
-        this.orderService.deleteDetail(id);
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    @PreAuthorize("hasAuthority('ORDER_CANCEL')")
+    public ResponseEntity<Void> cancelOrder(@PathVariable Long id) throws Exception {
+        orderService.cancel(id);
+        return ResponseEntity.noContent().build();
     }
 }

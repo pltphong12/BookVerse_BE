@@ -66,5 +66,4 @@ public class CustomerController {
                 .fetchAllCustomersWithPaginationAndFilter(criteriaFilterCustomer, pageable);
         return ResponseEntity.status(HttpStatus.OK).body(resPagination);
     }
-
 }

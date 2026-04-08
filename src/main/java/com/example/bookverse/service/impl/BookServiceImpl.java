@@ -16,6 +16,7 @@ import com.example.bookverse.domain.Book;
 import com.example.bookverse.domain.BookImage;
 import com.example.bookverse.domain.QBook;
 import com.example.bookverse.dto.criteria.CriteriaFilterBook;
+import com.example.bookverse.dto.criteria.CriteriaFilterProduct;
 import com.example.bookverse.dto.request.ReqBookImageDTO;
 import com.example.bookverse.dto.response.ResBookDTO;
 import com.example.bookverse.dto.response.ResPagination;
@@ -26,6 +27,7 @@ import com.example.bookverse.service.BookService;
 import com.example.bookverse.util.EntityValidator;
 import com.example.bookverse.util.FindObjectInDataBase;
 import com.querydsl.core.BooleanBuilder;
+import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 
 import jakarta.persistence.EntityManager;
@@ -270,5 +272,83 @@ public class BookServiceImpl implements BookService {
     public void delete(long id) throws Exception {
         FindObjectInDataBase.findByIdOrThrow(this.bookRepository, id);
         this.bookRepository.deleteById(id);
+    }
+
+    public Page<Book> filter(CriteriaFilterProduct criteriaFilterProduct, Pageable pageable) {
+        JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
+        QBook qBook = QBook.book;
+
+        BooleanBuilder builder = new BooleanBuilder();
+
+        if (criteriaFilterProduct.getTitle() != null && !criteriaFilterProduct.getTitle().isBlank()) {
+            builder.and(qBook.title.containsIgnoreCase(criteriaFilterProduct.getTitle()));
+        }
+        if (criteriaFilterProduct.getCategoryId() != null && !criteriaFilterProduct.getCategoryId().isEmpty()) {
+            builder.and(qBook.category.id.in(criteriaFilterProduct.getCategoryId()));
+        }
+        if (criteriaFilterProduct.getPublisherId() != null && !criteriaFilterProduct.getPublisherId().isEmpty()) {
+            builder.and(qBook.publisher.id.in(criteriaFilterProduct.getPublisherId()));
+        }
+        if (criteriaFilterProduct.getPublishYear() != null && !criteriaFilterProduct.getPublishYear().isEmpty()) {
+            builder.and(qBook.publishYear.in(criteriaFilterProduct.getPublishYear()));
+        }
+        if (criteriaFilterProduct.getCoverFormat() != null && !criteriaFilterProduct.getCoverFormat().isEmpty()) {
+            builder.and(qBook.coverFormat.in(criteriaFilterProduct.getCoverFormat()));
+        }
+        if (criteriaFilterProduct.getMinPrice() != null) {
+            builder.and(qBook.price.goe(criteriaFilterProduct.getMinPrice()));
+        }
+        if (criteriaFilterProduct.getMaxPrice() != null) {
+            builder.and(qBook.price.loe(criteriaFilterProduct.getMaxPrice()));
+        }
+
+        OrderSpecifier<?> orderSpecifier = qBook.createdAt.desc();
+        if (criteriaFilterProduct.getSortType() != null) {
+            orderSpecifier = switch (criteriaFilterProduct.getSortType()) {
+                case NEWEST -> qBook.createdAt.desc();
+                case SOLD_MOST -> qBook.sold.desc();
+                case PRICE_LOW_TO_HIGH -> qBook.price.asc();
+                case PRICE_HIGH_TO_LOW -> qBook.price.desc();
+            };
+        }
+
+        List<Book> books = queryFactory.selectFrom(qBook)
+                .where(builder)
+                .orderBy(orderSpecifier)
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .fetch();
+
+        long total = queryFactory.selectFrom(qBook)
+                .where(builder)
+                .fetchCount();
+
+        return new PageImpl<>(books, pageable, total);
+    }
+
+    @Override
+    public ResPagination fetchAllBooksWithPaginationAndFilter(CriteriaFilterProduct criteriaFilterProduct,
+            Pageable pageable) {
+        Page<Book> pageBook = this.filter(criteriaFilterProduct, pageable);
+        ResPagination rs = new ResPagination();
+        ResPagination.Meta mt = new ResPagination.Meta();
+
+        mt.setPage(pageable.getPageNumber() + 1);
+        mt.setPageSize(pageBook.getSize());
+        mt.setPages(pageBook.getTotalPages());
+        mt.setTotal(pageBook.getTotalElements());
+
+        rs.setMeta(mt);
+
+        List<Book> books = pageBook.getContent();
+        List<ResBookDTO> bookDTOS = new ArrayList<>();
+        for (Book book : books) {
+            ResBookDTO bookDTO = ResBookDTO.from(book);
+            bookDTOS.add(bookDTO);
+        }
+
+        rs.setResult(bookDTOS);
+
+        return rs;
     }
 }

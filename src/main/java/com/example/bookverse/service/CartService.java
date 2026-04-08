@@ -1,22 +1,16 @@
 package com.example.bookverse.service;
 
-import com.example.bookverse.domain.Cart;
-import com.example.bookverse.domain.CartDetail;
+import com.example.bookverse.dto.request.ReqAddToCartDTO;
+import com.example.bookverse.dto.response.ResCartDTO;
 
 public interface CartService {
-    // Create a Cart
-    Cart create (Cart cart) throws Exception;
-    // Create Cart detail
-    CartDetail createDetail(CartDetail cartDetail) throws Exception;
+    ResCartDTO fetchCartById() throws Exception;
 
-    // Update a Cart
-    Cart update (Cart cart) throws Exception;
-    // Update Cart detail
-    CartDetail updateDetail(CartDetail cartDetail) throws Exception;
+    ResCartDTO addToCart(ReqAddToCartDTO reqAddToCartDTO) throws Exception;
 
-    // Get a Cart
-    Cart fetchCartById(long id) throws Exception;
+    ResCartDTO increaseQuantity(long cartDetailId) throws Exception;
 
-    // Delete Cart detail
-    void deleteDetail(long id) throws Exception;
+    ResCartDTO decreaseQuantity(long cartDetailId) throws Exception;
+
+    ResCartDTO removeCartDetail(long cartDetailId) throws Exception;
 }

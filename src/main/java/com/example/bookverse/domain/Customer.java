@@ -38,12 +38,9 @@ public class Customer {
     @JsonIgnore
     private Cart cart;
 
-    @OneToOne()
+    @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "user_id")
     private User user;
-
-    @Column(columnDefinition = "MEDIUMTEXT")
-    private String refreshToken;
 
     private Instant createdAt;
     private Instant updatedAt;

@@ -22,6 +22,8 @@ public class ResLoginDTO {
         private String email;
         private String fullName;
         private String role;
+        /** {@code null} nếu user không gắn bản ghi {@code customers} (ví dụ ADMIN). */
+        private Long customerId;
     }
 }
 

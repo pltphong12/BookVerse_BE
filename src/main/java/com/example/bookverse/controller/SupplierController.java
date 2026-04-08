@@ -54,7 +54,6 @@ public class SupplierController {
     }
     
     @GetMapping("/suppliers")
-    @PreAuthorize("hasAuthority('SUPPLIER_VIEW_ALL')")
     public ResponseEntity<List<Supplier>> getAllSuppliers() throws Exception {
         List<Supplier> suppliers = this.supplierService.fetchAllSuppliers();
         return ResponseEntity.status(HttpStatus.OK).body(suppliers);

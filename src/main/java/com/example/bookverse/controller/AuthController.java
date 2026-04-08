@@ -51,7 +51,11 @@ public class AuthController {
             SecurityContextHolder.getContext().setAuthentication(authentication);
 
             User user = this.userService.fetchUserByEmail(reqLoginDTO.getEmail());
-            resLoginDTO.setUser(modelMapper.map(user, ResUserDTO.class));
+            ResUserDTO userDto = modelMapper.map(user, ResUserDTO.class);
+            if (user.getCustomer() != null) {
+                userDto.setCustomerId(user.getCustomer().getId());
+            }
+            resLoginDTO.setUser(userDto);
 
             String accessToken = this.securityUtil.createAccessToken(reqLoginDTO.getEmail(), resLoginDTO);
             resLoginDTO.setAccessToken(accessToken);
@@ -90,7 +94,11 @@ public class AuthController {
         }
 
         ResLoginDTO resLoginDTO = new ResLoginDTO();
-        resLoginDTO.setUser(modelMapper.map(currentUser, ResUserDTO.class));
+        ResUserDTO userDto = modelMapper.map(currentUser, ResUserDTO.class);
+        if (currentUser.getCustomer() != null) {
+            userDto.setCustomerId(currentUser.getCustomer().getId());
+        }
+        resLoginDTO.setUser(userDto);
 
         String accessToken = this.securityUtil.createAccessToken(currentUser.getEmail(), resLoginDTO);
         resLoginDTO.setAccessToken(accessToken);
@@ -111,6 +119,9 @@ public class AuthController {
         String email = SecurityUtil.getCurrentUserLogin().isPresent() ? SecurityUtil.getCurrentUserLogin().get() : "";
         User currentUser = this.userService.fetchUserByEmail(email);
         ResUserDTO userDTO = this.modelMapper.map(currentUser, ResUserDTO.class);
+        if (currentUser.getCustomer() != null) {
+            userDTO.setCustomerId(currentUser.getCustomer().getId());
+        }
         return ResponseEntity.ok().body(userDTO);
     }
 

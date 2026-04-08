@@ -52,7 +52,6 @@ public class PublisherController {
     }
 
     @GetMapping("/publishers")
-    @PreAuthorize("hasAuthority('PUBLISHER_VIEW_ALL')")
     public ResponseEntity<List<Publisher>> getAll() throws Exception {
         List<Publisher> publishers = this.publisherService.fetchAllPublisher();
         return ResponseEntity.status(HttpStatus.OK).body(publishers);

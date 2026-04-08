@@ -14,6 +14,8 @@ import java.time.Instant;
 @NoArgsConstructor
 public class ResUserDTO {
     private long id;
+    /** {@code null} nếu user không phải khách hàng. */
+    private Long customerId;
     private String fullName;
     private String email;
     private String address;

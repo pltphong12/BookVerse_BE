@@ -61,7 +61,6 @@ public class CategoryController {
 
     // Fetch all categories
     @GetMapping("/categories")
-    @PreAuthorize("hasAuthority('CATEGORY_VIEW_ALL')")
     public ResponseEntity<List<ResCategoryDTO>> getAllCategories() throws Exception {
         List<Category> categories = this.categoryService.fetchAllCategory();
         List<ResCategoryDTO> res = new ArrayList<>();

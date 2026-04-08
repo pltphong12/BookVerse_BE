@@ -1,274 +1,289 @@
 package com.example.bookverse.config;
 
-import com.example.bookverse.domain.Permission;
-import com.example.bookverse.domain.Role;
-import com.example.bookverse.domain.User;
-import com.example.bookverse.repository.PermissionRepository;
-import com.example.bookverse.repository.RoleRepository;
-import com.example.bookverse.repository.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.example.bookverse.domain.*;
+import com.example.bookverse.dto.enums.CustomerLevel;
+import com.example.bookverse.repository.*;
+import lombok.AllArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
 @Component
+@AllArgsConstructor
 public class DatabaseInitializer implements CommandLineRunner {
 
-    @Autowired
-    private PermissionRepository permissionRepository;
-
-    @Autowired
-    private RoleRepository roleRepository;
-
-    @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+    private final PermissionRepository permissionRepository;
+    private final RoleRepository roleRepository;
+    private final UserRepository userRepository;
+    private final CustomerRepository customerRepository;
+    private final CartRepository cartRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
-    public void run(String... args) throws Exception {
-        // Tạo permissions
+    public void run(String... args) {
         createPermissions();
-
-        // Tạo roles
         createRoles();
-
-        // Tạo admin user
-        createAdminUser();
+        createUsers();
     }
 
+    // ======================== PERMISSIONS ========================
+
     private void createPermissions() {
-        if (permissionRepository.count() > 0) {
-            System.out.println("Permissions already exist, skipping...");
-            return;
-        }
+        if (permissionRepository.count() > 0) return;
 
         List<Permission> permissions = new ArrayList<>();
 
-        // Book permissions
-        permissions.add(createPermission("BOOK_CREATE", "BOOK", "/api/v1/books", "POST"));
-        permissions.add(createPermission("BOOK_UPDATE", "BOOK", "/api/v1/books", "PUT"));
-        permissions.add(createPermission("BOOK_DELETE", "BOOK", "/api/v1/books/{id}", "DELETE"));
-        permissions.add(createPermission("BOOK_VIEW_ALL", "BOOK", "/api/v1/books", "GET"));
-        permissions.add(createPermission("BOOK_VIEW_BY_ID", "BOOK", "/api/v1/books/{id}", "GET"));
-        permissions.add(
-                createPermission("BOOK_VIEW_ALL_WITH_PAGINATION_AND_FILTER", "BOOK", "/api/v1/books/search", "GET"));
+        // Author
+        permissions.add(perm("AUTHOR_CREATE", "AUTHOR", "/api/v1/authors", "POST"));
+        permissions.add(perm("AUTHOR_UPDATE", "AUTHOR", "/api/v1/authors", "PUT"));
+        permissions.add(perm("AUTHOR_DELETE", "AUTHOR", "/api/v1/authors/{id}", "DELETE"));
+        permissions.add(perm("AUTHOR_VIEW_ALL", "AUTHOR", "/api/v1/authors", "GET"));
+        permissions.add(perm("AUTHOR_VIEW_BY_ID", "AUTHOR", "/api/v1/authors/{id}", "GET"));
+        permissions.add(perm("AUTHOR_VIEW_ALL_WITH_PAGINATION_AND_FILTER", "AUTHOR", "/api/v1/authors/search", "GET"));
 
-        // User permissions
-        permissions.add(createPermission("USER_CREATE", "USER", "/api/v1/users", "POST"));
-        permissions.add(createPermission("USER_UPDATE", "USER", "/api/v1/users", "PUT"));
-        permissions.add(createPermission("USER_VIEW_ALL", "USER", "/api/v1/users", "GET"));
-        permissions.add(createPermission("USER_VIEW_BY_ID", "USER", "/api/v1/users/{id}", "GET"));
-        permissions.add(
-                createPermission("USER_VIEW_ALL_WITH_PAGINATION_AND_FILTER", "USER", "/api/v1/users/search", "GET"));
+        // Book
+        permissions.add(perm("BOOK_CREATE", "BOOK", "/api/v1/books", "POST"));
+        permissions.add(perm("BOOK_UPDATE", "BOOK", "/api/v1/books", "PUT"));
+        permissions.add(perm("BOOK_DELETE", "BOOK", "/api/v1/books/{id}", "DELETE"));
+        permissions.add(perm("BOOK_VIEW_ALL", "BOOK", "/api/v1/books", "GET"));
+        permissions.add(perm("BOOK_VIEW_ALL_WITH_PAGINATION_AND_FILTER", "BOOK", "/api/v1/books/search", "GET"));
 
-        // Author permissions
-        permissions.add(createPermission("AUTHOR_CREATE", "AUTHOR", "/api/v1/authors", "POST"));
-        permissions.add(createPermission("AUTHOR_UPDATE", "AUTHOR", "/api/v1/authors", "PUT"));
-        permissions.add(createPermission("AUTHOR_DELETE", "AUTHOR", "/api/v1/authors/{id}", "DELETE"));
-        permissions.add(createPermission("AUTHOR_VIEW_ALL", "AUTHOR", "/api/v1/authors", "GET"));
-        permissions.add(createPermission("AUTHOR_VIEW_BY_ID", "AUTHOR", "/api/v1/authors/{id}", "GET"));
-        permissions.add(createPermission("AUTHOR_VIEW_ALL_WITH_PAGINATION_AND_FILTER", "AUTHOR",
-                "/api/v1/authors/search", "GET"));
+        // Cart
+        permissions.add(perm("CART_ADD_TO_CART", "CART", "/api/v1/carts/items", "POST"));
+        permissions.add(perm("CART_VIEW_BY_ID", "CART", "/api/v1/carts", "GET"));
 
-        // Publisher permissions
-        permissions.add(createPermission("PUBLISHER_CREATE", "PUBLISHER", "/api/v1/publishers", "POST"));
-        permissions.add(createPermission("PUBLISHER_UPDATE", "PUBLISHER", "/api/v1/publishers", "PUT"));
-        permissions.add(createPermission("PUBLISHER_DELETE", "PUBLISHER", "/api/v1/publishers/{id}", "DELETE"));
-        permissions.add(createPermission("PUBLISHER_VIEW_ALL", "PUBLISHER", "/api/v1/publishers", "GET"));
-        permissions.add(createPermission("PUBLISHER_VIEW_BY_ID", "PUBLISHER", "/api/v1/publishers/{id}", "GET"));
-        permissions.add(createPermission("PUBLISHER_VIEW_ALL_WITH_PAGINATION_AND_FILTER", "PUBLISHER",
-                "/api/v1/publishers/search", "GET"));
+        // Category
+        permissions.add(perm("CATEGORY_CREATE", "CATEGORY", "/api/v1/categories", "POST"));
+        permissions.add(perm("CATEGORY_UPDATE", "CATEGORY", "/api/v1/categories", "PUT"));
+        permissions.add(perm("CATEGORY_DELETE", "CATEGORY", "/api/v1/categories/{id}", "DELETE"));
+        permissions.add(perm("CATEGORY_VIEW_BY_ID", "CATEGORY", "/api/v1/categories/{id}", "GET"));
+        permissions.add(perm("CATEGORY_VIEW_ALL_WITH_PAGINATION_AND_FILTER", "CATEGORY", "/api/v1/categories/search", "GET"));
 
-        // Category permissions
-        permissions.add(createPermission("CATEGORY_CREATE", "CATEGORY", "/api/v1/categories", "POST"));
-        permissions.add(createPermission("CATEGORY_UPDATE", "CATEGORY", "/api/v1/categories", "PUT"));
-        permissions.add(createPermission("CATEGORY_DELETE", "CATEGORY", "/api/v1/categories/{id}", "DELETE"));
-        permissions.add(createPermission("CATEGORY_VIEW_ALL", "CATEGORY", "/api/v1/categories", "GET"));
-        permissions.add(createPermission("CATEGORY_VIEW_BY_ID", "CATEGORY", "/api/v1/categories/{id}", "GET"));
-        permissions.add(createPermission("CATEGORY_VIEW_ALL_WITH_PAGINATION_AND_FILTER", "CATEGORY",
-                "/api/v1/categories/search", "GET"));
+        // Customer
+        permissions.add(perm("CUSTOMER_CREATE", "CUSTOMER", "/api/v1/customers", "POST"));
+        permissions.add(perm("CUSTOMER_UPDATE", "CUSTOMER", "/api/v1/customers", "PUT"));
+        permissions.add(perm("CUSTOMER_DELETE", "CUSTOMER", "/api/v1/customers/{id}", "DELETE"));
+        permissions.add(perm("CUSTOMER_VIEW_BY_ID", "CUSTOMER", "/api/v1/customers/{id}", "GET"));
+        permissions.add(perm("CUSTOMER_VIEW_ALL_WITH_PAGINATION_AND_FILTER", "CUSTOMER", "/api/v1/customers/search", "GET"));
 
-        // Order permissions
-        permissions.add(createPermission("ORDER_CREATE", "ORDER", "/api/v1/orders", "POST"));
-        permissions.add(createPermission("ORDER_UPDATE", "ORDER", "/api/v1/orders", "PUT"));
-        permissions.add(createPermission("ORDER_DELETE", "ORDER", "/api/v1/orders/{id}", "DELETE"));
-        permissions.add(createPermission("ORDER_VIEW_ALL", "ORDER", "/api/v1/orders", "GET"));
-        permissions.add(createPermission("ORDER_VIEW_BY_ID", "ORDER", "/api/v1/orders/{id}", "GET"));
-        permissions.add(createPermission("ORDER_DETAIL_CREATE", "ORDER", "/api/v1/order_details", "POST"));
-        permissions.add(createPermission("ORDER_DETAIL_UPDATE", "ORDER", "/api/v1/order_details", "PUT"));
-        permissions.add(createPermission("ORDER_DETAIL_DELETE", "ORDER", "/api/v1/order_details/{id}", "DELETE"));
+        // File
+        permissions.add(perm("FILE_UPLOAD", "FILE", "/api/v1/files", "POST"));
 
-        // Cart permissions
-        permissions.add(createPermission("CART_CREATE", "CART", "/api/v1/carts", "POST"));
-        permissions.add(createPermission("CART_UPDATE", "CART", "/api/v1/carts", "PUT"));
-        permissions.add(createPermission("CART_VIEW_BY_ID", "CART", "/api/v1/carts/{id}", "GET"));
-        permissions.add(createPermission("CART_DETAIL_CREATE", "CART", "/api/v1/cart_details", "POST"));
-        permissions.add(createPermission("CART_DETAIL_UPDATE", "CART", "/api/v1/cart_details", "PUT"));
-        permissions.add(createPermission("CART_DETAIL_DELETE", "CART", "/api/v1/cart_details/{id}", "DELETE"));
+        // Order
+        permissions.add(perm("ORDER_CREATE", "ORDER", "/api/v1/orders", "POST"));
+        permissions.add(perm("ORDER_UPDATE", "ORDER", "/api/v1/orders", "PUT"));
+        permissions.add(perm("ORDER_CANCEL", "ORDER", "/api/v1/orders/{id}", "DELETE"));
+        permissions.add(perm("ORDER_VIEW_ALL_WITH_PAGINATION_AND_FILTER", "ORDER", "/api/v1/orders/search", "GET"));
+        permissions.add(perm("ORDER_VIEW_BY_ID", "ORDER", "/api/v1/orders/{id}", "GET"));
+        permissions.add(perm("ORDER_VIEW_MINE", "ORDER", "/api/v1/orders/me", "GET"));
 
-        // Role permissions
-        permissions.add(createPermission("ROLE_CREATE", "ROLE", "/api/v1/roles", "POST"));
-        permissions.add(createPermission("ROLE_UPDATE", "ROLE", "/api/v1/roles", "PUT"));
-        permissions.add(createPermission("ROLE_DELETE", "ROLE", "/api/v1/roles/{id}", "DELETE"));
-        permissions.add(createPermission("ROLE_VIEW_ALL", "ROLE", "/api/v1/roles", "GET"));
-        permissions.add(createPermission("ROLE_VIEW_BY_ID", "ROLE", "/api/v1/roles/{id}", "GET"));
-        permissions.add(
-                createPermission("ROLE_VIEW_ALL_WITH_PAGINATION_AND_FILTER", "ROLE", "/api/v1/roles/search", "GET"));
+        // Permission
+        permissions.add(perm("PERMISSION_CREATE", "PERMISSION", "/api/v1/permissions", "POST"));
+        permissions.add(perm("PERMISSION_UPDATE", "PERMISSION", "/api/v1/permissions", "PUT"));
+        permissions.add(perm("PERMISSION_DELETE", "PERMISSION", "/api/v1/permissions/{id}", "DELETE"));
+        permissions.add(perm("PERMISSION_VIEW_ALL", "PERMISSION", "/api/v1/permissions", "GET"));
+        permissions.add(perm("PERMISSION_VIEW_BY_ID", "PERMISSION", "/api/v1/permissions/{id}", "GET"));
+        permissions.add(perm("PERMISSION_VIEW_ALL_WITH_PAGINATION_AND_FILTER", "PERMISSION", "/api/v1/permissions/search", "GET"));
 
-        // Permission permissions
-        permissions.add(createPermission("PERMISSION_CREATE", "PERMISSION", "/api/v1/permissions", "POST"));
-        permissions.add(createPermission("PERMISSION_UPDATE", "PERMISSION", "/api/v1/permissions", "PUT"));
-        permissions.add(createPermission("PERMISSION_DELETE", "PERMISSION", "/api/v1/permissions/{id}", "DELETE"));
-        permissions.add(createPermission("PERMISSION_VIEW_ALL", "PERMISSION", "/api/v1/permissions", "GET"));
-        permissions.add(createPermission("PERMISSION_VIEW_BY_ID", "PERMISSION", "/api/v1/permissions/{id}", "GET"));
-        permissions.add(createPermission("PERMISSION_VIEW_ALL_WITH_PAGINATION_AND_FILTER", "PERMISSION",
-                "/api/v1/permissions/search", "GET"));
+        // Publisher
+        permissions.add(perm("PUBLISHER_CREATE", "PUBLISHER", "/api/v1/publishers", "POST"));
+        permissions.add(perm("PUBLISHER_UPDATE", "PUBLISHER", "/api/v1/publishers", "PUT"));
+        permissions.add(perm("PUBLISHER_DELETE", "PUBLISHER", "/api/v1/publishers/{id}", "DELETE"));
+        permissions.add(perm("PUBLISHER_VIEW_BY_ID", "PUBLISHER", "/api/v1/publishers/{id}", "GET"));
+        permissions.add(perm("PUBLISHER_VIEW_ALL_WITH_PAGINATION_AND_FILTER", "PUBLISHER", "/api/v1/publishers/search", "GET"));
 
-        // File permissions
-        permissions.add(createPermission("FILE_UPLOAD", "FILE", "/api/v1/files", "POST"));
+        // Role
+        permissions.add(perm("ROLE_CREATE", "ROLE", "/api/v1/roles", "POST"));
+        permissions.add(perm("ROLE_UPDATE", "ROLE", "/api/v1/roles", "PUT"));
+        permissions.add(perm("ROLE_DELETE", "ROLE", "/api/v1/roles/{id}", "DELETE"));
+        permissions.add(perm("ROLE_VIEW_ALL", "ROLE", "/api/v1/roles", "GET"));
+        permissions.add(perm("ROLE_VIEW_BY_ID", "ROLE", "/api/v1/roles/{id}", "GET"));
+        permissions.add(perm("ROLE_VIEW_ALL_WITH_PAGINATION_AND_FILTER", "ROLE", "/api/v1/roles/search", "GET"));
 
-        // Supplier permissions
-        permissions.add(createPermission("SUPPLIER_CREATE", "SUPPLIER", "/api/v1/suppliers", "POST"));
-        permissions.add(createPermission("SUPPLIER_UPDATE", "SUPPLIER", "/api/v1/suppliers", "PUT"));
-        permissions.add(createPermission("SUPPLIER_DELETE", "SUPPLIER", "/api/v1/suppliers/{id}", "DELETE"));
-        permissions.add(createPermission("SUPPLIER_VIEW_ALL", "SUPPLIER", "/api/v1/suppliers", "GET"));
-        permissions.add(createPermission("SUPPLIER_VIEW_BY_ID", "SUPPLIER", "/api/v1/suppliers/{id}", "GET"));
-        permissions.add(createPermission("SUPPLIER_VIEW_ALL_WITH_PAGINATION_AND_FILTER", "SUPPLIER",
-                "/api/v1/suppliers/search", "GET"));
+        // Supplier
+        permissions.add(perm("SUPPLIER_CREATE", "SUPPLIER", "/api/v1/suppliers", "POST"));
+        permissions.add(perm("SUPPLIER_UPDATE", "SUPPLIER", "/api/v1/suppliers", "PUT"));
+        permissions.add(perm("SUPPLIER_DELETE", "SUPPLIER", "/api/v1/suppliers/{id}", "DELETE"));
+        permissions.add(perm("SUPPLIER_VIEW_BY_ID", "SUPPLIER", "/api/v1/suppliers/{id}", "GET"));
+        permissions.add(perm("SUPPLIER_VIEW_ALL_WITH_PAGINATION_AND_FILTER", "SUPPLIER", "/api/v1/suppliers/search", "GET"));
+
+        // User
+        permissions.add(perm("USER_CREATE", "USER", "/api/v1/users", "POST"));
+        permissions.add(perm("USER_UPDATE", "USER", "/api/v1/users", "PUT"));
+        permissions.add(perm("USER_DELETE", "USER", "/api/v1/users/{id}", "DELETE"));
+        permissions.add(perm("USER_VIEW_ALL", "USER", "/api/v1/users", "GET"));
+        permissions.add(perm("USER_VIEW_BY_ID", "USER", "/api/v1/users/{id}", "GET"));
+        permissions.add(perm("USER_VIEW_ALL_WITH_PAGINATION_AND_FILTER", "USER", "/api/v1/users/search", "GET"));
 
         permissionRepository.saveAll(permissions);
-        System.out.println("Created " + permissions.size() + " permissions");
+        System.out.println(">>> Created " + permissions.size() + " permissions");
     }
 
-    private Permission createPermission(String name, String domain, String apiPath, String method) {
-        Permission permission = new Permission();
-        permission.setName(name);
-        permission.setDomain(domain);
-        permission.setApiPath(apiPath);
-        permission.setMethod(method);
-        permission.setCreatedAt(Instant.now());
-        permission.setCreatedBy("system");
-        return permission;
+    private Permission perm(String name, String domain, String apiPath, String method) {
+        Permission p = new Permission();
+        p.setName(name);
+        p.setDomain(domain);
+        p.setApiPath(apiPath);
+        p.setMethod(method);
+        p.setCreatedAt(Instant.now());
+        p.setCreatedBy("system");
+        return p;
     }
+
+    // ======================== ROLES ========================
 
     private void createRoles() {
-        if (roleRepository.count() > 0) {
-            System.out.println("Roles already exist, skipping...");
-            return;
-        }
+        if (roleRepository.count() > 0) return;
 
-        // Tạo ADMIN role
-        Role adminRole = new Role();
-        adminRole.setName("ADMIN");
-        adminRole.setDescription("Quản trị viên với toàn quyền truy cập");
-        adminRole.setCreatedAt(Instant.now());
-        adminRole.setCreatedBy("system");
+        List<Permission> all = permissionRepository.findAll();
 
-        // Gán tất cả permissions cho ADMIN
-        List<Permission> allPermissions = permissionRepository.findAll();
-        adminRole.setPermissions(allPermissions);
+        // ADMIN — toàn quyền
+        Role admin = role("ADMIN", "Quản trị viên hệ thống — toàn quyền");
+        admin.setPermissions(new ArrayList<>(all));
+        roleRepository.save(admin);
 
-        roleRepository.save(adminRole);
+        // MANAGER — quản lý sách, tác giả, NXB, thể loại, nhà cung cấp, xem đơn hàng/khách hàng, upload file
+        Role manager = role("MANAGER", "Quản lý — quản lý sản phẩm, xem đơn hàng và khách hàng");
+        manager.setPermissions(findPermissions(
+                "BOOK_CREATE", "BOOK_UPDATE", "BOOK_DELETE", "BOOK_VIEW_ALL", "BOOK_VIEW_ALL_WITH_PAGINATION_AND_FILTER",
+                "AUTHOR_CREATE", "AUTHOR_UPDATE", "AUTHOR_DELETE", "AUTHOR_VIEW_ALL", "AUTHOR_VIEW_BY_ID", "AUTHOR_VIEW_ALL_WITH_PAGINATION_AND_FILTER",
+                "PUBLISHER_CREATE", "PUBLISHER_UPDATE", "PUBLISHER_DELETE", "PUBLISHER_VIEW_BY_ID", "PUBLISHER_VIEW_ALL_WITH_PAGINATION_AND_FILTER",
+                "CATEGORY_CREATE", "CATEGORY_UPDATE", "CATEGORY_DELETE", "CATEGORY_VIEW_BY_ID", "CATEGORY_VIEW_ALL_WITH_PAGINATION_AND_FILTER",
+                "SUPPLIER_CREATE", "SUPPLIER_UPDATE", "SUPPLIER_DELETE", "SUPPLIER_VIEW_BY_ID", "SUPPLIER_VIEW_ALL_WITH_PAGINATION_AND_FILTER",
+                "CUSTOMER_VIEW_BY_ID", "CUSTOMER_VIEW_ALL_WITH_PAGINATION_AND_FILTER",
+                "ORDER_VIEW_ALL_WITH_PAGINATION_AND_FILTER", "ORDER_VIEW_BY_ID", "ORDER_VIEW_MINE", "ORDER_UPDATE", "ORDER_CANCEL", "ORDER_DETAIL_UPDATE",
+                "FILE_UPLOAD"
+        ));
+        roleRepository.save(manager);
 
-        // Tạo USER role
-        Role userRole = new Role();
-        userRole.setName("CUSTOMER");
-        userRole.setDescription("Người dùng thường với quyền truy cập giới hạn");
-        userRole.setCreatedAt(Instant.now());
-        userRole.setCreatedBy("system");
+        // STAFF — xem sản phẩm, quản lý khách hàng và đơn hàng, upload file
+        Role staff = role("STAFF", "Nhân viên — quản lý khách hàng và đơn hàng");
+        staff.setPermissions(findPermissions(
+                "BOOK_VIEW_ALL", "BOOK_VIEW_ALL_WITH_PAGINATION_AND_FILTER",
+                "AUTHOR_VIEW_ALL", "AUTHOR_VIEW_BY_ID", "AUTHOR_VIEW_ALL_WITH_PAGINATION_AND_FILTER",
+                "PUBLISHER_VIEW_BY_ID", "PUBLISHER_VIEW_ALL_WITH_PAGINATION_AND_FILTER",
+                "CATEGORY_VIEW_BY_ID", "CATEGORY_VIEW_ALL_WITH_PAGINATION_AND_FILTER",
+                "SUPPLIER_VIEW_BY_ID", "SUPPLIER_VIEW_ALL_WITH_PAGINATION_AND_FILTER",
+                "CUSTOMER_CREATE", "CUSTOMER_UPDATE", "CUSTOMER_DELETE", "CUSTOMER_VIEW_BY_ID", "CUSTOMER_VIEW_ALL_WITH_PAGINATION_AND_FILTER",
+                "ORDER_CREATE", "ORDER_UPDATE", "ORDER_CANCEL", "ORDER_VIEW_ALL_WITH_PAGINATION_AND_FILTER", "ORDER_VIEW_BY_ID",
+                "ORDER_DETAIL_CREATE", "ORDER_DETAIL_UPDATE", "ORDER_DETAIL_DELETE",
+                "FILE_UPLOAD"
+        ));
+        roleRepository.save(staff);
 
-        // Gán permissions cơ bản cho USER
-        List<Permission> userPermissions = new ArrayList<>();
-        userPermissions.add(permissionRepository.findByName("BOOK_VIEW_ALL"));
-        userPermissions.add(permissionRepository.findByName("BOOK_VIEW_BY_ID"));
-        userPermissions.add(permissionRepository.findByName("AUTHOR_VIEW_ALL"));
-        userPermissions.add(permissionRepository.findByName("AUTHOR_VIEW_BY_ID"));
-        userPermissions.add(permissionRepository.findByName("PUBLISHER_VIEW_ALL"));
-        userPermissions.add(permissionRepository.findByName("PUBLISHER_VIEW_BY_ID"));
-        userPermissions.add(permissionRepository.findByName("CATEGORY_VIEW_ALL"));
-        userPermissions.add(permissionRepository.findByName("CATEGORY_VIEW_BY_ID"));
-        userPermissions.add(permissionRepository.findByName("CART_CREATE"));
-        userPermissions.add(permissionRepository.findByName("CART_UPDATE"));
-        userPermissions.add(permissionRepository.findByName("CART_VIEW_BY_ID"));
-        userPermissions.add(permissionRepository.findByName("CART_DETAIL_CREATE"));
-        userPermissions.add(permissionRepository.findByName("CART_DETAIL_UPDATE"));
-        userPermissions.add(permissionRepository.findByName("CART_DETAIL_DELETE"));
-        userPermissions.add(permissionRepository.findByName("ORDER_CREATE"));
-        userPermissions.add(permissionRepository.findByName("ORDER_VIEW_BY_ID"));
+        // CUSTOMER — giỏ hàng, đặt hàng, xem đơn hàng
+        Role customer = role("CUSTOMER", "Khách hàng — mua sắm, giỏ hàng, đặt hàng");
+        customer.setPermissions(findPermissions(
+                "CART_ADD_TO_CART", "CART_VIEW_BY_ID",
+                "ORDER_CREATE", "ORDER_VIEW_BY_ID", "ORDER_VIEW_MINE", "ORDER_UPDATE", "ORDER_CANCEL"
+        ));
+        roleRepository.save(customer);
 
-        // Lọc null values
-        userPermissions.removeIf(permission -> permission == null);
-        userRole.setPermissions(userPermissions);
-
-        roleRepository.save(userRole);
-
-        // Tạo MANAGER role
-        Role managerRole = new Role();
-        managerRole.setName("MANAGER");
-        managerRole.setDescription("Quản trị viên với quyền quản lý sách và tác giả");
-        managerRole.setCreatedAt(Instant.now());
-        managerRole.setCreatedBy("system");
-
-        // Gán permissions cho MANAGER (book và author management)
-        List<Permission> managerPermissions = new ArrayList<>();
-        managerPermissions.add(permissionRepository.findByName("BOOK_CREATE"));
-        managerPermissions.add(permissionRepository.findByName("BOOK_UPDATE"));
-        managerPermissions.add(permissionRepository.findByName("BOOK_DELETE"));
-        managerPermissions.add(permissionRepository.findByName("BOOK_VIEW_ALL"));
-        managerPermissions.add(permissionRepository.findByName("BOOK_VIEW_BY_ID"));
-        managerPermissions.add(permissionRepository.findByName("AUTHOR_CREATE"));
-        managerPermissions.add(permissionRepository.findByName("AUTHOR_UPDATE"));
-        managerPermissions.add(permissionRepository.findByName("AUTHOR_DELETE"));
-        managerPermissions.add(permissionRepository.findByName("AUTHOR_VIEW_ALL"));
-        managerPermissions.add(permissionRepository.findByName("AUTHOR_VIEW_BY_ID"));
-        managerPermissions.add(permissionRepository.findByName("PUBLISHER_CREATE"));
-        managerPermissions.add(permissionRepository.findByName("PUBLISHER_UPDATE"));
-        managerPermissions.add(permissionRepository.findByName("PUBLISHER_DELETE"));
-        managerPermissions.add(permissionRepository.findByName("PUBLISHER_VIEW_ALL"));
-        managerPermissions.add(permissionRepository.findByName("PUBLISHER_VIEW_BY_ID"));
-        managerPermissions.add(permissionRepository.findByName("CATEGORY_CREATE"));
-        managerPermissions.add(permissionRepository.findByName("CATEGORY_UPDATE"));
-        managerPermissions.add(permissionRepository.findByName("CATEGORY_DELETE"));
-        managerPermissions.add(permissionRepository.findByName("CATEGORY_VIEW_ALL"));
-        managerPermissions.add(permissionRepository.findByName("CATEGORY_VIEW_BY_ID"));
-        managerPermissions.add(permissionRepository.findByName("ORDER_VIEW_ALL"));
-        managerPermissions.add(permissionRepository.findByName("ORDER_VIEW_BY_ID"));
-
-        // Lọc null values
-        managerPermissions.removeIf(permission -> permission == null);
-        managerRole.setPermissions(managerPermissions);
-
-        roleRepository.save(managerRole);
-
-        System.out.println("Created 3 roles: ADMIN, CUSTOMER, MANAGER");
+        System.out.println(">>> Created 4 roles: ADMIN, MANAGER, STAFF, CUSTOMER");
     }
 
-    private void createAdminUser() {
-        if (userRepository.findByEmail("admin@bookverse.com") != null) {
-            System.out.println("Admin user already exists, skipping...");
-            return;
-        }
+    private Role role(String name, String description) {
+        Role r = new Role();
+        r.setName(name);
+        r.setDescription(description);
+        r.setCreatedAt(Instant.now());
+        r.setCreatedBy("system");
+        return r;
+    }
 
-        User adminUser = new User();
-        adminUser.setPassword(passwordEncoder.encode("123456"));
-        adminUser.setEmail("admin@bookverse.com");
-        adminUser.setFullName("Quản trị viên");
-        adminUser.setAddress("Hồ Chí Minh");
-        adminUser.setPhone("0767557431");
-        adminUser.setAvatar("admin-avatar.jpg");
-        adminUser.setCreatedAt(Instant.now());
-        adminUser.setCreatedBy("system");
+    private List<Permission> findPermissions(String... names) {
+        List<Permission> result = new ArrayList<>();
+        for (String name : names) {
+            Permission p = permissionRepository.findByName(name);
+            if (p != null) result.add(p);
+        }
+        return result;
+    }
+
+    // ======================== USERS ========================
+
+    private void createUsers() {
+        if (userRepository.count() > 0) return;
 
         Role adminRole = roleRepository.findByName("ADMIN");
-        adminUser.setRole(adminRole);
+        Role managerRole = roleRepository.findByName("MANAGER");
+        Role staffRole = roleRepository.findByName("STAFF");
+        Role customerRole = roleRepository.findByName("CUSTOMER");
 
-        userRepository.save(adminUser);
-        System.out.println("Created admin user with email: admin@bookverse.com, password: 123456");
+        // 1 Admin
+        createUser("admin@bookverse.com", "Nguyễn Văn Admin", "0900000001", "TP. Hồ Chí Minh", adminRole);
+
+        // 2 Managers
+        createUser("manager1@bookverse.com", "Trần Thị Manager", "0900000002", "Hà Nội", managerRole);
+        createUser("manager2@bookverse.com", "Lê Văn Manager", "0900000003", "Đà Nẵng", managerRole);
+
+        // 5 Staff
+        createUser("staff1@bookverse.com", "Phạm Thị Nhân Viên", "0900000004", "TP. Hồ Chí Minh", staffRole);
+        createUser("staff2@bookverse.com", "Hoàng Văn Nhân Viên", "0900000005", "Hà Nội", staffRole);
+        createUser("staff3@bookverse.com", "Ngô Thị Nhân Viên", "0900000006", "Đà Nẵng", staffRole);
+        createUser("staff4@bookverse.com", "Đỗ Văn Nhân Viên", "0900000007", "Cần Thơ", staffRole);
+        createUser("staff5@bookverse.com", "Vũ Thị Nhân Viên", "0900000008", "Hải Phòng", staffRole);
+
+        // 10 Customers — mỗi customer được liên kết với bảng customers + tạo cart
+        createCustomerUser("customer1@bookverse.com", "Bùi Văn Khách", "0900000009", "TP. Hồ Chí Minh", customerRole, "079200001001");
+        createCustomerUser("customer2@bookverse.com", "Đặng Thị Khách", "0900000010", "Hà Nội", customerRole, "079200001002");
+        createCustomerUser("customer3@bookverse.com", "Lý Văn Khách", "0900000011", "Đà Nẵng", customerRole, "079200001003");
+        createCustomerUser("customer4@bookverse.com", "Mai Thị Khách", "0900000012", "Cần Thơ", customerRole, "079200001004");
+        createCustomerUser("customer5@bookverse.com", "Tô Văn Khách", "0900000013", "Hải Phòng", customerRole, "079200001005");
+        createCustomerUser("customer6@bookverse.com", "Phan Thị Khách", "0900000014", "Huế", customerRole, "079200001006");
+        createCustomerUser("customer7@bookverse.com", "Trịnh Văn Khách", "0900000015", "Nha Trang", customerRole, "079200001007");
+        createCustomerUser("customer8@bookverse.com", "Cao Thị Khách", "0900000016", "Vũng Tàu", customerRole, "079200001008");
+        createCustomerUser("customer9@bookverse.com", "Hồ Văn Khách", "0900000017", "Biên Hòa", customerRole, "079200001009");
+        createCustomerUser("customer10@bookverse.com", "Dương Thị Khách", "0900000018", "Thủ Đức", customerRole, "079200001010");
+
+        System.out.println(">>> Created 18 users: 1 admin, 2 managers, 5 staff, 10 customers");
+    }
+
+    private User createUser(String email, String fullName, String phone, String address, Role role) {
+        User user = new User();
+        user.setEmail(email);
+        user.setPassword(passwordEncoder.encode("123456"));
+        user.setFullName(fullName);
+        user.setPhone(phone);
+        user.setAddress(address);
+        user.setRole(role);
+        user.setCreatedAt(Instant.now());
+        user.setCreatedBy("system");
+        return userRepository.save(user);
+    }
+
+    private void createCustomerUser(String email, String fullName, String phone, String address,
+                                    Role role, String identityCard) {
+        User user = new User();
+        user.setEmail(email);
+        user.setPassword(passwordEncoder.encode("123456"));
+        user.setFullName(fullName);
+        user.setPhone(phone);
+        user.setAddress(address);
+        user.setRole(role);
+        user.setCreatedAt(Instant.now());
+        user.setCreatedBy("system");
+
+        Customer customer = new Customer();
+        customer.setUser(user);
+        customer.setIdentityCard(identityCard);
+        customer.setTotalOrder(0L);
+        customer.setTotalSpending(BigDecimal.ZERO);
+        customer.setCustomerLevel(CustomerLevel.BRONZE);
+        customer.setCreatedAt(Instant.now());
+        customer.setCreatedBy("system");
+        Customer savedCustomer = customerRepository.save(customer);
+
+        Cart cart = new Cart();
+        cart.setCustomer(savedCustomer);
+        cart.setSum(0);
+        cart.setCreatedAt(Instant.now());
+        cart.setCreatedBy("system");
+        cartRepository.save(cart);
     }
 }

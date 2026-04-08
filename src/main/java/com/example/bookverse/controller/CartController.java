@@ -1,9 +1,11 @@
 package com.example.bookverse.controller;
 
-import com.example.bookverse.domain.Cart;
-import com.example.bookverse.domain.CartDetail;
+import com.example.bookverse.dto.request.ReqAddToCartDTO;
 import com.example.bookverse.dto.response.ResCartDTO;
 import com.example.bookverse.service.CartService;
+
+import jakarta.validation.Valid;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -18,50 +20,38 @@ public class CartController {
         this.cartService = cartService;
     }
 
-    @PostMapping("/carts")
-    @PreAuthorize("hasAuthority('CART_CREATE')")
-    public ResponseEntity<ResCartDTO> createCart(@RequestBody Cart cart) throws Exception {
-        Cart newCart = this.cartService.create(cart);
-        ResCartDTO resCartDTO = ResCartDTO.from(newCart);
-        return ResponseEntity.status(HttpStatus.CREATED).body(resCartDTO);
-    }
-
-    @PostMapping("/cart_details")
-    @PreAuthorize("hasAuthority('CART_DETAIL_CREATE')")
-    public ResponseEntity<ResCartDTO.InfoCartDetailInCart> createCartDetail(@RequestBody CartDetail cartDetail) throws Exception {
-        CartDetail newCartDetail = this.cartService.createDetail(cartDetail);
-        ResCartDTO.InfoCartDetailInCart res = ResCartDTO.getInfoCartDetailInCart(newCartDetail);
-        return ResponseEntity.status(HttpStatus.CREATED).body(res);
-    }
-
-    @PutMapping("/carts")
-    @PreAuthorize("hasAuthority('CART_UPDATE')")
-    public ResponseEntity<ResCartDTO> updateCart(@RequestBody Cart cart) throws Exception {
-        Cart updatedCart = this.cartService.update(cart);
-        ResCartDTO resCartDTO = ResCartDTO.from(updatedCart);
+    @PostMapping("/carts/items")
+    @PreAuthorize("hasAuthority('CART_ADD_TO_CART')")
+    public ResponseEntity<ResCartDTO> addToCart(@Valid @RequestBody ReqAddToCartDTO reqAddToCartDTO) throws Exception {
+        ResCartDTO resCartDTO = this.cartService.addToCart(reqAddToCartDTO);
         return ResponseEntity.status(HttpStatus.OK).body(resCartDTO);
     }
 
-    @PutMapping("/cart_details")
-    @PreAuthorize("hasAuthority('CART_DETAIL_UPDATE')")
-    public ResponseEntity<ResCartDTO.InfoCartDetailInCart> updateCartDetail(@RequestBody CartDetail cartDetail) throws Exception {
-        CartDetail updatedCartDetail = this.cartService.updateDetail(cartDetail);
-        ResCartDTO.InfoCartDetailInCart res = ResCartDTO.getInfoCartDetailInCart(updatedCartDetail);
-        return ResponseEntity.status(HttpStatus.OK).body(res);
-    }
-
-    @GetMapping("/carts/{id}")
+    @GetMapping("/carts")
     @PreAuthorize("hasAuthority('CART_VIEW_BY_ID')")
-    public ResponseEntity<ResCartDTO> getCarts(@PathVariable long id) throws Exception {
-        Cart cart = this.cartService.fetchCartById(id);
-        ResCartDTO resCartDTO = ResCartDTO.from(cart);
+    public ResponseEntity<ResCartDTO> getCarts() throws Exception {
+        ResCartDTO resCartDTO = this.cartService.fetchCartById();
         return ResponseEntity.status(HttpStatus.OK).body(resCartDTO);
     }
 
-    @DeleteMapping("/cart_details/{id}")
-    @PreAuthorize("hasAuthority('CART_DETAIL_DELETE')")
-    public ResponseEntity<Void> deleteCart(@PathVariable long id) throws Exception {
-        this.cartService.deleteDetail(id);
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    @PutMapping("/carts/items/{id}/increase")
+    @PreAuthorize("hasAuthority('CART_ADD_TO_CART')")
+    public ResponseEntity<ResCartDTO> increaseQuantity(@PathVariable long id) throws Exception {
+        ResCartDTO resCartDTO = this.cartService.increaseQuantity(id);
+        return ResponseEntity.status(HttpStatus.OK).body(resCartDTO);
+    }
+
+    @PutMapping("/carts/items/{id}/decrease")
+    @PreAuthorize("hasAuthority('CART_ADD_TO_CART')")
+    public ResponseEntity<ResCartDTO> decreaseQuantity(@PathVariable long id) throws Exception {
+        ResCartDTO resCartDTO = this.cartService.decreaseQuantity(id);
+        return ResponseEntity.status(HttpStatus.OK).body(resCartDTO);
+    }
+
+    @DeleteMapping("/carts/items/{id}")
+    @PreAuthorize("hasAuthority('CART_ADD_TO_CART')")
+    public ResponseEntity<ResCartDTO> removeCartDetail(@PathVariable long id) throws Exception {
+        ResCartDTO resCartDTO = this.cartService.removeCartDetail(id);
+        return ResponseEntity.status(HttpStatus.OK).body(resCartDTO);
     }
 }

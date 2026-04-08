@@ -1,31 +1,26 @@
 package com.example.bookverse.service;
 
-import com.example.bookverse.domain.Order;
-import com.example.bookverse.domain.OrderDetail;
+import com.example.bookverse.dto.criteria.CriteriaFilterOrder;
+import com.example.bookverse.dto.request.ReqCreateOrderDTO;
+import com.example.bookverse.dto.request.ReqUpdateOrderDTO;
+import com.example.bookverse.dto.response.ResOrderDTO;
+import com.example.bookverse.dto.response.ResPagination;
+
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 
 public interface OrderService {
-    // Create an order
-    Order create (Order order) throws Exception;
-    // Create order detail
-    OrderDetail createDetail(OrderDetail orderDetail) throws Exception;
 
-    // Update an order
-    Order update (Order order) throws Exception;
-    // Update order detail
-    OrderDetail updateDetail(OrderDetail orderDetail) throws Exception;
+    ResOrderDTO create(ReqCreateOrderDTO req) throws Exception;
 
-    // Get an order
-    Order fetchOrderById(long id) throws Exception;
+    ResOrderDTO update(ReqUpdateOrderDTO req) throws Exception;
 
-    // Get all order
-    List<Order> fetchAllOrders() throws Exception;
+    ResOrderDTO getById(long id) throws Exception;
 
+    List<ResOrderDTO> listMine() throws Exception;
 
-    // Delete an order
-    void delete(long id) throws Exception;
-    // Delete order detail
-    void deleteDetail(long id) throws Exception;
+    ResPagination fetchAllOrdersWithPaginationAndFilter(CriteriaFilterOrder criteria, Pageable pageable) throws Exception;
+
+    void cancel(long id) throws Exception;
 }
-

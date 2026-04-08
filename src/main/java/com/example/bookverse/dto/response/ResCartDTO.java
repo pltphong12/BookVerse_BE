@@ -49,6 +49,7 @@ public class ResCartDTO {
         private long id;
         private String title;
         private List<InfoAuthorInCart> authors;
+        private int discount;
         private String publisher;
         private double price;
         private long quantity;
@@ -78,12 +79,12 @@ public class ResCartDTO {
         cartDTO.setCreatedBy(cart.getCreatedBy());
         cartDTO.setUpdatedBy(cart.getUpdatedBy());
         List<InfoCartDetailInCart> cartDetails = new ArrayList<>();
-        for (CartDetail cartDetail : cart.getCartDetails()) {
-            InfoCartDetailInCart cartDetailInCart = new InfoCartDetailInCart();
-            cartDetailInCart = getInfoCartDetailInCart(cartDetail);
-            cartDetails.add(cartDetailInCart);
-            cartDTO.setCartDetails(cartDetails);
+        if (cart.getCartDetails() != null) {
+            for (CartDetail cartDetail : cart.getCartDetails()) {
+                cartDetails.add(getInfoCartDetailInCart(cartDetail));
+            }
         }
+        cartDTO.setCartDetails(cartDetails);
         return cartDTO;
     }
 
@@ -100,10 +101,11 @@ public class ResCartDTO {
 
     public static InfoBookInCart getInfoBookInCart(CartDetail cartDetail) {
         InfoBookInCart infoBookInCart = new InfoBookInCart();
-        infoBookInCart.setId(cartDetail.getId());
+        infoBookInCart.setId(cartDetail.getBook().getId());
         infoBookInCart.setTitle(cartDetail.getBook().getTitle());
         infoBookInCart.setPublisher(cartDetail.getBook().getPublisher().getName());
         infoBookInCart.setPrice(cartDetail.getBook().getPrice());
+        infoBookInCart.setDiscount(cartDetail.getBook().getDiscount());
         infoBookInCart.setQuantity(cartDetail.getBook().getQuantity());
         infoBookInCart.setDescription(cartDetail.getBook().getDescription());
         infoBookInCart.setImage(cartDetail.getBook().getImage());

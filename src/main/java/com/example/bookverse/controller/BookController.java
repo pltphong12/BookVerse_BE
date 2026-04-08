@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.bookverse.domain.Book;
 import com.example.bookverse.dto.criteria.CriteriaFilterBook;
+import com.example.bookverse.dto.criteria.CriteriaFilterProduct;
 import com.example.bookverse.dto.response.ResBookDTO;
 import com.example.bookverse.dto.response.ResPagination;
 import com.example.bookverse.service.BookService;
@@ -54,7 +55,6 @@ public class BookController {
 
     // Fetch a book by id
     @GetMapping("/books/{id}")
-    @PreAuthorize("hasAuthority('BOOK_VIEW_BY_ID')")
     public ResponseEntity<ResBookDTO> getBookById(@PathVariable Long id) throws Exception {
         Book book = this.bookService.fetchBookById(id);
         ResBookDTO resBookDTO = ResBookDTO.from(book);
@@ -102,5 +102,14 @@ public class BookController {
     public ResponseEntity<Void> deleteBook(@PathVariable Long id) throws Exception {
         this.bookService.delete(id);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    }
+
+    @GetMapping("/books/search-product")
+    public ResponseEntity<ResPagination> getAllBooksWithPaginationAndFilterProduct(
+            @ModelAttribute CriteriaFilterProduct criteriaFilterProduct,
+            Pageable pageable) throws Exception {
+        ResPagination resPagination = this.bookService.fetchAllBooksWithPaginationAndFilter(criteriaFilterProduct,
+                pageable);
+        return ResponseEntity.status(HttpStatus.OK).body(resPagination);
     }
 }

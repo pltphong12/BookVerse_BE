@@ -24,6 +24,7 @@ public class FileController {
         this.fileService = fileService;
     }
 
+    // Upload a file
     @PostMapping("/files")
     @PreAuthorize("hasAuthority('FILE_UPLOAD')")
     public ResponseEntity<ResFileDTO> upload(
@@ -37,10 +38,7 @@ public class FileController {
         return ResponseEntity.ok().body(new ResFileDTO(finalName, Instant.now()));
     }
 
-    /**
-     * Upload nhiều file một lần. Form-data: cùng tên part {@code files} (input multiple) + {@code folder}.
-     * Ví dụ relativePath cho sách: {@code folder + "/" + fileName} giống upload đơn.
-     */
+    // Upload multiple files
     @PostMapping("/files/batch")
     @PreAuthorize("hasAuthority('FILE_UPLOAD')")
     public ResponseEntity<List<ResFileDTO>> uploadBatch(
