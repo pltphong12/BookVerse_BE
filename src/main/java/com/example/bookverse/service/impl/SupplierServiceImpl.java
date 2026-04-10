@@ -20,16 +20,14 @@ import com.example.bookverse.util.FindObjectInDataBase;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 
-import jakarta.persistence.EntityManager;
-
 @Service
 public class SupplierServiceImpl implements SupplierService{
     private final SupplierRepository supplierRepository;
-    private final EntityManager entityManager;
+    private final JPAQueryFactory queryFactory;
 
-    public SupplierServiceImpl(SupplierRepository supplierRepository, EntityManager entityManager) {
+    public SupplierServiceImpl(SupplierRepository supplierRepository, JPAQueryFactory queryFactory) {
         this.supplierRepository = supplierRepository;
-        this.entityManager = entityManager;
+        this.queryFactory = queryFactory;
     }
 
     @Override
@@ -78,7 +76,6 @@ public class SupplierServiceImpl implements SupplierService{
     }
 
     public Page<Supplier> filter(CriteriaFilterSupplier criteriaFilterSupplier, Pageable pageable) {
-        JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
         QSupplier qSupplier = QSupplier.supplier;
 
         BooleanBuilder builder = new BooleanBuilder();

@@ -24,19 +24,17 @@ import com.example.bookverse.util.FindObjectInDataBase;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 
-import jakarta.persistence.EntityManager;
-
 @Service
 public class RoleServiceImpl implements RoleService {
 
     private final RoleRepository roleRepository;
     private final PermissionRepository permissionRepository;
-    private final EntityManager entityManager;
+    private final JPAQueryFactory queryFactory;
 
-    public RoleServiceImpl(RoleRepository roleRepository, PermissionRepository permissionRepository, EntityManager entityManager) {
+    public RoleServiceImpl(RoleRepository roleRepository, PermissionRepository permissionRepository, JPAQueryFactory queryFactory) {
         this.roleRepository = roleRepository;
         this.permissionRepository = permissionRepository;
-        this.entityManager = entityManager;
+        this.queryFactory = queryFactory;
     }
 
     @Override
@@ -87,7 +85,6 @@ public class RoleServiceImpl implements RoleService {
     }
 
     public Page<Role> filter(CriteriaFilterRole criteriaFilterRole, Pageable pageable) {
-        JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
         QRole qRole = QRole.role;
 
         BooleanBuilder builder = new BooleanBuilder();

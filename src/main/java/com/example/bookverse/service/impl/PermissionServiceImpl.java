@@ -23,18 +23,16 @@ import com.example.bookverse.util.FindObjectInDataBase;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 
-import jakarta.persistence.EntityManager;
-
 @Service
 public class PermissionServiceImpl implements PermissionService {
     final private PermissionRepository permissionRepository;
     final private RoleRepository roleRepository;
-    final private EntityManager entityManager;
+    final private JPAQueryFactory queryFactory;
 
-    public PermissionServiceImpl(PermissionRepository permissionRepository, RoleRepository roleRepository, EntityManager entityManager) {
+    public PermissionServiceImpl(PermissionRepository permissionRepository, RoleRepository roleRepository, JPAQueryFactory queryFactory) {
         this.permissionRepository = permissionRepository;
         this.roleRepository = roleRepository;
-        this.entityManager = entityManager;
+        this.queryFactory = queryFactory;
     }
 
     @Override
@@ -74,7 +72,6 @@ public class PermissionServiceImpl implements PermissionService {
     }
 
     public Page<Permission> filter(CriteriaFilterPermission criteriaFilterPermission, Pageable pageable) {
-        JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
         QPermission qPermission = QPermission.permission;
 
         BooleanBuilder builder = new BooleanBuilder();

@@ -30,19 +30,17 @@ import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 
-import jakarta.persistence.EntityManager;
-
 @Service
 public class BookServiceImpl implements BookService {
     private final BookRepository bookRepository;
     private final AuthorRepository authorRepository;
-    private final EntityManager entityManager;
+    private final JPAQueryFactory queryFactory;
 
     public BookServiceImpl(BookRepository bookRepository, AuthorRepository authorRepository,
-            EntityManager entityManager) {
+            JPAQueryFactory queryFactory) {
         this.bookRepository = bookRepository;
         this.authorRepository = authorRepository;
-        this.entityManager = entityManager;
+        this.queryFactory = queryFactory;
     }
 
     @Override
@@ -208,7 +206,6 @@ public class BookServiceImpl implements BookService {
     }
 
     public Page<Book> filter(CriteriaFilterBook criteriaFilterBook, Pageable pageable) {
-        JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
         QBook qBook = QBook.book;
 
         BooleanBuilder builder = new BooleanBuilder();
@@ -275,7 +272,6 @@ public class BookServiceImpl implements BookService {
     }
 
     public Page<Book> filter(CriteriaFilterProduct criteriaFilterProduct, Pageable pageable) {
-        JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
         QBook qBook = QBook.book;
 
         BooleanBuilder builder = new BooleanBuilder();

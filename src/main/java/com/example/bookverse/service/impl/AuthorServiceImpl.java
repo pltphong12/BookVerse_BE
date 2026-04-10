@@ -24,18 +24,16 @@ import com.example.bookverse.util.FindObjectInDataBase;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 
-import jakarta.persistence.EntityManager;
-
 @Service
 public class AuthorServiceImpl implements AuthorService {
     private final AuthorRepository authorRepository;
     private final BookRepository bookRepository;
-    private final EntityManager entityManager;
+    private final JPAQueryFactory queryFactory;
 
-    public AuthorServiceImpl(AuthorRepository authorRepository, BookRepository bookRepository, EntityManager entityManager) {
+    public AuthorServiceImpl(AuthorRepository authorRepository, BookRepository bookRepository, JPAQueryFactory queryFactory) {
         this.authorRepository = authorRepository;
         this.bookRepository = bookRepository;
-        this.entityManager = entityManager;
+        this.queryFactory = queryFactory;
     }
 
     @Override
@@ -78,7 +76,6 @@ public class AuthorServiceImpl implements AuthorService {
     }
 
     private Page<Author> filter(CriteriaFilterAuthor criteriaFilterAuthor, Pageable pageable) {
-        JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
         QAuthor qAuthor = QAuthor.author;
 
         BooleanBuilder builder = new BooleanBuilder();

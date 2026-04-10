@@ -21,10 +21,10 @@ import com.example.bookverse.domain.Customer;
 import com.example.bookverse.domain.Order;
 import com.example.bookverse.domain.OrderDetail;
 import com.example.bookverse.domain.QOrder;
+import com.example.bookverse.dto.criteria.CriteriaFilterOrder;
 import com.example.bookverse.dto.enums.OrderStatus;
 import com.example.bookverse.dto.enums.PaymentMethod;
 import com.example.bookverse.dto.enums.PaymentStatus;
-import com.example.bookverse.dto.criteria.CriteriaFilterOrder;
 import com.example.bookverse.dto.request.ReqCreateOrderDTO;
 import com.example.bookverse.dto.request.ReqOrderLineDTO;
 import com.example.bookverse.dto.request.ReqUpdateOrderDTO;
@@ -41,32 +41,33 @@ import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 
-import jakarta.persistence.EntityManager;
-
 @Service
 public class OrderServiceImpl implements OrderService {
 
     private static final String ORDER_VIEW_ALL_PAGED = "ORDER_VIEW_ALL_WITH_PAGINATION_AND_FILTER";
 
-    /** Phí ship do server quyết định (sau này có thể đọc từ cấu hình / đối tác vận chuyển). */
+    /**
+     * Phí ship do server quyết định (sau này có thể đọc từ cấu hình / đối tác vận
+     * chuyển).
+     */
     private static final double DEFAULT_SHIPPING_FEE = 0;
 
     private final OrderRepository orderRepository;
     private final BookRepository bookRepository;
     private final CustomerRepository customerRepository;
     private final CurrentCustomerAccessor currentCustomerAccessor;
-    private final EntityManager entityManager;
+    private final JPAQueryFactory queryFactory;
 
     public OrderServiceImpl(OrderRepository orderRepository,
             BookRepository bookRepository,
             CustomerRepository customerRepository,
             CurrentCustomerAccessor currentCustomerAccessor,
-            EntityManager entityManager) {
+            JPAQueryFactory queryFactory) {
         this.orderRepository = orderRepository;
         this.bookRepository = bookRepository;
         this.customerRepository = customerRepository;
         this.currentCustomerAccessor = currentCustomerAccessor;
-        this.entityManager = entityManager;
+        this.queryFactory = queryFactory;
     }
 
     private boolean hasAuthority(String authority) {
@@ -239,7 +240,6 @@ public class OrderServiceImpl implements OrderService {
     }
 
     private Page<Order> filterOrders(CriteriaFilterOrder criteria, Pageable pageable) throws IdInvalidException {
-        JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
         QOrder qOrder = QOrder.order;
         BooleanBuilder builder = new BooleanBuilder();
 
@@ -258,14 +258,16 @@ public class OrderServiceImpl implements OrderService {
         }
         if (criteria.getPaymentMethod() != null && !criteria.getPaymentMethod().isBlank()) {
             try {
-                builder.and(qOrder.paymentMethod.eq(PaymentMethod.valueOf(criteria.getPaymentMethod().trim().toUpperCase())));
+                builder.and(qOrder.paymentMethod
+                        .eq(PaymentMethod.valueOf(criteria.getPaymentMethod().trim().toUpperCase())));
             } catch (IllegalArgumentException e) {
                 throw new IdInvalidException("paymentMethod không hợp lệ: " + criteria.getPaymentMethod());
             }
         }
         if (criteria.getPaymentStatus() != null && !criteria.getPaymentStatus().isBlank()) {
             try {
-                builder.and(qOrder.paymentStatus.eq(PaymentStatus.valueOf(criteria.getPaymentStatus().trim().toUpperCase())));
+                builder.and(qOrder.paymentStatus
+                        .eq(PaymentStatus.valueOf(criteria.getPaymentStatus().trim().toUpperCase())));
             } catch (IllegalArgumentException e) {
                 throw new IdInvalidException("paymentStatus không hợp lệ: " + criteria.getPaymentStatus());
             }

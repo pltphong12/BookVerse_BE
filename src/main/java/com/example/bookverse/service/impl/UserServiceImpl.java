@@ -27,8 +27,6 @@ import com.example.bookverse.util.FindObjectInDataBase;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 
-import jakarta.persistence.EntityManager;
-
 @Service
 public class UserServiceImpl implements UserService {
 
@@ -36,15 +34,15 @@ public class UserServiceImpl implements UserService {
     private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
     private final ModelMapper modelMapper;
-    private final EntityManager entityManager;
+    private final JPAQueryFactory queryFactory;
 
     public UserServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder,
-            RoleRepository roleRepository, ModelMapper modelMapper, EntityManager entityManager) {
+            RoleRepository roleRepository, ModelMapper modelMapper, JPAQueryFactory queryFactory) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.passwordEncoder = passwordEncoder;
         this.modelMapper = modelMapper;
-        this.entityManager = entityManager;
+        this.queryFactory = queryFactory;
     }
 
     @Override
@@ -102,7 +100,6 @@ public class UserServiceImpl implements UserService {
     }
 
     public Page<User> filter(CriteriaFilterUser criteriaFilterUser, Pageable pageable) {
-        JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
         QUser qUser = QUser.user;
 
         BooleanBuilder builder = new BooleanBuilder();

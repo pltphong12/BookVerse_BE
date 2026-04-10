@@ -29,25 +29,22 @@ import com.example.bookverse.util.SecurityUtil;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 
-import jakarta.persistence.EntityManager;
-
 @Service
 public class CustomerServiceImpl implements CustomerService {
     private final CustomerRepository customerRepository;
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
     private final UserService userService;
-
-    private final EntityManager entityManager;
+    private final JPAQueryFactory queryFactory;
 
     public CustomerServiceImpl(CustomerRepository customerRepository, UserRepository userRepository,
             RoleRepository roleRepository, UserService userService,
-            EntityManager entityManager) {
+            JPAQueryFactory queryFactory) {
         this.customerRepository = customerRepository;
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.userService = userService;
-        this.entityManager = entityManager;
+        this.queryFactory = queryFactory;
     }
 
     @Override
@@ -118,7 +115,6 @@ public class CustomerServiceImpl implements CustomerService {
     }
 
     private Page<Customer> filter(CriteriaFilterCustomer criteriaFilterCustomer, Pageable pageable) {
-        JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
         QCustomer qCustomer = QCustomer.customer;
 
         BooleanBuilder builder = new BooleanBuilder();

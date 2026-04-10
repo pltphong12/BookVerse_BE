@@ -22,17 +22,15 @@ import com.example.bookverse.util.FindObjectInDataBase;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 
-import jakarta.persistence.EntityManager;
-
 @Service
 public class CategoryServiceImpl implements CategoryService {
 
     private final CategoryRepository categoryRepository;
-    private final EntityManager entityManager;
+    private final JPAQueryFactory queryFactory;
 
-    public CategoryServiceImpl(CategoryRepository categoryRepository, EntityManager entityManager) {
+    public CategoryServiceImpl(CategoryRepository categoryRepository, JPAQueryFactory queryFactory) {
         this.categoryRepository = categoryRepository;
-        this.entityManager = entityManager;
+        this.queryFactory = queryFactory;
     }
 
     @Override
@@ -66,7 +64,6 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     public Page<Category> filter(CriteriaFilterCategory criteriaFilterCategory, Pageable pageable) {
-        JPAQueryFactory queryFactory = new JPAQueryFactory(entityManager);
         QCategory qCategory = QCategory.category;
 
         BooleanBuilder builder = new BooleanBuilder();
