@@ -1,0 +1,77 @@
+spring:
+  application:
+    name: bookverse
+
+  # Dev tooling
+  profiles:
+    active: development
+
+  devtools:
+    restart:
+      enabled: true
+
+  # Database
+  datasource:
+    url: jdbc:mysql://localhost:3306/bookverse
+    username: root
+    password: "123456"
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        use_sql_comments: true
+
+  # File upload
+  servlet:
+    multipart:
+      max-file-size: 50MB
+      max-request-size: 50MB
+
+  # Pagination
+  data:
+    web:
+      pageable:
+        one-indexed-parameters: true
+
+# Logging
+logging:
+  level:
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql: TRACE
+
+# BookVerse custom configuration
+bookverse:
+  jwt:
+    base64-secret: T0KnmKcoSy8fw2Ky8uxaQ6WxGWEi3qWso9rCSes/MbFKP+2gaEk7A60mZufMY/Qbz6jNoKXggMh0jor+WIckpQ==
+    access-token-validity-in-seconds: 100000
+    refresh-token-validity-in-seconds: 864000
+
+  upload-file:
+    base-uri: "file:///D:/Code/Source_Code/project/intellij_java/upload_bookverse/"
+
+  vnpay:
+    tmn-code: PDKGEDOW
+    hash-secret: UGT162UJMTP88XF1HQ8CM838A6LYI2Y8
+    payment-url: https://sandbox.vnpayment.vn/paymentv2/vpcpay.html
+    return-url: http://localhost:8080/api/v1/payments/vnpay/return
+    frontend-success-url: http://localhost:5173/payment/success
+    frontend-fail-url: http://localhost:5173/payment/failure
+
+# Gửi mail (bật khi cần)
+# spring:
+#   mail:
+#     host: smtp.gmail.com
+#     port: 587
+#     username: thanhphongjk19@gmail.com
+#     password: hrnotbaxiqdmwqsa
+#     properties:
+#       mail:
+#         smtp:
+#           auth: true
+#           starttls:
+#             enable: true

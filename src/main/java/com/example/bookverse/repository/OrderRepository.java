@@ -1,11 +1,14 @@
 package com.example.bookverse.repository;
 
 import com.example.bookverse.domain.Order;
+import com.example.bookverse.dto.enums.PaymentMethod;
+import com.example.bookverse.dto.enums.PaymentStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
@@ -45,4 +48,7 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
             ORDER BY o.createdAt DESC
             """)
     List<Order> fetchAllWithDetails();
+
+    List<Order> findByPaymentMethodAndPaymentStatusAndCreatedAtBefore(
+            PaymentMethod paymentMethod, PaymentStatus paymentStatus, Instant cutoff);
 }

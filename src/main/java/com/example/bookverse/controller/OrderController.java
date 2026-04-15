@@ -6,6 +6,7 @@ import com.example.bookverse.dto.request.ReqUpdateOrderDTO;
 import com.example.bookverse.dto.response.ResOrderDTO;
 import com.example.bookverse.dto.response.ResPagination;
 import com.example.bookverse.service.OrderService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -28,7 +29,14 @@ public class OrderController {
 
     @PostMapping("/orders")
     @PreAuthorize("hasAuthority('ORDER_CREATE')")
-    public ResponseEntity<ResOrderDTO> createOrder(@Valid @RequestBody ReqCreateOrderDTO req) throws Exception {
+    public ResponseEntity<ResOrderDTO> createOrder(@Valid @RequestBody ReqCreateOrderDTO req,
+                                                   HttpServletRequest httpRequest) throws Exception {
+        String ip = httpRequest.getHeader("X-Forwarded-For");
+        if (ip == null || ip.isBlank()) {
+            ip = httpRequest.getRemoteAddr();
+        }
+        req.setClientIpAddress(ip);
+
         ResOrderDTO created = orderService.create(req);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }

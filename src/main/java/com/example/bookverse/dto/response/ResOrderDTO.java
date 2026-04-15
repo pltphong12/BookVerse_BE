@@ -37,6 +37,9 @@ public class ResOrderDTO {
     private Instant paidAt;
     private Long customerId;
 
+    /** Chỉ có giá trị khi paymentMethod = VNPAY và đơn vừa tạo. */
+    private String paymentUrl;
+
     List<InfoOrderDetailInOrder> orderDetails;
 
     private Instant createdAt;

@@ -24,6 +24,8 @@ public class SecurityConfiguration {
             "/api/v1/auth/register",
             "/api/v1/auth/refresh",
             "/api/v1/books/**",
+            "/api/v1/payments/vnpay/return",
+            "/api/v1/payments/vnpay/ipn",
     };
 
     public SecurityConfiguration(JwtConfiguration jwtConfiguration) {

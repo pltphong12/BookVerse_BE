@@ -16,12 +16,15 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.example.bookverse.config.VnpayProperties;
 import com.example.bookverse.domain.Book;
 import com.example.bookverse.domain.Customer;
 import com.example.bookverse.domain.Order;
 import com.example.bookverse.domain.OrderDetail;
+import com.example.bookverse.domain.OrderPayment;
 import com.example.bookverse.domain.QOrder;
 import com.example.bookverse.dto.criteria.CriteriaFilterOrder;
+import com.example.bookverse.dto.enums.OrderPaymentStatus;
 import com.example.bookverse.dto.enums.OrderStatus;
 import com.example.bookverse.dto.enums.PaymentMethod;
 import com.example.bookverse.dto.enums.PaymentStatus;
@@ -33,10 +36,15 @@ import com.example.bookverse.dto.response.ResOrderSummaryDTO;
 import com.example.bookverse.dto.response.ResPagination;
 import com.example.bookverse.exception.global.IdInvalidException;
 import com.example.bookverse.repository.BookRepository;
+import com.example.bookverse.repository.CartDetailRepository;
+import com.example.bookverse.repository.CartRepository;
 import com.example.bookverse.repository.CustomerRepository;
+import com.example.bookverse.repository.OrderPaymentRepository;
 import com.example.bookverse.repository.OrderRepository;
+import com.example.bookverse.service.CartService;
 import com.example.bookverse.service.OrderService;
 import com.example.bookverse.util.CurrentCustomerAccessor;
+import com.example.bookverse.util.VnpayUtil;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.jpa.impl.JPAQueryFactory;
@@ -55,19 +63,31 @@ public class OrderServiceImpl implements OrderService {
     private final OrderRepository orderRepository;
     private final BookRepository bookRepository;
     private final CustomerRepository customerRepository;
+    private final OrderPaymentRepository orderPaymentRepository;
     private final CurrentCustomerAccessor currentCustomerAccessor;
     private final JPAQueryFactory queryFactory;
+    private final VnpayProperties vnpayProperties;
+    private final CartRepository cartRepository;
+    private final CartDetailRepository cartDetailRepository;
 
     public OrderServiceImpl(OrderRepository orderRepository,
             BookRepository bookRepository,
             CustomerRepository customerRepository,
+            OrderPaymentRepository orderPaymentRepository,
             CurrentCustomerAccessor currentCustomerAccessor,
-            JPAQueryFactory queryFactory) {
+            JPAQueryFactory queryFactory,
+            VnpayProperties vnpayProperties,
+            CartRepository cartRepository,
+            CartDetailRepository cartDetailRepository) {
         this.orderRepository = orderRepository;
         this.bookRepository = bookRepository;
         this.customerRepository = customerRepository;
+        this.orderPaymentRepository = orderPaymentRepository;
         this.currentCustomerAccessor = currentCustomerAccessor;
         this.queryFactory = queryFactory;
+        this.vnpayProperties = vnpayProperties;
+        this.cartRepository = cartRepository;
+        this.cartDetailRepository = cartDetailRepository;
     }
 
     private boolean hasAuthority(String authority) {
@@ -95,10 +115,6 @@ public class OrderServiceImpl implements OrderService {
     @Override
     @Transactional
     public ResOrderDTO create(ReqCreateOrderDTO req) throws Exception {
-        if (req.getPaymentMethod() != PaymentMethod.COD) {
-            throw new IdInvalidException("Hiện tại chỉ hỗ trợ thanh toán COD. VNPAY sẽ được tích hợp sau.");
-        }
-
         Customer customer = getCurrentCustomer();
 
         Map<Long, Long> qtyByBookId = new HashMap<>();
@@ -130,12 +146,9 @@ public class OrderServiceImpl implements OrderService {
             details.add(od);
         }
 
-        for (Map.Entry<Long, Long> e : qtyByBookId.entrySet()) {
-            Book book = bookRepository.findById(e.getKey())
-                    .orElseThrow(() -> new IdInvalidException("Không tìm thấy sách id = " + e.getKey()));
-            book.setQuantity(book.getQuantity() - e.getValue());
-            book.setSold(book.getSold() + e.getValue());
-            bookRepository.save(book);
+        // COD: trừ kho ngay; VNPAY: trừ kho khi nhận xác nhận thanh toán thành công
+        if (req.getPaymentMethod() == PaymentMethod.COD) {
+            deductStock(qtyByBookId);
         }
 
         double shipping = DEFAULT_SHIPPING_FEE;
@@ -166,7 +179,71 @@ public class OrderServiceImpl implements OrderService {
         customer.setTotalOrder(customer.getTotalOrder() == null ? 1L : customer.getTotalOrder() + 1);
         customerRepository.save(customer);
 
-        return ResOrderDTO.from(orderRepository.fetchDetailById(saved.getId()).orElse(saved));
+        ResOrderDTO result = ResOrderDTO.from(
+                orderRepository.fetchDetailById(saved.getId()).orElse(saved));
+
+        if (req.getPaymentMethod() == PaymentMethod.VNPAY) {
+            String paymentUrl = createVnpayPayment(saved, req.getClientIpAddress());
+            result.setPaymentUrl(paymentUrl);
+        }
+
+        // remove cart
+        removeCart(customer);
+        return result;
+    }
+
+    // remove cart
+    private void removeCart(Customer customer) {
+        cartDetailRepository.deleteAllByCart(customer.getCart());
+    }
+
+    /**
+     * Trừ tồn kho + tăng sold cho từng sách trong map.
+     * Dùng chung cho COD (lúc tạo đơn) và VNPAY (lúc xác nhận thanh toán).
+     */
+    public void deductStock(Map<Long, Long> qtyByBookId) throws IdInvalidException {
+        for (Map.Entry<Long, Long> e : qtyByBookId.entrySet()) {
+            Book book = bookRepository.findById(e.getKey())
+                    .orElseThrow(() -> new IdInvalidException("Không tìm thấy sách id = " + e.getKey()));
+            book.setQuantity(book.getQuantity() - e.getValue());
+            book.setSold(book.getSold() + e.getValue());
+            bookRepository.save(book);
+        }
+    }
+
+    /**
+     * Tạo OrderPayment INITIATED và build URL thanh toán VNPAY.
+     */
+    private String createVnpayPayment(Order order, String clientIp) {
+        String providerRef = "BV" + order.getId() + "T" + System.currentTimeMillis();
+
+        OrderPayment payment = new OrderPayment();
+        payment.setProviderRef(providerRef);
+        payment.setMethod(PaymentMethod.VNPAY);
+        payment.setAmount(order.getTotalPrice());
+        payment.setStatus(OrderPaymentStatus.INITIATED);
+        payment.setOrder(order);
+        orderPaymentRepository.save(payment);
+
+        long amountInSmallestUnit = Math.round(order.getTotalPrice() * 100);
+
+        Map<String, String> params = new HashMap<>();
+        params.put("vnp_Version", vnpayProperties.getVersion());
+        params.put("vnp_Command", vnpayProperties.getCommand());
+        params.put("vnp_TmnCode", vnpayProperties.getTmnCode());
+        params.put("vnp_Amount", String.valueOf(amountInSmallestUnit));
+        params.put("vnp_CurrCode", vnpayProperties.getCurrCode());
+        params.put("vnp_TxnRef", providerRef);
+        params.put("vnp_OrderInfo", "Thanh toan don hang " + order.getOrderCode());
+        params.put("vnp_OrderType", vnpayProperties.getOrderType());
+        params.put("vnp_Locale", vnpayProperties.getLocale());
+        params.put("vnp_ReturnUrl", vnpayProperties.getReturnUrl());
+        params.put("vnp_IpAddr", clientIp != null ? clientIp : "127.0.0.1");
+        params.put("vnp_CreateDate", VnpayUtil.now());
+        params.put("vnp_ExpireDate", VnpayUtil.nowPlusMinutes(15));
+
+        return VnpayUtil.buildPaymentUrl(
+                vnpayProperties.getPaymentUrl(), params, vnpayProperties.getHashSecret());
     }
 
     @Override

@@ -1,6 +1,7 @@
 package com.example.bookverse.dto.request;
 
 import com.example.bookverse.dto.enums.PaymentMethod;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
@@ -37,4 +38,8 @@ public class ReqCreateOrderDTO {
     @NotEmpty(message = "Danh sách sản phẩm không được rỗng")
     @Valid
     private List<ReqOrderLineDTO> items;
+
+    /** Controller set IP từ HttpServletRequest — không nhận từ JSON body. */
+    @JsonIgnore
+    private String clientIpAddress;
 }
