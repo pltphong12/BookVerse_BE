@@ -7,6 +7,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.example.bookverse.domain.*;
+import com.example.bookverse.service.CustomerService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -17,12 +19,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.example.bookverse.config.VnpayProperties;
-import com.example.bookverse.domain.Book;
-import com.example.bookverse.domain.Customer;
-import com.example.bookverse.domain.Order;
-import com.example.bookverse.domain.OrderDetail;
-import com.example.bookverse.domain.OrderPayment;
-import com.example.bookverse.domain.QOrder;
 import com.example.bookverse.dto.criteria.CriteriaFilterOrder;
 import com.example.bookverse.dto.enums.OrderPaymentStatus;
 import com.example.bookverse.dto.enums.OrderStatus;
@@ -67,18 +63,17 @@ public class OrderServiceImpl implements OrderService {
     private final CurrentCustomerAccessor currentCustomerAccessor;
     private final JPAQueryFactory queryFactory;
     private final VnpayProperties vnpayProperties;
-    private final CartRepository cartRepository;
     private final CartDetailRepository cartDetailRepository;
+    private final CustomerService customerService;
 
     public OrderServiceImpl(OrderRepository orderRepository,
-            BookRepository bookRepository,
-            CustomerRepository customerRepository,
-            OrderPaymentRepository orderPaymentRepository,
-            CurrentCustomerAccessor currentCustomerAccessor,
-            JPAQueryFactory queryFactory,
-            VnpayProperties vnpayProperties,
-            CartRepository cartRepository,
-            CartDetailRepository cartDetailRepository) {
+                            BookRepository bookRepository,
+                            CustomerRepository customerRepository,
+                            OrderPaymentRepository orderPaymentRepository,
+                            CurrentCustomerAccessor currentCustomerAccessor,
+                            JPAQueryFactory queryFactory,
+                            VnpayProperties vnpayProperties,
+                            CartDetailRepository cartDetailRepository, CustomerService customerService) {
         this.orderRepository = orderRepository;
         this.bookRepository = bookRepository;
         this.customerRepository = customerRepository;
@@ -86,8 +81,8 @@ public class OrderServiceImpl implements OrderService {
         this.currentCustomerAccessor = currentCustomerAccessor;
         this.queryFactory = queryFactory;
         this.vnpayProperties = vnpayProperties;
-        this.cartRepository = cartRepository;
         this.cartDetailRepository = cartDetailRepository;
+        this.customerService = customerService;
     }
 
     private boolean hasAuthority(String authority) {
@@ -194,6 +189,11 @@ public class OrderServiceImpl implements OrderService {
 
     // remove cart
     private void removeCart(Customer customer) {
+        Cart cart = customer.getCart();
+        if (cart == null) {
+            return;
+        }
+        cart.setSum(0);
         cartDetailRepository.deleteAllByCart(customer.getCart());
     }
 
@@ -291,6 +291,7 @@ public class OrderServiceImpl implements OrderService {
             orderInDB.setPaymentStatus(req.getPaymentStatus());
             if (req.getPaymentStatus() == PaymentStatus.PAID && orderInDB.getPaidAt() == null) {
                 orderInDB.setPaidAt(Instant.now());
+                customerService.updateTotalSpendingAndLevel(orderInDB.getCustomer().getId(), orderInDB.getTotalPrice());
             }
         }
 
@@ -309,11 +310,24 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<ResOrderDTO> listMine() throws Exception {
+    public ResPagination listMine(Pageable pageable) throws Exception {
         Customer customer = getCurrentCustomer();
-        return orderRepository.fetchDetailsByCustomerId(customer.getId()).stream()
-                .map(ResOrderDTO::from)
-                .toList();
+        Page<Order> page = orderRepository.findByCustomer_Id(customer.getId(), pageable);
+        ResPagination rs = new ResPagination();
+        ResPagination.Meta mt = new ResPagination.Meta();
+        mt.setPage(pageable.getPageNumber() + 1);
+        mt.setPageSize(page.getSize());
+        mt.setPages(page.getTotalPages());
+        mt.setTotal(page.getTotalElements());
+        rs.setMeta(mt);
+        List<ResOrderDTO> rows = new ArrayList<>();
+        for (Order stub : page.getContent()) {
+            Order full = orderRepository.fetchDetailById(stub.getId())
+                    .orElseThrow(() -> new IdInvalidException("Không tìm thấy đơn hàng"));
+            rows.add(ResOrderDTO.from(full));
+        }
+        rs.setResult(rows);
+        return rs;
     }
 
     private Page<Order> filterOrders(CriteriaFilterOrder criteria, Pageable pageable) throws IdInvalidException {

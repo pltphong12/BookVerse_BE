@@ -9,13 +9,13 @@ import com.example.bookverse.service.OrderService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1")
@@ -55,8 +55,10 @@ public class OrderController {
 
     @GetMapping("/orders/me")
     @PreAuthorize("hasAuthority('ORDER_VIEW_MINE')")
-    public ResponseEntity<List<ResOrderDTO>> listMyOrders() throws Exception {
-        return ResponseEntity.ok(orderService.listMine());
+    public ResponseEntity<ResPagination> listMyOrders(
+            @PageableDefault(size = 5, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable)
+            throws Exception {
+        return ResponseEntity.ok(orderService.listMine(pageable));
     }
 
     @GetMapping("/orders/search")

@@ -5,11 +5,13 @@ import com.example.bookverse.domain.Order;
 import com.example.bookverse.domain.OrderDetail;
 import com.example.bookverse.domain.OrderPayment;
 import com.example.bookverse.dto.enums.OrderPaymentStatus;
+import com.example.bookverse.dto.enums.OrderStatus;
 import com.example.bookverse.dto.enums.PaymentMethod;
 import com.example.bookverse.dto.enums.PaymentStatus;
 import com.example.bookverse.repository.BookRepository;
 import com.example.bookverse.repository.OrderPaymentRepository;
 import com.example.bookverse.repository.OrderRepository;
+import com.example.bookverse.service.CustomerService;
 import com.example.bookverse.service.VnpayPaymentService;
 import com.example.bookverse.util.VnpayUtil;
 import org.slf4j.Logger;
@@ -30,15 +32,18 @@ public class VnpayPaymentServiceImpl implements VnpayPaymentService {
     private final OrderPaymentRepository orderPaymentRepository;
     private final OrderRepository orderRepository;
     private final BookRepository bookRepository;
+    private final CustomerService customerService;
 
     public VnpayPaymentServiceImpl(VnpayProperties vnpayProperties,
                                    OrderPaymentRepository orderPaymentRepository,
                                    OrderRepository orderRepository,
-                                   BookRepository bookRepository) {
+                                   BookRepository bookRepository,
+                                   CustomerService customerService) {
         this.vnpayProperties = vnpayProperties;
         this.orderPaymentRepository = orderPaymentRepository;
         this.orderRepository = orderRepository;
         this.bookRepository = bookRepository;
+        this.customerService = customerService;
     }
 
     // ─── Return URL (browser redirect) ───────────────────────────────
@@ -130,14 +135,18 @@ public class VnpayPaymentServiceImpl implements VnpayPaymentService {
 
         if (success) {
             payment.setStatus(OrderPaymentStatus.SUCCESS);
+            order.setStatus(OrderStatus.CONFIRMED);
             order.setPaymentStatus(PaymentStatus.PAID);
             order.setPaidAt(Instant.now());
+            // Thực hiện việc cộng tiền
+            customerService.updateTotalSpendingAndLevel(order.getCustomer().getId(), order.getTotalPrice());
 
             deductStockForOrder(order);
 
             log.info("Thanh toán thành công: vnp_TxnRef={}, orderId={}", txnRef, order.getId());
         } else {
             payment.setStatus(OrderPaymentStatus.FAILED);
+            order.setStatus(OrderStatus.CANCELLED);
             order.setPaymentStatus(PaymentStatus.FAILED);
             log.info("Thanh toán thất bại: vnp_TxnRef={}, responseCode={}", txnRef, params.get("vnp_ResponseCode"));
         }

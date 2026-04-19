@@ -7,6 +7,8 @@ import com.example.bookverse.dto.request.ReqCustomerDTO;
 import com.example.bookverse.dto.response.ResCustomerDTO;
 import com.example.bookverse.dto.response.ResPagination;
 
+import java.math.BigDecimal;
+
 public interface CustomerService {
     ResCustomerDTO create(ReqCustomerDTO reqCustomerDTO) throws Exception;
 
@@ -17,4 +19,6 @@ public interface CustomerService {
     ResPagination fetchAllCustomersWithPaginationAndFilter(CriteriaFilterCustomer criteriaFilterCustomer, Pageable pageable) throws Exception;
 
     void delete(long id) throws Exception;
+
+    void updateTotalSpendingAndLevel(Long customerId, double amount);
 }

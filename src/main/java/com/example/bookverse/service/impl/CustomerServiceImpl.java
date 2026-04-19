@@ -6,6 +6,7 @@ import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.example.bookverse.util.CurrentCustomerAccessor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -36,15 +37,17 @@ public class CustomerServiceImpl implements CustomerService {
     private final RoleRepository roleRepository;
     private final UserService userService;
     private final JPAQueryFactory queryFactory;
+    private final CurrentCustomerAccessor currentCustomerAccessor;
 
     public CustomerServiceImpl(CustomerRepository customerRepository, UserRepository userRepository,
             RoleRepository roleRepository, UserService userService,
-            JPAQueryFactory queryFactory) {
+            JPAQueryFactory queryFactory,  CurrentCustomerAccessor currentCustomerAccessor) {
         this.customerRepository = customerRepository;
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.userService = userService;
         this.queryFactory = queryFactory;
+        this.currentCustomerAccessor = currentCustomerAccessor;
     }
 
     @Override
@@ -176,5 +179,27 @@ public class CustomerServiceImpl implements CustomerService {
         Customer customer = FindObjectInDataBase.findByIdOrThrow(customerRepository, id);
         customerRepository.delete(customer);
         userRepository.delete(customer.getUser());
+    }
+
+    @Override
+    public void updateTotalSpendingAndLevel(Long customerId, double amount) {
+        Customer customer = customerRepository.findById(customerId).orElseThrow();
+        BigDecimal newTotalSpending = customer.getTotalSpending().add(BigDecimal.valueOf(amount));
+        customer.setTotalSpending(newTotalSpending);
+        // Cập nhật level
+        updateLevelBasedOnSpending(customer, newTotalSpending);
+        customerRepository.save(customer);
+    }
+
+    private void updateLevelBasedOnSpending(Customer customer, BigDecimal total) {
+        if (total.compareTo(new BigDecimal("10000000")) >= 0) {
+            customer.setCustomerLevel(CustomerLevel.DIAMOND);
+        } else if (total.compareTo(new BigDecimal("5000000")) >= 0) {
+            customer.setCustomerLevel(CustomerLevel.GOLD);
+        } else if (total.compareTo(new BigDecimal("1000000")) >= 0) {
+            customer.setCustomerLevel(CustomerLevel.SILVER);
+        } else {
+            customer.setCustomerLevel(CustomerLevel.BRONZE);
+        }
     }
 }

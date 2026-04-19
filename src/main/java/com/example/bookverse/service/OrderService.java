@@ -8,8 +8,6 @@ import com.example.bookverse.dto.response.ResPagination;
 
 import org.springframework.data.domain.Pageable;
 
-import java.util.List;
-
 public interface OrderService {
 
     ResOrderDTO create(ReqCreateOrderDTO req) throws Exception;
@@ -18,7 +16,7 @@ public interface OrderService {
 
     ResOrderDTO getById(long id) throws Exception;
 
-    List<ResOrderDTO> listMine() throws Exception;
+    ResPagination listMine(Pageable pageable) throws Exception;
 
     ResPagination fetchAllOrdersWithPaginationAndFilter(CriteriaFilterOrder criteria, Pageable pageable) throws Exception;
 

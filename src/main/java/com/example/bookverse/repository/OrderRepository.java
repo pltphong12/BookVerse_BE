@@ -3,6 +3,8 @@ package com.example.bookverse.repository;
 import com.example.bookverse.domain.Order;
 import com.example.bookverse.dto.enums.PaymentMethod;
 import com.example.bookverse.dto.enums.PaymentStatus;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -29,6 +31,9 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
             WHERE o.id = :id
             """)
     Optional<Order> fetchDetailById(@Param("id") long id);
+
+    /** Chỉ phân trang id; chi tiết nạp qua {@link #fetchDetailById(long)} để tránh lỗi fetch join + page. */
+    Page<Order> findByCustomer_Id(long customerId, Pageable pageable);
 
     @Query("""
             SELECT DISTINCT o FROM Order o
