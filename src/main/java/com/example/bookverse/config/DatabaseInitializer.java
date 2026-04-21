@@ -120,6 +120,9 @@ public class DatabaseInitializer implements CommandLineRunner {
         permissions.add(perm("USER_VIEW_BY_ID", "USER", "/api/v1/users/{id}", "GET"));
         permissions.add(perm("USER_VIEW_ALL_WITH_PAGINATION_AND_FILTER", "USER", "/api/v1/users/search", "GET"));
 
+        // Dashboard
+        permissions.add(perm("DASHBOARD_VIEW", "DASHBOARD", "/api/v1/dashboard", "GET"));
+
         permissionRepository.saveAll(permissions);
         System.out.println(">>> Created " + permissions.size() + " permissions");
     }

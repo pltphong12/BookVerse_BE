@@ -9,4 +9,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface CustomerRepository extends JpaRepository<Customer, Long>, QuerydslPredicateExecutor<Customer> {
     boolean existsByIdentityCard(String identityCard);
+
+    long countByCreatedAtBetween(java.time.Instant from, java.time.Instant to);
 }

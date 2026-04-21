@@ -1,6 +1,7 @@
 package com.example.bookverse.repository;
 
 import com.example.bookverse.domain.Order;
+import com.example.bookverse.dto.enums.OrderStatus;
 import com.example.bookverse.dto.enums.PaymentMethod;
 import com.example.bookverse.dto.enums.PaymentStatus;
 import org.springframework.data.domain.Page;
@@ -56,4 +57,35 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
 
     List<Order> findByPaymentMethodAndPaymentStatusAndCreatedAtBefore(
             PaymentMethod paymentMethod, PaymentStatus paymentStatus, Instant cutoff);
+
+    long countByCreatedAtBetween(Instant from, Instant to);
+
+    long countByStatusAndCreatedAtBetween(OrderStatus status, Instant from, Instant to);
+
+    @Query("""
+            SELECT COALESCE(SUM(o.totalPrice), 0) FROM Order o
+            WHERE o.createdAt BETWEEN :from AND :to
+            AND o.status <> com.example.bookverse.dto.enums.OrderStatus.CANCELLED
+            """)
+    Double sumRevenueByCreatedAtBetween(@Param("from") Instant from, @Param("to") Instant to);
+
+    @Query("""
+            SELECT o.status, COUNT(o.id) FROM Order o
+            WHERE o.createdAt BETWEEN :from AND :to
+            GROUP BY o.status
+            """)
+    List<Object[]> countOrderByStatusBetween(@Param("from") Instant from, @Param("to") Instant to);
+
+    @Query(value = """
+            SELECT DATE_FORMAT(CONVERT_TZ(o.created_at, '+00:00', @@session.time_zone), :pattern) AS label,
+                   COALESCE(SUM(CASE WHEN o.status <> 'CANCELLED' THEN o.total_price ELSE 0 END), 0) AS revenue,
+                   COUNT(o.id) AS orders
+            FROM orders o
+            WHERE o.created_at BETWEEN :from AND :to
+            GROUP BY label
+            ORDER BY MIN(o.created_at) ASC
+            """, nativeQuery = true)
+    List<Object[]> getRevenueSeries(@Param("from") Instant from,
+                                    @Param("to") Instant to,
+                                    @Param("pattern") String pattern);
 }
