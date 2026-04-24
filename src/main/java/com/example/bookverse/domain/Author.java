@@ -14,7 +14,12 @@ import java.util.Date;
 import java.util.List;
 
 @Entity
-@Table(name = "authors")
+@Table(
+        name = "authors",
+        indexes = {
+                @Index(name = "idx_authors_name", columnList = "name")
+        }
+)
 @Getter
 @Setter
 @AllArgsConstructor

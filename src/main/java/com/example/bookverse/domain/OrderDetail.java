@@ -11,7 +11,14 @@ import lombok.Setter;
 import java.time.Instant;
 
 @Entity
-@Table(name = "order_details")
+@Table(
+        name = "order_details",
+        indexes = {
+                @Index(name = "idx_order_details_order_id", columnList = "order_id"),
+                @Index(name = "idx_order_details_book_id", columnList = "book_id"),
+                @Index(name = "idx_order_details_book_order", columnList = "book_id,order_id")
+        }
+)
 @Getter
 @Setter
 @AllArgsConstructor

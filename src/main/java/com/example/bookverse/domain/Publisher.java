@@ -13,7 +13,12 @@ import java.time.Instant;
 import java.util.List;
 
 @Entity
-@Table(name = "publishers")
+@Table(
+        name = "publishers",
+        indexes = {
+                @Index(name = "idx_publishers_name", columnList = "name")
+        }
+)
 @Getter
 @Setter
 @AllArgsConstructor

@@ -7,7 +7,14 @@ import lombok.*;
 import java.time.Instant;
 
 @Entity
-@Table(name = "cart_details")
+@Table(
+        name = "cart_details",
+        indexes = {
+                @Index(name = "idx_cart_details_cart_id", columnList = "cart_id"),
+                @Index(name = "idx_cart_details_book_id", columnList = "book_id"),
+                @Index(name = "idx_cart_details_cart_book", columnList = "cart_id,book_id")
+        }
+)
 @Getter
 @Setter
 @AllArgsConstructor

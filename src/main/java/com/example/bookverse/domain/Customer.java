@@ -14,7 +14,14 @@ import java.time.Instant;
 import java.util.List;
 
 @Entity
-@Table(name = "customers")
+@Table(
+        name = "customers",
+        indexes = {
+                @Index(name = "idx_customers_identity_card", columnList = "identityCard"),
+                @Index(name = "idx_customers_created_at", columnList = "createdAt"),
+                @Index(name = "idx_customers_user_id", columnList = "user_id")
+        }
+)
 @Getter
 @Setter
 @AllArgsConstructor

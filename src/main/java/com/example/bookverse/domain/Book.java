@@ -18,7 +18,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name = "books")
+@Table(
+        name = "books",
+        indexes = {
+                @Index(name = "idx_books_title", columnList = "title"),
+                @Index(name = "idx_books_created_at", columnList = "createdAt"),
+                @Index(name = "idx_books_category_id", columnList = "category_id"),
+                @Index(name = "idx_books_publisher_id", columnList = "publisher_id"),
+                @Index(name = "idx_books_supplier_id", columnList = "supplier_id")
+        }
+)
 @Getter
 @Setter
 @AllArgsConstructor
@@ -56,7 +65,15 @@ public class Book {
 
     @ManyToMany(fetch = FetchType.LAZY)
     @JsonIgnoreProperties(value = { "books" })
-    @JoinTable(name = "author_book", joinColumns = @JoinColumn(name = "book_id"), inverseJoinColumns = @JoinColumn(name = "author_id"))
+    @JoinTable(
+            name = "author_book",
+            joinColumns = @JoinColumn(name = "book_id"),
+            inverseJoinColumns = @JoinColumn(name = "author_id"),
+            indexes = {
+                    @Index(name = "idx_author_book_book_id", columnList = "book_id"),
+                    @Index(name = "idx_author_book_author_id", columnList = "author_id")
+            }
+    )
     private List<Author> authors;
 
     @ManyToOne

@@ -11,7 +11,12 @@ import java.time.Instant;
 import java.util.List;
 
 @Entity
-@Table(name = "carts")
+@Table(
+        name = "carts",
+        indexes = {
+                @Index(name = "idx_carts_customer_id", columnList = "customer_id")
+        }
+)
 @Getter
 @Setter
 @AllArgsConstructor

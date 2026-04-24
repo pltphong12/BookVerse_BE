@@ -14,7 +14,12 @@ import java.time.Instant;
 import java.util.List;
 
 @Entity
-@Table(name = "roles")
+@Table(
+        name = "roles",
+        indexes = {
+                @Index(name = "idx_roles_name", columnList = "name")
+        }
+)
 @Getter
 @Setter
 @AllArgsConstructor
@@ -33,9 +38,15 @@ public class Role {
 
     @ManyToMany
     @JsonIgnoreProperties(value = {"roles"})
-    @JoinTable(name = "permission_role",
+    @JoinTable(
+            name = "permission_role",
             joinColumns = @JoinColumn(name = "role_id"),
-            inverseJoinColumns = @JoinColumn(name = "permission_id"))
+            inverseJoinColumns = @JoinColumn(name = "permission_id"),
+            indexes = {
+                    @Index(name = "idx_permission_role_role_id", columnList = "role_id"),
+                    @Index(name = "idx_permission_role_permission_id", columnList = "permission_id")
+            }
+    )
     private List<Permission> permissions;
 
     private Instant createdAt;
