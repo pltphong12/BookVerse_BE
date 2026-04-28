@@ -38,3 +38,5 @@ build/
 
 ### Environment ###
 .env
+
+mysql_data/

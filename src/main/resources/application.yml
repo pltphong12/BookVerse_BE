@@ -38,6 +38,10 @@ spring:
       pageable:
         one-indexed-parameters: true
 
+  #Elasticsearch
+  elasticsearch:
+    uris: http://localhost:9200
+
 # Logging
 logging:
   level:

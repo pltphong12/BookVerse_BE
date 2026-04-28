@@ -3,7 +3,11 @@ package com.example.bookverse.service.impl;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -14,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.example.bookverse.domain.Author;
 import com.example.bookverse.domain.Book;
 import com.example.bookverse.domain.BookImage;
+import com.example.bookverse.domain.BookSearchDocument;
 import com.example.bookverse.domain.QBook;
 import com.example.bookverse.dto.criteria.CriteriaFilterBook;
 import com.example.bookverse.dto.criteria.CriteriaFilterProduct;
@@ -23,6 +28,7 @@ import com.example.bookverse.dto.response.ResPagination;
 import com.example.bookverse.exception.global.ExistDataException;
 import com.example.bookverse.repository.AuthorRepository;
 import com.example.bookverse.repository.BookRepository;
+import com.example.bookverse.repository.BookSearchRepository;
 import com.example.bookverse.service.BookService;
 import com.example.bookverse.util.EntityValidator;
 import com.example.bookverse.util.FindObjectInDataBase;
@@ -33,12 +39,15 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 @Service
 public class BookServiceImpl implements BookService {
     private final BookRepository bookRepository;
+    private final BookSearchRepository bookSearchRepository;
     private final AuthorRepository authorRepository;
     private final JPAQueryFactory queryFactory;
 
-    public BookServiceImpl(BookRepository bookRepository, AuthorRepository authorRepository,
+    public BookServiceImpl(BookRepository bookRepository, BookSearchRepository bookSearchRepository,
+            AuthorRepository authorRepository,
             JPAQueryFactory queryFactory) {
         this.bookRepository = bookRepository;
+        this.bookSearchRepository = bookSearchRepository;
         this.authorRepository = authorRepository;
         this.queryFactory = queryFactory;
     }
@@ -83,7 +92,9 @@ public class BookServiceImpl implements BookService {
             book.setImage(primary.getRelativePath());
         }
 
-        return this.bookRepository.save(book);
+        Book savedBook = this.bookRepository.save(book);
+        this.bookSearchRepository.save(toSearchDocument(savedBook));
+        return savedBook;
     }
 
     @Override
@@ -167,7 +178,9 @@ public class BookServiceImpl implements BookService {
             }
         }
 
-        return this.bookRepository.save(bookInDB);
+        Book updatedBook = this.bookRepository.save(bookInDB);
+        this.bookSearchRepository.save(toSearchDocument(updatedBook));
+        return updatedBook;
     }
 
     private boolean isSameImageList(List<BookImage> existing, List<ReqBookImageDTO> incoming) {
@@ -269,6 +282,7 @@ public class BookServiceImpl implements BookService {
     public void delete(long id) throws Exception {
         FindObjectInDataBase.findByIdOrThrow(this.bookRepository, id);
         this.bookRepository.deleteById(id);
+        this.bookSearchRepository.deleteById(id);
     }
 
     public Page<Book> filter(CriteriaFilterProduct criteriaFilterProduct, Pageable pageable) {
@@ -346,5 +360,68 @@ public class BookServiceImpl implements BookService {
         rs.setResult(bookDTOS);
 
         return rs;
+    }
+
+    @Override
+    public ResPagination searchForClient(String keyword, Pageable pageable) throws Exception {
+        String query = keyword == null ? "" : keyword.trim();
+        Page<BookSearchDocument> pageDocument = this.bookSearchRepository
+                .findByTitleContainingIgnoreCaseOrDescriptionContainingIgnoreCase(query, query, pageable);
+
+        List<Long> orderedIds = pageDocument.getContent().stream()
+                .map(BookSearchDocument::getId)
+                .toList();
+        List<Book> booksInDb = this.bookRepository.findAllById(orderedIds);
+
+        Map<Long, Book> bookMap = new HashMap<>();
+        for (Book book : booksInDb) {
+            bookMap.put(book.getId(), book);
+        }
+
+        List<ResBookDTO> result = new ArrayList<>();
+        for (Long id : orderedIds) {
+            Book book = bookMap.get(id);
+            if (book != null) {
+                result.add(ResBookDTO.from(book));
+            }
+        }
+
+        ResPagination rs = new ResPagination();
+        ResPagination.Meta mt = new ResPagination.Meta();
+        mt.setPage(pageable.getPageNumber() + 1);
+        mt.setPageSize(pageDocument.getSize());
+        mt.setPages(pageDocument.getTotalPages());
+        mt.setTotal(pageDocument.getTotalElements());
+        rs.setMeta(mt);
+        rs.setResult(result);
+        return rs;
+    }
+
+    @Override
+    public List<String> suggestTitlesForClient(String keyword) {
+        String query = keyword == null ? "" : keyword.trim();
+        if (query.isEmpty()) {
+            return List.of();
+        }
+
+        List<BookSearchDocument> documents = this.bookSearchRepository
+                .findTop10ByTitleContainingIgnoreCaseOrderBySoldDesc(query);
+        Set<String> uniqueTitles = new LinkedHashSet<>();
+        for (BookSearchDocument document : documents) {
+            uniqueTitles.add(document.getTitle());
+        }
+        return new ArrayList<>(uniqueTitles);
+    }
+
+    private BookSearchDocument toSearchDocument(Book book) {
+        return new BookSearchDocument(
+                book.getId(),
+                book.getTitle(),
+                book.getDescription(),
+                book.getPrice(),
+                book.getDiscount(),
+                book.getSold(),
+                book.getImage(),
+                book.getCreatedAt());
     }
 }

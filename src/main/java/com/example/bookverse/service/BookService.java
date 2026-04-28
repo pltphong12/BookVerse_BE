@@ -25,5 +25,9 @@ public interface BookService {
 
     ResPagination fetchAllBooksWithPaginationAndFilter(CriteriaFilterProduct criteriaFilterProduct, Pageable pageable) throws Exception;
 
+    ResPagination searchForClient(String keyword, Pageable pageable) throws Exception;
+
+    List<String> suggestTitlesForClient(String keyword);
+
     void delete(long id) throws Exception;
 }

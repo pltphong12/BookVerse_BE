@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.bookverse.domain.Book;
@@ -111,5 +112,20 @@ public class BookController {
         ResPagination resPagination = this.bookService.fetchAllBooksWithPaginationAndFilter(criteriaFilterProduct,
                 pageable);
         return ResponseEntity.status(HttpStatus.OK).body(resPagination);
+    }
+
+    @GetMapping("/books/client-search")
+    public ResponseEntity<ResPagination> searchBooksForClient(
+            @RequestParam(name = "keyword", required = false) String keyword,
+            Pageable pageable) throws Exception {
+        ResPagination resPagination = this.bookService.searchForClient(keyword, pageable);
+        return ResponseEntity.status(HttpStatus.OK).body(resPagination);
+    }
+
+    @GetMapping("/books/client-suggestions")
+    public ResponseEntity<List<String>> suggestBookTitlesForClient(
+            @RequestParam(name = "keyword", required = false) String keyword) {
+        List<String> suggestions = this.bookService.suggestTitlesForClient(keyword);
+        return ResponseEntity.status(HttpStatus.OK).body(suggestions);
     }
 }
