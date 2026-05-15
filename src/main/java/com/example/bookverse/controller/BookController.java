@@ -15,12 +15,10 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.bookverse.domain.Book;
 import com.example.bookverse.dto.criteria.CriteriaFilterBook;
-import com.example.bookverse.dto.criteria.CriteriaFilterProduct;
 import com.example.bookverse.dto.response.ResBookDTO;
 import com.example.bookverse.dto.response.ResPagination;
 import com.example.bookverse.service.BookService;
@@ -103,29 +101,5 @@ public class BookController {
     public ResponseEntity<Void> deleteBook(@PathVariable Long id) throws Exception {
         this.bookService.delete(id);
         return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
-    }
-
-    @GetMapping("/books/search-product")
-    public ResponseEntity<ResPagination> getAllBooksWithPaginationAndFilterProduct(
-            @ModelAttribute CriteriaFilterProduct criteriaFilterProduct,
-            Pageable pageable) throws Exception {
-        ResPagination resPagination = this.bookService.fetchAllBooksWithPaginationAndFilter(criteriaFilterProduct,
-                pageable);
-        return ResponseEntity.status(HttpStatus.OK).body(resPagination);
-    }
-
-    @GetMapping("/books/client-search")
-    public ResponseEntity<ResPagination> searchBooksForClient(
-            @RequestParam(name = "keyword", required = false) String keyword,
-            Pageable pageable) throws Exception {
-        ResPagination resPagination = this.bookService.searchForClient(keyword, pageable);
-        return ResponseEntity.status(HttpStatus.OK).body(resPagination);
-    }
-
-    @GetMapping("/books/client-suggestions")
-    public ResponseEntity<List<String>> suggestBookTitlesForClient(
-            @RequestParam(name = "keyword", required = false) String keyword) {
-        List<String> suggestions = this.bookService.suggestTitlesForClient(keyword);
-        return ResponseEntity.status(HttpStatus.OK).body(suggestions);
     }
 }

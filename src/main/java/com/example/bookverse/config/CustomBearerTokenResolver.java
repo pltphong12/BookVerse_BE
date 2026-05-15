@@ -2,6 +2,7 @@ package com.example.bookverse.config;
 
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.security.oauth2.server.resource.web.BearerTokenResolver;
+import org.springframework.security.oauth2.server.resource.web.DefaultBearerTokenResolver;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -17,7 +18,7 @@ public class CustomBearerTokenResolver implements BearerTokenResolver {
             "/api/v1/auth/refresh"
     );
 
-    private final BearerTokenResolver defaultResolver = new org.springframework.security.oauth2.server.resource.web.DefaultBearerTokenResolver();
+    private final BearerTokenResolver defaultResolver = new DefaultBearerTokenResolver();
 
     @Override
     public String resolve(HttpServletRequest request) {

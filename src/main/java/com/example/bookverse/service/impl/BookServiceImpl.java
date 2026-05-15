@@ -3,11 +3,7 @@ package com.example.bookverse.service.impl;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -18,22 +14,20 @@ import org.springframework.transaction.annotation.Transactional;
 import com.example.bookverse.domain.Author;
 import com.example.bookverse.domain.Book;
 import com.example.bookverse.domain.BookImage;
-import com.example.bookverse.domain.BookSearchDocument;
 import com.example.bookverse.domain.QBook;
 import com.example.bookverse.dto.criteria.CriteriaFilterBook;
-import com.example.bookverse.dto.criteria.CriteriaFilterProduct;
 import com.example.bookverse.dto.request.ReqBookImageDTO;
 import com.example.bookverse.dto.response.ResBookDTO;
 import com.example.bookverse.dto.response.ResPagination;
+import com.example.bookverse.elasticsearch.BookDocument;
 import com.example.bookverse.exception.global.ExistDataException;
 import com.example.bookverse.repository.AuthorRepository;
-import com.example.bookverse.repository.BookRepository;
 import com.example.bookverse.repository.BookSearchRepository;
+import com.example.bookverse.repository.BookRepository;
 import com.example.bookverse.service.BookService;
 import com.example.bookverse.util.EntityValidator;
 import com.example.bookverse.util.FindObjectInDataBase;
 import com.querydsl.core.BooleanBuilder;
-import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 
 @Service
@@ -43,7 +37,8 @@ public class BookServiceImpl implements BookService {
     private final AuthorRepository authorRepository;
     private final JPAQueryFactory queryFactory;
 
-    public BookServiceImpl(BookRepository bookRepository, BookSearchRepository bookSearchRepository,
+    public BookServiceImpl(BookRepository bookRepository,
+            BookSearchRepository bookSearchRepository,
             AuthorRepository authorRepository,
             JPAQueryFactory queryFactory) {
         this.bookRepository = bookRepository;
@@ -93,7 +88,7 @@ public class BookServiceImpl implements BookService {
         }
 
         Book savedBook = this.bookRepository.save(book);
-        this.bookSearchRepository.save(toSearchDocument(savedBook));
+        this.bookSearchRepository.save(BookDocument.fromBook(savedBook));
         return savedBook;
     }
 
@@ -179,7 +174,7 @@ public class BookServiceImpl implements BookService {
         }
 
         Book updatedBook = this.bookRepository.save(bookInDB);
-        this.bookSearchRepository.save(toSearchDocument(updatedBook));
+        this.bookSearchRepository.save(BookDocument.fromBook(updatedBook));
         return updatedBook;
     }
 
@@ -282,146 +277,6 @@ public class BookServiceImpl implements BookService {
     public void delete(long id) throws Exception {
         FindObjectInDataBase.findByIdOrThrow(this.bookRepository, id);
         this.bookRepository.deleteById(id);
-        this.bookSearchRepository.deleteById(id);
-    }
-
-    public Page<Book> filter(CriteriaFilterProduct criteriaFilterProduct, Pageable pageable) {
-        QBook qBook = QBook.book;
-
-        BooleanBuilder builder = new BooleanBuilder();
-
-        if (criteriaFilterProduct.getTitle() != null && !criteriaFilterProduct.getTitle().isBlank()) {
-            builder.and(qBook.title.containsIgnoreCase(criteriaFilterProduct.getTitle()));
-        }
-        if (criteriaFilterProduct.getCategoryId() != null && !criteriaFilterProduct.getCategoryId().isEmpty()) {
-            builder.and(qBook.category.id.in(criteriaFilterProduct.getCategoryId()));
-        }
-        if (criteriaFilterProduct.getPublisherId() != null && !criteriaFilterProduct.getPublisherId().isEmpty()) {
-            builder.and(qBook.publisher.id.in(criteriaFilterProduct.getPublisherId()));
-        }
-        if (criteriaFilterProduct.getPublishYear() != null && !criteriaFilterProduct.getPublishYear().isEmpty()) {
-            builder.and(qBook.publishYear.in(criteriaFilterProduct.getPublishYear()));
-        }
-        if (criteriaFilterProduct.getCoverFormat() != null && !criteriaFilterProduct.getCoverFormat().isEmpty()) {
-            builder.and(qBook.coverFormat.in(criteriaFilterProduct.getCoverFormat()));
-        }
-        if (criteriaFilterProduct.getMinPrice() != null) {
-            builder.and(qBook.price.goe(criteriaFilterProduct.getMinPrice()));
-        }
-        if (criteriaFilterProduct.getMaxPrice() != null) {
-            builder.and(qBook.price.loe(criteriaFilterProduct.getMaxPrice()));
-        }
-
-        OrderSpecifier<?> orderSpecifier = qBook.createdAt.desc();
-        if (criteriaFilterProduct.getSortType() != null) {
-            orderSpecifier = switch (criteriaFilterProduct.getSortType()) {
-                case NEWEST -> qBook.createdAt.desc();
-                case SOLD_MOST -> qBook.sold.desc();
-                case PRICE_LOW_TO_HIGH -> qBook.price.asc();
-                case PRICE_HIGH_TO_LOW -> qBook.price.desc();
-            };
-        }
-
-        List<Book> books = queryFactory.selectFrom(qBook)
-                .where(builder)
-                .orderBy(orderSpecifier)
-                .offset(pageable.getOffset())
-                .limit(pageable.getPageSize())
-                .fetch();
-
-        long total = queryFactory.selectFrom(qBook)
-                .where(builder)
-                .fetchCount();
-
-        return new PageImpl<>(books, pageable, total);
-    }
-
-    @Override
-    public ResPagination fetchAllBooksWithPaginationAndFilter(CriteriaFilterProduct criteriaFilterProduct,
-            Pageable pageable) {
-        Page<Book> pageBook = this.filter(criteriaFilterProduct, pageable);
-        ResPagination rs = new ResPagination();
-        ResPagination.Meta mt = new ResPagination.Meta();
-
-        mt.setPage(pageable.getPageNumber() + 1);
-        mt.setPageSize(pageBook.getSize());
-        mt.setPages(pageBook.getTotalPages());
-        mt.setTotal(pageBook.getTotalElements());
-
-        rs.setMeta(mt);
-
-        List<Book> books = pageBook.getContent();
-        List<ResBookDTO> bookDTOS = new ArrayList<>();
-        for (Book book : books) {
-            ResBookDTO bookDTO = ResBookDTO.from(book);
-            bookDTOS.add(bookDTO);
-        }
-
-        rs.setResult(bookDTOS);
-
-        return rs;
-    }
-
-    @Override
-    public ResPagination searchForClient(String keyword, Pageable pageable) throws Exception {
-        String query = keyword == null ? "" : keyword.trim();
-        Page<BookSearchDocument> pageDocument = this.bookSearchRepository
-                .findByTitleContainingIgnoreCaseOrDescriptionContainingIgnoreCase(query, query, pageable);
-
-        List<Long> orderedIds = pageDocument.getContent().stream()
-                .map(BookSearchDocument::getId)
-                .toList();
-        List<Book> booksInDb = this.bookRepository.findAllById(orderedIds);
-
-        Map<Long, Book> bookMap = new HashMap<>();
-        for (Book book : booksInDb) {
-            bookMap.put(book.getId(), book);
-        }
-
-        List<ResBookDTO> result = new ArrayList<>();
-        for (Long id : orderedIds) {
-            Book book = bookMap.get(id);
-            if (book != null) {
-                result.add(ResBookDTO.from(book));
-            }
-        }
-
-        ResPagination rs = new ResPagination();
-        ResPagination.Meta mt = new ResPagination.Meta();
-        mt.setPage(pageable.getPageNumber() + 1);
-        mt.setPageSize(pageDocument.getSize());
-        mt.setPages(pageDocument.getTotalPages());
-        mt.setTotal(pageDocument.getTotalElements());
-        rs.setMeta(mt);
-        rs.setResult(result);
-        return rs;
-    }
-
-    @Override
-    public List<String> suggestTitlesForClient(String keyword) {
-        String query = keyword == null ? "" : keyword.trim();
-        if (query.isEmpty()) {
-            return List.of();
-        }
-
-        List<BookSearchDocument> documents = this.bookSearchRepository
-                .findTop10ByTitleContainingIgnoreCaseOrderBySoldDesc(query);
-        Set<String> uniqueTitles = new LinkedHashSet<>();
-        for (BookSearchDocument document : documents) {
-            uniqueTitles.add(document.getTitle());
-        }
-        return new ArrayList<>(uniqueTitles);
-    }
-
-    private BookSearchDocument toSearchDocument(Book book) {
-        return new BookSearchDocument(
-                book.getId(),
-                book.getTitle(),
-                book.getDescription(),
-                book.getPrice(),
-                book.getDiscount(),
-                book.getSold(),
-                book.getImage(),
-                book.getCreatedAt());
+        this.bookSearchRepository.deleteById(String.valueOf(id));
     }
 }

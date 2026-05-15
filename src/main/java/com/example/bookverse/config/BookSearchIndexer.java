@@ -2,14 +2,14 @@ package com.example.bookverse.config;
 
 import java.util.List;
 
+import com.example.bookverse.elasticsearch.BookDocument;
+import com.example.bookverse.repository.BookSearchRepository;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
 import com.example.bookverse.domain.Book;
-import com.example.bookverse.domain.BookSearchDocument;
 import com.example.bookverse.repository.BookRepository;
-import com.example.bookverse.repository.BookSearchRepository;
 
 @Component
 public class BookSearchIndexer {
@@ -23,21 +23,10 @@ public class BookSearchIndexer {
 
     @EventListener(ApplicationReadyEvent.class)
     public void syncBooksToSearchIndex() {
-        List<BookSearchDocument> documents = this.bookRepository.findAll().stream()
-                .map(this::toSearchDocument)
-                .toList();
-        this.bookSearchRepository.saveAll(documents);
-    }
-
-    private BookSearchDocument toSearchDocument(Book book) {
-        return new BookSearchDocument(
-                book.getId(),
-                book.getTitle(),
-                book.getDescription(),
-                book.getPrice(),
-                book.getDiscount(),
-                book.getSold(),
-                book.getImage(),
-                book.getCreatedAt());
+        List<Book> allBooks = bookRepository.findAllWithAuthorsAndCategory();
+        List<BookDocument> docs = allBooks.stream()
+            .map(BookDocument::fromBook)
+            .toList();
+        bookSearchRepository.saveAll(docs);
     }
 }

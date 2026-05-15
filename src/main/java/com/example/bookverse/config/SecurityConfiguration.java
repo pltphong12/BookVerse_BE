@@ -23,7 +23,6 @@ public class SecurityConfiguration {
             "/api/v1/auth/login",
             "/api/v1/auth/register",
             "/api/v1/auth/refresh",
-            "/api/v1/books/**",
             "/api/v1/payments/vnpay/return",
             "/api/v1/payments/vnpay/ipn",
     };
@@ -50,6 +49,7 @@ public class SecurityConfiguration {
                         .requestMatchers(HttpMethod.GET, "/api/v1/categories").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/publishers").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/suppliers").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/search/**").permitAll()
                         .anyRequest().authenticated())
                 .formLogin(AbstractHttpConfigurer::disable)
                 .oauth2ResourceServer((oauth2 -> oauth2
