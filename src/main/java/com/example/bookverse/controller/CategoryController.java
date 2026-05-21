@@ -62,12 +62,7 @@ public class CategoryController {
     // Fetch all categories
     @GetMapping("/categories")
     public ResponseEntity<List<ResCategoryDTO>> getAllCategories() throws Exception {
-        List<Category> categories = this.categoryService.fetchAllCategory();
-        List<ResCategoryDTO> res = new ArrayList<>();
-        for (Category category : categories) {
-            ResCategoryDTO resCategoryDTO = ResCategoryDTO.from(category);
-            res.add(resCategoryDTO);
-        }
+        List<ResCategoryDTO> res = this.categoryService.fetchAllCategory();
         return ResponseEntity.status(HttpStatus.OK).body(res);
     }
 

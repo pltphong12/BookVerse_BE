@@ -2,6 +2,7 @@ package com.example.bookverse.service;
 
 import java.util.List;
 
+import com.example.bookverse.dto.response.ResCategoryDTO;
 import org.springframework.data.domain.Pageable;
 
 import com.example.bookverse.domain.Category;
@@ -19,7 +20,7 @@ public interface CategoryService {
     Category fetchCategoryById(long id) throws Exception;
 
     // Fetch all role
-    List<Category> fetchAllCategory() throws Exception;
+    List<ResCategoryDTO> fetchAllCategory() throws Exception;
 
     // Fetch all category
     ResPagination fetchAllCategoriesWithPaginationAndFilter(CriteriaFilterCategory criteriaFilterCategory, Pageable pageable) throws Exception;

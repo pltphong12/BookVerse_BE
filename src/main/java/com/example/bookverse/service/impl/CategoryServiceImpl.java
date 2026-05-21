@@ -5,6 +5,9 @@ import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.example.bookverse.config.RedisCacheConfig;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -34,6 +37,7 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
+    @CacheEvict(cacheNames = RedisCacheConfig.CATEGORY, key = "'all'")
     public Category create(Category category) throws Exception {
         if (this.categoryRepository.existsByName(category.getName())) {
             throw new ExistDataException(category.getName() + " already exist");
@@ -42,6 +46,7 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
+    @CacheEvict(cacheNames = RedisCacheConfig.CATEGORY, key = "'all'")
     public Category update(Category category) throws Exception {
         Category categoryInDB = FindObjectInDataBase.findByIdOrThrow(categoryRepository, category.getId());
         if (category.getName() != null && !category.getName().equals(categoryInDB.getName())) {
@@ -59,8 +64,15 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
-    public List<Category> fetchAllCategory() throws Exception {
-        return this.categoryRepository.findAll();
+    @Cacheable(cacheNames = RedisCacheConfig.CATEGORY, key = "'all'")
+    public List<ResCategoryDTO> fetchAllCategory() throws Exception {
+        List<ResCategoryDTO> res = new ArrayList<>();
+        List<Category> categories = this.categoryRepository.findAll();
+        for (Category category : categories) {
+            ResCategoryDTO resCategoryDTO = ResCategoryDTO.from(category);
+            res.add(resCategoryDTO);
+        }
+        return res;
     }
 
     public Page<Category> filter(CriteriaFilterCategory criteriaFilterCategory, Pageable pageable) {
@@ -118,6 +130,7 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
+    @CacheEvict(cacheNames = RedisCacheConfig.CATEGORY, key = "'all'")
     public void delete(long id) throws Exception {
         FindObjectInDataBase.findByIdOrThrow(categoryRepository, id);
         this.categoryRepository.deleteById(id);
