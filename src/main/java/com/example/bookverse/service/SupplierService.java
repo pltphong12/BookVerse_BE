@@ -2,6 +2,7 @@ package com.example.bookverse.service;
 
 import java.util.List;
 
+import com.example.bookverse.dto.response.ResSupplierDTO;
 import org.springframework.data.domain.Pageable;
 
 import com.example.bookverse.domain.Supplier;
@@ -16,7 +17,7 @@ public interface SupplierService {
     // Fetch a one
     Supplier fetchSupplierById(long id) throws Exception;
     // Fetch all
-    List<Supplier> fetchAllSuppliers() throws Exception;
+    List<ResSupplierDTO> fetchAllSuppliers() throws Exception;
     // Fetch all with pagination and filter
     ResPagination fetchAllSuppliersWithPaginationAndFilter(CriteriaFilterSupplier criteriaFilterSupplier, Pageable pageable) throws Exception;
     // Delete

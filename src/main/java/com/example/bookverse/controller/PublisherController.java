@@ -2,6 +2,7 @@ package com.example.bookverse.controller;
 
 import java.util.List;
 
+import com.example.bookverse.dto.response.ResPublisherDTO;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -52,9 +53,9 @@ public class PublisherController {
     }
 
     @GetMapping("/publishers")
-    public ResponseEntity<List<Publisher>> getAll() throws Exception {
-        List<Publisher> publishers = this.publisherService.fetchAllPublisher();
-        return ResponseEntity.status(HttpStatus.OK).body(publishers);
+    public ResponseEntity<List<ResPublisherDTO>> getAll() throws Exception {
+        List<ResPublisherDTO> res = this.publisherService.fetchAllPublisher();
+        return ResponseEntity.status(HttpStatus.OK).body(res);
     }
 
     @GetMapping("/publishers/search")

@@ -2,6 +2,7 @@ package com.example.bookverse.service;
 
 import java.util.List;
 
+import com.example.bookverse.dto.response.ResAuthorDTO;
 import org.springframework.data.domain.Pageable;
 
 import com.example.bookverse.domain.Author;
@@ -19,7 +20,7 @@ public interface AuthorService {
     Author fetchAuthorById(long id) throws Exception;
 
     // Fetch all authors
-    List<Author> fetchAllAuthors() throws Exception;
+    List<ResAuthorDTO> fetchAllAuthors() throws Exception;
 
     // Fetch all authors with pagination and filter
     ResPagination fetchAllAuthorsWithPaginationAndFilter(CriteriaFilterAuthor criteriaFilterAuthor, Pageable pageable) throws Exception;

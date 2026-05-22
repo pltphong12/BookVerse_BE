@@ -114,7 +114,7 @@ public class AuthController {
         return ResponseEntity.status(HttpStatus.OK).header(HttpHeaders.SET_COOKIE, springCookie.toString()).body(resLoginDTO);
     }
 
-    @GetMapping("/auth/account")
+    @GetMapping("/auth/me")
     public ResponseEntity<ResUserDTO> getAccount() {
         String email = SecurityUtil.getCurrentUserLogin().isPresent() ? SecurityUtil.getCurrentUserLogin().get() : "";
         User currentUser = this.userService.fetchUserByEmail(email);

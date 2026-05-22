@@ -59,13 +59,8 @@ public class AuthorController {
     @GetMapping("/authors")
     @PreAuthorize("hasAuthority('AUTHOR_VIEW_ALL')")
     public ResponseEntity<List<ResAuthorDTO>> getAuthors() throws Exception {
-        List<ResAuthorDTO> resAuthorDTOS = new ArrayList<>();
-        List<Author> authors = this.authorService.fetchAllAuthors();
-        for (Author author : authors) {
-            ResAuthorDTO authorDTO = ResAuthorDTO.from(author);
-            resAuthorDTOS.add(authorDTO);
-        }
-        return ResponseEntity.status(HttpStatus.OK).body(resAuthorDTOS);
+        List<ResAuthorDTO> res = this.authorService.fetchAllAuthors();
+        return ResponseEntity.status(HttpStatus.OK).body(res);
     }
 
     @GetMapping("/authors/search")

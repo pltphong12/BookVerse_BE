@@ -2,6 +2,7 @@ package com.example.bookverse.controller;
 
 import java.util.List;
 
+import com.example.bookverse.dto.response.ResSupplierDTO;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -54,9 +55,9 @@ public class SupplierController {
     }
     
     @GetMapping("/suppliers")
-    public ResponseEntity<List<Supplier>> getAllSuppliers() throws Exception {
-        List<Supplier> suppliers = this.supplierService.fetchAllSuppliers();
-        return ResponseEntity.status(HttpStatus.OK).body(suppliers);
+    public ResponseEntity<List<ResSupplierDTO>> getAllSuppliers() throws Exception {
+        List<ResSupplierDTO> res = this.supplierService.fetchAllSuppliers();
+        return ResponseEntity.status(HttpStatus.OK).body(res);
     }
 
     @GetMapping("/suppliers/search")

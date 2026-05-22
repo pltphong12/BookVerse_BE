@@ -11,7 +11,7 @@ import java.time.Instant;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class ResPublisherDTO {
+public class ResSupplierDTO {
     private Long id;
     private String name;
     private String address;

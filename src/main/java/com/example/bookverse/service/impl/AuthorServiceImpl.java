@@ -5,6 +5,9 @@ import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.example.bookverse.config.RedisCacheConfig;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -37,6 +40,7 @@ public class AuthorServiceImpl implements AuthorService {
     }
 
     @Override
+    @CacheEvict(cacheNames = RedisCacheConfig.AUTHOR, key = "'all'")
     public Author create(Author author) throws Exception {
         if (this.authorRepository.existsByName(author.getName())) {
             throw new ExistDataException(author.getName() + " đã tồn tại");
@@ -45,6 +49,7 @@ public class AuthorServiceImpl implements AuthorService {
     }
 
     @Override
+    @CacheEvict(cacheNames = RedisCacheConfig.AUTHOR, key = "'all'")
     public Author update(Author author) throws Exception {
         Author authorInDB = FindObjectInDataBase.findByIdOrThrow(authorRepository, author.getId());
         if (author.getName() != null && !author.getName().equals(authorInDB.getName())) {
@@ -71,8 +76,15 @@ public class AuthorServiceImpl implements AuthorService {
     }
 
     @Override
-    public List<Author> fetchAllAuthors() throws Exception {
-        return this.authorRepository.findAll();
+    @Cacheable(cacheNames = RedisCacheConfig.AUTHOR, key = "'all'")
+    public List<ResAuthorDTO> fetchAllAuthors() throws Exception {
+        List<ResAuthorDTO> res = new ArrayList<>();
+        List<Author> authors = this.authorRepository.findAll();
+        for (Author author : authors) {
+            ResAuthorDTO authorDTO = ResAuthorDTO.from(author);
+            res.add(authorDTO);
+        }
+        return res;
     }
 
     private Page<Author> filter(CriteriaFilterAuthor criteriaFilterAuthor, Pageable pageable) {
@@ -130,6 +142,7 @@ public class AuthorServiceImpl implements AuthorService {
     }
 
     @Override
+    @CacheEvict(cacheNames = RedisCacheConfig.AUTHOR, key = "'all'")
     public void delete(long id) throws Exception {
         Author author = FindObjectInDataBase.findByIdOrThrow(authorRepository, id);
         List<Author> authors = new ArrayList<>();

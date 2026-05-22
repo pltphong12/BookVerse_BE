@@ -2,8 +2,14 @@ package com.example.bookverse.service.impl;
 
 import java.time.Instant;
 import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.List;
 
+import com.example.bookverse.config.RedisCacheConfig;
+import com.example.bookverse.dto.response.ResSupplierDTO;
+import org.modelmapper.ModelMapper;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -24,13 +30,16 @@ import com.querydsl.jpa.impl.JPAQueryFactory;
 public class SupplierServiceImpl implements SupplierService{
     private final SupplierRepository supplierRepository;
     private final JPAQueryFactory queryFactory;
+    private final ModelMapper mapper;
 
-    public SupplierServiceImpl(SupplierRepository supplierRepository, JPAQueryFactory queryFactory) {
+    public SupplierServiceImpl(SupplierRepository supplierRepository, JPAQueryFactory queryFactory,  ModelMapper mapper) {
         this.supplierRepository = supplierRepository;
         this.queryFactory = queryFactory;
+        this.mapper = mapper;
     }
 
     @Override
+    @CacheEvict(cacheNames = RedisCacheConfig.SUPPLIER, key = "'all'")
     public Supplier create(Supplier supplier) throws Exception {
         if (supplierRepository.existsByName(supplier.getName())) {
             throw new ExistDataException(supplier.getName() + " already exists");
@@ -39,6 +48,7 @@ public class SupplierServiceImpl implements SupplierService{
     }
     
     @Override
+    @CacheEvict(cacheNames = RedisCacheConfig.SUPPLIER, key = "'all'")
     public Supplier update(Supplier supplier) throws Exception {
         Supplier supplierInDB = FindObjectInDataBase.findByIdOrThrow(supplierRepository, supplier.getId());
         if (supplier.getName() != null && !supplier.getName().equals(supplierInDB.getName())) {
@@ -71,8 +81,15 @@ public class SupplierServiceImpl implements SupplierService{
     }
     
     @Override
-    public List<Supplier> fetchAllSuppliers() throws Exception {
-        return supplierRepository.findAll();
+    @Cacheable(cacheNames = RedisCacheConfig.SUPPLIER, key = "'all'")
+    public List<ResSupplierDTO> fetchAllSuppliers() throws Exception {
+        List<ResSupplierDTO> res = new ArrayList<>();
+        List<Supplier> suppliers = supplierRepository.findAll();
+        for (Supplier supplier : suppliers){
+            ResSupplierDTO resSupplierDTO = mapper.map(supplier, ResSupplierDTO.class);
+            res.add(resSupplierDTO);
+        }
+        return res;
     }
 
     public Page<Supplier> filter(CriteriaFilterSupplier criteriaFilterSupplier, Pageable pageable) {
@@ -124,6 +141,7 @@ public class SupplierServiceImpl implements SupplierService{
     }
 
     @Override
+    @CacheEvict(cacheNames = RedisCacheConfig.SUPPLIER, key = "'all'")
     public void delete(long id) throws Exception {
         supplierRepository.deleteById(id);
     }
