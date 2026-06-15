@@ -1,5 +1,33 @@
-version: '3.8'
 services:
+  app:
+    build: .
+    container_name: bookverse-app
+    ports:
+      - "8080:8080"
+    depends_on:
+      mysql-db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      elasticsearch:
+        condition: service_healthy
+    restart: unless-stopped
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql-db:3306/${MYSQL_DATABASE}
+      SPRING_DATASOURCE_USERNAME: ${MYSQL_USERNAME}
+      SPRING_DATASOURCE_PASSWORD: ${MYSQL_PASSWORD}
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATA_REDIS_PORT: 6379
+      SPRING_DATA_REDIS_PASSWORD: ${REDIS_PASSWORD}
+      SPRING_ELASTICSEARCH_URIS: http://elasticsearch:9200
+      BOOKVERSE_JWT_BASE64_SECRET: ${BOOKVERSE_JWT_BASE64_SECRET}
+      BOOKVERSE_UPLOAD_BASE_URI: ${BOOKVERSE_UPLOAD_BASE_URI}
+      BOOKVERSE_VNPAY_TMN_CODE: ${BOOKVERSE_VNPAY_TMN_CODE}
+      BOOKVERSE_VNPAY_HASH_SECRET: ${BOOKVERSE_VNPAY_HASH_SECRET}
+      BOOKVERSE_VNPAY_PAYMENT_URL: ${BOOKVERSE_VNPAY_PAYMENT_URL}
+      BOOKVERSE_VNPAY_RETURN_URL: ${BOOKVERSE_VNPAY_RETURN_URL}
+      BOOKVERSE_VNPAY_FRONTEND_SUCCESS_URL: ${BOOKVERSE_VNPAY_FRONTEND_SUCCESS_URL}
+      BOOKVERSE_VNPAY_FRONTEND_FAIL_URL: ${BOOKVERSE_VNPAY_FRONTEND_FAIL_URL}
   # MySQL Database Service
   mysql-db:
     image: mysql:8.0
@@ -13,6 +41,11 @@ services:
     volumes:
       - ./mysql_data:/var/lib/mysql
       - ./init:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "--silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
   # Elasticsearch Service
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:8.13.0
@@ -25,16 +58,28 @@ services:
       - "9200:9200"
     volumes:
       - es_data:/usr/share/elasticsearch/data
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS 'http://localhost:9200/_cluster/health?wait_for_status=yellow&timeout=1s' || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
   # Redis Service
   redis:
     image: redis:8-alpine
     container_name: redis
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
     ports:
       - "6379:6379"
     volumes:
       - redis_data:/data
     command: redis-server --requirepass ${REDIS_PASSWORD} --appendonly yes
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli -a \"$${REDIS_PASSWORD}\" ping | grep PONG"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
 
 volumes:
   es_data:

@@ -1,0 +1,6 @@
+target
+.idea
+.git
+mysql_data
+*.log
+.env

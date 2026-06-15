@@ -50,6 +50,7 @@ public class SecurityConfiguration {
                         .requestMatchers(HttpMethod.GET, "/api/v1/categories").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/publishers").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/suppliers").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/books/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/search/**").permitAll()
                         .anyRequest().authenticated())
                 .formLogin(AbstractHttpConfigurer::disable)
