@@ -70,6 +70,23 @@ bookverse:
     return-url: ${BOOKVERSE_VNPAY_RETURN_URL}
     frontend-success-url: ${BOOKVERSE_VNPAY_FRONTEND_SUCCESS_URL}
     frontend-fail-url: ${BOOKVERSE_VNPAY_FRONTEND_FAIL_URL}
+  chatbot:
+    max-memory-messages: 5
+    top-k: 3
+
+langchain4j:
+  google-ai-gemini:
+    chat-model:
+      api-key: ${GEMINI_API_KEY}
+      model-name: gemini-2.5-flash
+      temperature: 0.2
+    streaming-chat-model:
+      api-key: ${GEMINI_API_KEY}
+      model-name: gemini-2.5-flash
+      temperature: 0.2
+    embedding-model:
+      api-key: ${GEMINI_API_KEY}
+      model-name: gemini-embedding-001
 
 # Gửi mail (bật khi cần)
 # spring:

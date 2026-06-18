@@ -24,6 +24,7 @@ import com.example.bookverse.exception.global.ExistDataException;
 import com.example.bookverse.repository.AuthorRepository;
 import com.example.bookverse.repository.BookSearchRepository;
 import com.example.bookverse.repository.BookRepository;
+import com.example.bookverse.service.BookEmbeddingService;
 import com.example.bookverse.service.BookService;
 import com.example.bookverse.util.EntityValidator;
 import com.example.bookverse.util.FindObjectInDataBase;
@@ -36,15 +37,24 @@ public class BookServiceImpl implements BookService {
     private final BookSearchRepository bookSearchRepository;
     private final AuthorRepository authorRepository;
     private final JPAQueryFactory queryFactory;
+    private final BookEmbeddingService bookEmbeddingService;
 
     public BookServiceImpl(BookRepository bookRepository,
             BookSearchRepository bookSearchRepository,
             AuthorRepository authorRepository,
-            JPAQueryFactory queryFactory) {
+            JPAQueryFactory queryFactory,
+            BookEmbeddingService bookEmbeddingService) {
         this.bookRepository = bookRepository;
         this.bookSearchRepository = bookSearchRepository;
         this.authorRepository = authorRepository;
         this.queryFactory = queryFactory;
+        this.bookEmbeddingService = bookEmbeddingService;
+    }
+
+    private BookDocument toSearchDocumentWithEmbedding(Book book) {
+        BookDocument document = BookDocument.fromBook(book);
+        document.setEmbedding(bookEmbeddingService.embed(document.getRagContent()));
+        return document;
     }
 
     @Override
@@ -88,7 +98,7 @@ public class BookServiceImpl implements BookService {
         }
 
         Book savedBook = this.bookRepository.save(book);
-        this.bookSearchRepository.save(BookDocument.fromBook(savedBook));
+        this.bookSearchRepository.save(toSearchDocumentWithEmbedding(savedBook));
         return savedBook;
     }
 
@@ -174,7 +184,7 @@ public class BookServiceImpl implements BookService {
         }
 
         Book updatedBook = this.bookRepository.save(bookInDB);
-        this.bookSearchRepository.save(BookDocument.fromBook(updatedBook));
+        this.bookSearchRepository.save(toSearchDocumentWithEmbedding(updatedBook));
         return updatedBook;
     }
 
