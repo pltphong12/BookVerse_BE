@@ -1,4 +1,4 @@
-package com.example.bookverse.dto.response;
+package com.example.bookverse.dto.record;
 
 import java.util.List;
 

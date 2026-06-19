@@ -11,6 +11,8 @@ import com.example.bookverse.domain.Book;
 import com.example.bookverse.domain.QBook;
 import com.example.bookverse.dto.criteria.CriteriaFilterProduct;
 import com.example.bookverse.dto.enums.SortType;
+import com.example.bookverse.dto.record.ProductHit;
+import com.example.bookverse.dto.record.SearchAutocompleteResponse;
 import com.example.bookverse.dto.response.*;
 import com.example.bookverse.repository.BookRepository;
 import com.querydsl.core.BooleanBuilder;

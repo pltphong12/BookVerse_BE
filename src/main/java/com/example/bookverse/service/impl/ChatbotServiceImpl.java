@@ -5,8 +5,11 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import com.example.bookverse.dto.response.RagSearchResult;
+import com.example.bookverse.dto.record.ChatHistoryResponse;
+import com.example.bookverse.dto.record.ChatMemoryMessage;
+import com.example.bookverse.dto.record.RagSearchResult;
 import com.example.bookverse.service.BookverseAssistant;
+import com.example.bookverse.service.ChatMemoryService;
 import com.example.bookverse.service.ChatbotService;
 import com.example.bookverse.service.RagRetrievalService;
 
@@ -15,31 +18,56 @@ import dev.langchain4j.service.AiServices;
 import dev.langchain4j.service.TokenStream;
 
 @Service
-public class ChatbotServiceImpl implements ChatbotService{
-    private static final String OUT_OF_SCOPE_RESPONSE =
-            "Hiện tại mình chưa có đủ thông tin về nội dung này trong dữ liệu BookVerse.";
+public class ChatbotServiceImpl implements ChatbotService {
+    private static final String OUT_OF_SCOPE_RESPONSE = "Hiện tại mình chưa có đủ thông tin về nội dung này trong dữ liệu BookVerse.";
     private final RagRetrievalService ragRetrievalService;
+    private final ChatMemoryService chatMemoryService;
     private final BookverseAssistant assistant;
     private final int topK;
+
     public ChatbotServiceImpl(
             RagRetrievalService ragRetrievalService,
             StreamingChatModel streamingChatModel,
+            ChatMemoryService chatMemoryService,
             @Value("${bookverse.chatbot.top-k:3}") int topK) {
         this.ragRetrievalService = ragRetrievalService;
+        this.chatMemoryService = chatMemoryService;
         this.assistant = AiServices.builder(BookverseAssistant.class)
                 .streamingChatModel(streamingChatModel)
                 .build();
         this.topK = topK;
     }
+
     @Override
     public TokenStream stream(String sessionId, String message) {
-        List<RagSearchResult> contexts = ragRetrievalService.retrieve(message, topK);
-        String prompt = buildPrompt(sessionId, message, contexts);
+        List<ChatMemoryMessage> history = chatMemoryService.getRecentMessages(sessionId);
+        String retrievalQuery = buildRetrievalQuery(message, history);
+        List<RagSearchResult> contexts = ragRetrievalService.retrieve(retrievalQuery, topK);
+        String prompt = buildPrompt(sessionId, message, history, contexts);
+
+        chatMemoryService.addUserMessage(sessionId, message);
+
         return assistant.chat(prompt);
     }
-    private String buildPrompt(String sessionId, String message, List<RagSearchResult> contexts) {
+
+    @Override
+    public void rememberAssistantMessage(String sessionId, String message) {
+        chatMemoryService.addAssistantMessage(sessionId, message);
+    }
+
+    @Override
+    public ChatHistoryResponse getHistory(String sessionId) {
+        return new ChatHistoryResponse(sessionId, chatMemoryService.getRecentMessages(sessionId));
+    }
+
+    private String buildPrompt(
+            String sessionId,
+            String message,
+            List<ChatMemoryMessage> history,
+            List<RagSearchResult> contexts) {
         return """
                 Bạn là trợ lý bán sách của BookVerse.
+
                 QUY TẮC BẮT BUỘC:
                 - Chỉ trả lời dựa trên CONTEXT được cung cấp bên dưới.
                 - Không tự bịa giá bán, tồn kho, tác giả, nhà xuất bản, khuyến mãi hoặc thông tin sản phẩm.
@@ -47,18 +75,53 @@ public class ChatbotServiceImpl implements ChatbotService{
                   "%s"
                 - Từ chối khéo các câu hỏi ngoài phạm vi tư vấn sách/sản phẩm BookVerse.
                 - Trả lời bằng tiếng Việt, thân thiện, ngắn gọn.
+
                 SESSION_ID:
                 %s
+
+                LỊCH SỬ HỘI THOẠI GẦN NHẤT:
+                %s
+
                 CONTEXT:
                 %s
+
                 CÂU HỎI KHÁCH HÀNG:
                 %s
                 """.formatted(
                 OUT_OF_SCOPE_RESPONSE,
                 sessionId,
+                formatHistory(history),
                 formatContexts(contexts),
                 message);
     }
+
+    private String buildRetrievalQuery(String message, List<ChatMemoryMessage> history) {
+        if (history == null || history.isEmpty()) {
+            return message;
+        }
+    
+        return """
+                Lịch sử hội thoại gần nhất:
+                %s
+    
+                Câu hỏi hiện tại: %s
+                """.formatted(formatHistory(history), message);
+    }
+    
+    private String formatHistory(List<ChatMemoryMessage> history) {
+        if (history == null || history.isEmpty()) {
+            return "Không có lịch sử hội thoại.";
+        }
+    
+        StringBuilder builder = new StringBuilder();
+        for (ChatMemoryMessage item : history) {
+            builder.append(item.role() == ChatMemoryMessage.Role.USER ? "Khách hàng: " : "Trợ lý: ")
+                    .append(item.content())
+                    .append('\n');
+        }
+        return builder.toString().trim();
+    }
+
     private String formatContexts(List<RagSearchResult> contexts) {
         if (contexts == null || contexts.isEmpty()) {
             return "Không tìm thấy context phù hợp.";
@@ -77,5 +140,5 @@ public class ChatbotServiceImpl implements ChatbotService{
                     .append("\n\n");
         }
         return builder.toString().trim();
-    }  
+    }
 }

@@ -8,7 +8,7 @@ import java.util.Map;
 
 import org.springframework.stereotype.Service;
 
-import com.example.bookverse.dto.response.RagSearchResult;
+import com.example.bookverse.dto.record.RagSearchResult;
 import com.example.bookverse.elasticsearch.BookDocument;
 import com.example.bookverse.service.BookEmbeddingService;
 import com.example.bookverse.service.RagRetrievalService;

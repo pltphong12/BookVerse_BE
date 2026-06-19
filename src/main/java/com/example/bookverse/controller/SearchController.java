@@ -1,8 +1,8 @@
 package com.example.bookverse.controller;
 
 import com.example.bookverse.dto.criteria.CriteriaFilterProduct;
+import com.example.bookverse.dto.record.SearchAutocompleteResponse;
 import com.example.bookverse.dto.response.ResPagination;
-import com.example.bookverse.dto.response.SearchAutocompleteResponse;
 import com.example.bookverse.service.SearchService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;

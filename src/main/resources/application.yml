@@ -71,8 +71,9 @@ bookverse:
     frontend-success-url: ${BOOKVERSE_VNPAY_FRONTEND_SUCCESS_URL}
     frontend-fail-url: ${BOOKVERSE_VNPAY_FRONTEND_FAIL_URL}
   chatbot:
-    max-memory-messages: 5
-    top-k: 3
+    max-memory-messages: ${BOOKVERSE_CHATBOT_MAX_MEMORY_MESSAGES}
+    top-k: ${BOOKVERSE_CHATBOT_TOP_K}
+    memory-ttl-minutes: ${BOOKVERSE_CHATBOT_MEMORY_TTL_MINUTES}
 
 langchain4j:
   google-ai-gemini:
