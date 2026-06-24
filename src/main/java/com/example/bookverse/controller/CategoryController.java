@@ -1,6 +1,5 @@
 package com.example.bookverse.controller;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.data.domain.Pageable;

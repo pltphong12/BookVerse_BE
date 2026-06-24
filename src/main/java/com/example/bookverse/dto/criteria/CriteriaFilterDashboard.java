@@ -1,6 +1,5 @@
 package com.example.bookverse.dto.criteria;
 
-import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
