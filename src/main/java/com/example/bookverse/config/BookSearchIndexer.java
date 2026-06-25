@@ -7,6 +7,7 @@ import com.example.bookverse.repository.BookSearchRepository;
 import com.example.bookverse.service.BookEmbeddingService;
 
 import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.annotation.Profile;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Component;
 
@@ -14,6 +15,7 @@ import com.example.bookverse.domain.Book;
 import com.example.bookverse.repository.BookRepository;
 
 @Component
+@Profile("!test")
 public class BookSearchIndexer {
     private final BookRepository bookRepository;
     private final BookSearchRepository bookSearchRepository;
@@ -31,6 +33,9 @@ public class BookSearchIndexer {
         List<BookDocument> docs = allBooks.stream()
                 .map(this::toSearchDocumentWithEmbedding)
                 .toList();
+        if (docs.isEmpty()) {
+            return;
+        }
         bookSearchRepository.saveAll(docs);
     }
 
