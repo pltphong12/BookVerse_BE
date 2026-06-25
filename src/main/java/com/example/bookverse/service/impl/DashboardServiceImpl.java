@@ -8,6 +8,7 @@ import com.example.bookverse.repository.CustomerRepository;
 import com.example.bookverse.repository.OrderDetailRepository;
 import com.example.bookverse.repository.OrderRepository;
 import com.example.bookverse.service.DashboardService;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -99,7 +100,7 @@ public class DashboardServiceImpl implements DashboardService {
         }
 
         List<ResDashboardDTO.ResTopProduct> topProducts = new ArrayList<>();
-        for (Object[] row : orderDetailRepository.findTopProducts(from, to, topN)) {
+        for (Object[] row : orderDetailRepository.findTopProducts(from, to, PageRequest.of(0, topN))) {
             if (row == null || row.length < 4) {
                 continue;
             }

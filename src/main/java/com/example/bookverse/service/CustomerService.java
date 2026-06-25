@@ -7,8 +7,6 @@ import com.example.bookverse.dto.request.ReqCustomerDTO;
 import com.example.bookverse.dto.response.ResCustomerDTO;
 import com.example.bookverse.dto.response.ResPagination;
 
-import java.math.BigDecimal;
-
 public interface CustomerService {
     ResCustomerDTO create(ReqCustomerDTO reqCustomerDTO) throws Exception;
 

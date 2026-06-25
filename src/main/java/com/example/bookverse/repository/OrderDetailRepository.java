@@ -1,14 +1,13 @@
 package com.example.bookverse.repository;
 
 import com.example.bookverse.domain.OrderDetail;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.stereotype.Repository;
 
 import java.time.Instant;
 import java.util.List;
 
-@Repository
 public interface OrderDetailRepository extends JpaRepository<OrderDetail, Long> {
     @Query("""
             SELECT COALESCE(SUM(od.quantity), 0) FROM OrderDetail od
@@ -29,7 +28,6 @@ public interface OrderDetailRepository extends JpaRepository<OrderDetail, Long> 
               AND o.status <> 'CANCELLED'
             GROUP BY od.book_id, b.title
             ORDER BY soldQty DESC, revenue DESC
-            LIMIT :topN
             """, nativeQuery = true)
-    List<Object[]> findTopProducts(Instant from, Instant to, int topN);
+    List<Object[]> findTopProducts(Instant from, Instant to, Pageable pageable);
 }

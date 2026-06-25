@@ -1,0 +1,94 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: bookverse
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -uroot -proot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+
+      redis:
+        image: redis:8-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+      elasticsearch:
+        image: docker.elastic.co/elasticsearch/elasticsearch:8.13.0
+        env:
+          discovery.type: single-node
+          xpack.security.enabled: "false"
+          ES_JAVA_OPTS: -Xms512m -Xmx512m
+        ports:
+          - 9200:9200
+        options: >-
+          --health-cmd="curl -fsS 'http://localhost:9200/_cluster/health?wait_for_status=yellow&timeout=1s' || exit 1"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=12
+
+    env:
+      SPRING_PROFILES_ACTIVE: test
+      MYSQL_URL: jdbc:mysql://localhost:3306/bookverse
+      MYSQL_USERNAME: root
+      MYSQL_PASSWORD: root
+      REDIS_PASSWORD: ""
+      BOOKVERSE_JWT_BASE64_SECRET: Ym9va3ZlcnNlLWNpLWp3dC1zZWNyZXQta2V5LTMyYnl0ZXMh
+      BOOKVERSE_UPLOAD_BASE_URI: file:///tmp/bookverse-upload/
+      BOOKVERSE_VNPAY_TMN_CODE: CI_TEST
+      BOOKVERSE_VNPAY_HASH_SECRET: CI_TEST_HASH
+      BOOKVERSE_VNPAY_PAYMENT_URL: https://sandbox.vnpayment.vn/paymentv2/vpcpay.html
+      BOOKVERSE_VNPAY_RETURN_URL: http://localhost:8080/api/v1/payments/vnpay/return
+      BOOKVERSE_VNPAY_FRONTEND_SUCCESS_URL: http://localhost:5173/payment/success
+      BOOKVERSE_VNPAY_FRONTEND_FAIL_URL: http://localhost:5173/payment/failure
+      GEMINI_API_KEY: ci-placeholder
+      BOOKVERSE_CHATBOT_MAX_MEMORY_MESSAGES: "10"
+      BOOKVERSE_CHATBOT_TOP_K: "3"
+      BOOKVERSE_CHATBOT_MEMORY_TTL_MINUTES: "60"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: "21"
+          distribution: temurin
+          cache: maven
+
+      - name: Build and test
+        run: ./mvnw -B verify
+
+      - name: Upload test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: surefire-reports
+          path: target/surefire-reports
