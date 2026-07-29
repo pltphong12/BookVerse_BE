@@ -20,6 +20,7 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -131,7 +132,10 @@ public class AuthController {
         if (email.equals(" ")) {
             throw new IdInvalidException("Access Token không hợp lệ");
         }
+        JwtAuthenticationToken auth = (JwtAuthenticationToken) SecurityContextHolder.getContext().getAuthentication();
+        String accessToken = auth.getToken().getTokenValue();
         this.userService.updateRefreshToken(email, null);
+        this.securityUtil.blacklistToken(accessToken);
         ResponseCookie springCookie = ResponseCookie.from("refresh_token", null).httpOnly(true)
                 .secure(true)
                 .path("/")

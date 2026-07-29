@@ -3,6 +3,7 @@ package com.example.bookverse.util;
 import com.example.bookverse.dto.response.ResLoginDTO;
 import com.nimbusds.jose.util.Base64;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -13,19 +14,25 @@ import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 @Service
 public class SecurityUtil {
     private final JwtEncoder jwtEncoder;
+    private final JwtDecoder jwtDecoder;
+    private final StringRedisTemplate stringRedisTemplate;
 
-    public SecurityUtil(JwtEncoder jwtEncoder) {
+    public SecurityUtil(JwtEncoder jwtEncoder, JwtDecoder jwtDecoder, StringRedisTemplate stringRedisTemplate) {
         this.jwtEncoder = jwtEncoder;
+        this.jwtDecoder = jwtDecoder;
+        this.stringRedisTemplate = stringRedisTemplate;
     }
 
     public static final MacAlgorithm JWT_ALGORITHM = MacAlgorithm.HS512;
@@ -152,5 +159,18 @@ public class SecurityUtil {
             return Optional.of(n.longValue());
         }
         return Optional.empty();
+    }
+
+    public void blacklistToken(String token) {
+        Jwt jwt = jwtDecoder.decode(token);
+        Instant expiration = jwt.getExpiresAt();
+        long ttl = Duration.between(Instant.now(), expiration).getSeconds();
+        if (ttl > 0) {
+            stringRedisTemplate.opsForValue().set("blacklist:" + token, "true", ttl, TimeUnit.SECONDS);
+        }
+    }
+
+    public Boolean isTokenBlacklisted(String token) {
+        return Boolean.TRUE.equals(stringRedisTemplate.hasKey("blacklist:" + token));
     }
 }

@@ -76,7 +76,7 @@ public class AuthorServiceImpl implements AuthorService {
     }
 
     @Override
-    @Cacheable(cacheNames = RedisCacheConfig.AUTHOR, key = "'all'")
+    @Cacheable(cacheNames = RedisCacheConfig.AUTHOR, key = "'all'", unless = "#result == null or #result.empty")
     public List<ResAuthorDTO> fetchAllAuthors() throws Exception {
         List<ResAuthorDTO> res = new ArrayList<>();
         List<Author> authors = this.authorRepository.findAll();
@@ -116,6 +116,7 @@ public class AuthorServiceImpl implements AuthorService {
     }
 
     @Override
+    @Cacheable(cacheNames = RedisCacheConfig.AUTHOR, key = "'allWithPaginationAndFilter:' + #criteriaFilterAuthor + '_' + #pageable", unless = "#result == null or #result.empty")
     public ResPagination fetchAllAuthorsWithPaginationAndFilter(CriteriaFilterAuthor criteriaFilterAuthor, Pageable pageable) throws Exception {
         Page<Author> pageAuthor = this.filter(criteriaFilterAuthor, pageable);
         ResPagination rs = new ResPagination();

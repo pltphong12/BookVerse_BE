@@ -81,7 +81,7 @@ public class SupplierServiceImpl implements SupplierService{
     }
     
     @Override
-    @Cacheable(cacheNames = RedisCacheConfig.SUPPLIER, key = "'all'")
+    @Cacheable(cacheNames = RedisCacheConfig.SUPPLIER, key = "'all'", unless = "#result == null or #result.empty")
     public List<ResSupplierDTO> fetchAllSuppliers() throws Exception {
         List<ResSupplierDTO> res = new ArrayList<>();
         List<Supplier> suppliers = supplierRepository.findAll();
@@ -121,6 +121,7 @@ public class SupplierServiceImpl implements SupplierService{
     }
 
     @Override
+    @Cacheable(cacheNames = RedisCacheConfig.SUPPLIER, key = "'allWithPaginationAndFilter:' + #criteriaFilterSupplier + '_' + #pageable", unless = "#result == null or #result.empty")
     public ResPagination fetchAllSuppliersWithPaginationAndFilter(CriteriaFilterSupplier criteriaFilterSupplier, Pageable pageable) throws Exception {
         Page<Supplier> pageSupplier = this.filter(criteriaFilterSupplier, pageable);
         ResPagination rs = new ResPagination();

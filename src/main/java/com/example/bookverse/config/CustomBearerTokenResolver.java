@@ -1,6 +1,8 @@
 package com.example.bookverse.config;
 
+import com.example.bookverse.util.SecurityUtil;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.oauth2.server.resource.web.BearerTokenResolver;
 import org.springframework.security.oauth2.server.resource.web.DefaultBearerTokenResolver;
 import org.springframework.stereotype.Component;
@@ -8,7 +10,10 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 
 @Component
+@RequiredArgsConstructor
 public class CustomBearerTokenResolver implements BearerTokenResolver {
+
+    private final SecurityUtil securityUtil;
 
     private final List<String> whitelist = List.of(
             "/api/v1/auth/login",
@@ -27,7 +32,10 @@ public class CustomBearerTokenResolver implements BearerTokenResolver {
         if (whitelist.contains(path)) {
             return null;
         }
-        // Ngược lại thì vẫn parse token như bình thường
-        return defaultResolver.resolve(request);
+        String token = defaultResolver.resolve(request);
+        if (token != null && securityUtil.isTokenBlacklisted(token)) {
+            return null;
+        }
+        return token;
     }
 }

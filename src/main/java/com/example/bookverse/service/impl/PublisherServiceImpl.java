@@ -82,7 +82,7 @@ public class PublisherServiceImpl implements PublisherService {
 
     // Fetch all
     @Override
-    @Cacheable(cacheNames = RedisCacheConfig.PUBLISHER, key = "'all'")
+    @Cacheable(cacheNames = RedisCacheConfig.PUBLISHER, key = "'all'", unless = "#result == null or #result.empty")
     public List<ResPublisherDTO> fetchAllPublisher() throws Exception {
         List<ResPublisherDTO> res = new ArrayList<>();
         List<Publisher> publishers = this.publisherRepository.findAll();
@@ -122,6 +122,7 @@ public class PublisherServiceImpl implements PublisherService {
     }
 
     @Override
+    @Cacheable(cacheNames = RedisCacheConfig.PUBLISHER, key = "'allWithPaginationAndFilter:' + #criteriaFilterPublisher + '_' + #pageable", unless = "#result == null or #result.empty")
     public ResPagination fetchAllPublisherWithPaginationAndFilter(CriteriaFilterPublisher criteriaFilterPublisher, Pageable pageable) throws Exception {
         Page<Publisher> pagePublisher = this.filter(criteriaFilterPublisher, pageable);
         ResPagination rs = new ResPagination();
