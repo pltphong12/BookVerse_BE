@@ -116,7 +116,7 @@ public class AuthorServiceImpl implements AuthorService {
     }
 
     @Override
-    @Cacheable(cacheNames = RedisCacheConfig.AUTHOR, key = "'allWithPaginationAndFilter:' + #criteriaFilterAuthor + '_' + #pageable", unless = "#result == null or #result.empty")
+    @Cacheable(cacheNames = RedisCacheConfig.AUTHOR, key = "'allWithPaginationAndFilter:' + #criteriaFilterAuthor + '_' + #pageable", unless = "#result == null or #result.meta == null or #result.meta.total == 0")
     public ResPagination fetchAllAuthorsWithPaginationAndFilter(CriteriaFilterAuthor criteriaFilterAuthor, Pageable pageable) throws Exception {
         Page<Author> pageAuthor = this.filter(criteriaFilterAuthor, pageable);
         ResPagination rs = new ResPagination();

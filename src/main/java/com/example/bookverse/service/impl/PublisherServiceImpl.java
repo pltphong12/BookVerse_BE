@@ -122,7 +122,7 @@ public class PublisherServiceImpl implements PublisherService {
     }
 
     @Override
-    @Cacheable(cacheNames = RedisCacheConfig.PUBLISHER, key = "'allWithPaginationAndFilter:' + #criteriaFilterPublisher + '_' + #pageable", unless = "#result == null or #result.empty")
+    @Cacheable(cacheNames = RedisCacheConfig.PUBLISHER, key = "'allWithPaginationAndFilter:' + #criteriaFilterPublisher + '_' + #pageable", unless = "#result == null or #result.meta == null or #result.meta.total == 0")
     public ResPagination fetchAllPublisherWithPaginationAndFilter(CriteriaFilterPublisher criteriaFilterPublisher, Pageable pageable) throws Exception {
         Page<Publisher> pagePublisher = this.filter(criteriaFilterPublisher, pageable);
         ResPagination rs = new ResPagination();

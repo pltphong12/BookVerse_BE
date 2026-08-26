@@ -104,7 +104,7 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
     @Override
-    @Cacheable(cacheNames = RedisCacheConfig.CATEGORY, key = "'allWithPaginationAndFilter:' + #criteriaFilterCategory + '_' + #pageable", unless = "#result == null or #result.empty")
+    @Cacheable(cacheNames = RedisCacheConfig.CATEGORY, key = "'allWithPaginationAndFilter:' + #criteriaFilterCategory + '_' + #pageable", unless = "#result == null or #result.meta == null or #result.meta.total == 0")
     public ResPagination fetchAllCategoriesWithPaginationAndFilter(CriteriaFilterCategory criteriaFilterCategory, Pageable pageable) throws Exception{
         Page<Category> pageCategory = this.filter(criteriaFilterCategory, pageable);
         ResPagination rs = new ResPagination();

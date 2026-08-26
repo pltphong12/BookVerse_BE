@@ -240,9 +240,9 @@ public class SearchServiceImpl implements SearchService {
         }
         return List.of(switch (sortType) {
             case NEWEST -> SortOptions.of(s -> s.field(f -> f.field("publisherYear").order(SortOrder.Desc)));
-            case SOLD_MOST -> SortOptions.of(s -> s.field(f -> f.field("sold").order(SortOrder.Desc)));
-            case PRICE_LOW_TO_HIGH -> SortOptions.of(s -> s.field(f -> f.field("price").order(SortOrder.Asc)));
-            case PRICE_HIGH_TO_LOW -> SortOptions.of(s -> s.field(f -> f.field("price").order(SortOrder.Desc)));
+            case BEST_SELLING -> SortOptions.of(s -> s.field(f -> f.field("sold").order(SortOrder.Desc)));
+            case PRICE_ASC -> SortOptions.of(s -> s.field(f -> f.field("price").order(SortOrder.Asc)));
+            case PRICE_DESC -> SortOptions.of(s -> s.field(f -> f.field("price").order(SortOrder.Desc)));
         });
     }
 
@@ -295,9 +295,9 @@ public class SearchServiceImpl implements SearchService {
         if (criteriaFilterProduct.getSortType() != null) {
             orderSpecifier = switch (criteriaFilterProduct.getSortType()) {
                 case NEWEST -> qBook.createdAt.desc();
-                case SOLD_MOST -> qBook.sold.desc();
-                case PRICE_LOW_TO_HIGH -> qBook.price.asc();
-                case PRICE_HIGH_TO_LOW -> qBook.price.desc();
+                case BEST_SELLING -> qBook.sold.desc();
+                case PRICE_ASC -> qBook.price.asc();
+                case PRICE_DESC -> qBook.price.desc();
             };
         }
 
