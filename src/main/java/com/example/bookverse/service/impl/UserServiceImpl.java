@@ -1,5 +1,6 @@
 package com.example.bookverse.service.impl;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.util.ArrayList;
@@ -11,15 +12,21 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import com.example.bookverse.domain.Cart;
+import com.example.bookverse.domain.Customer;
 import com.example.bookverse.domain.QUser;
 import com.example.bookverse.domain.Role;
 import com.example.bookverse.domain.User;
 import com.example.bookverse.dto.criteria.CriteriaFilterUser;
+import com.example.bookverse.dto.enums.CustomerLevel;
 import com.example.bookverse.dto.response.ResPagination;
 import com.example.bookverse.dto.response.ResUserDTO;
 import com.example.bookverse.exception.global.ExistDataException;
 import com.example.bookverse.exception.global.IdInvalidException;
+import com.example.bookverse.repository.CartRepository;
+import com.example.bookverse.repository.CustomerRepository;
 import com.example.bookverse.repository.RoleRepository;
 import com.example.bookverse.repository.UserRepository;
 import com.example.bookverse.service.UserService;
@@ -32,14 +39,19 @@ public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
+    private final CustomerRepository customerRepository;
+    private final CartRepository cartRepository;
     private final PasswordEncoder passwordEncoder;
     private final ModelMapper modelMapper;
     private final JPAQueryFactory queryFactory;
 
     public UserServiceImpl(UserRepository userRepository, PasswordEncoder passwordEncoder,
-            RoleRepository roleRepository, ModelMapper modelMapper, JPAQueryFactory queryFactory) {
+            RoleRepository roleRepository, CustomerRepository customerRepository, CartRepository cartRepository,
+            ModelMapper modelMapper, JPAQueryFactory queryFactory) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
+        this.customerRepository = customerRepository;
+        this.cartRepository = cartRepository;
         this.passwordEncoder = passwordEncoder;
         this.modelMapper = modelMapper;
         this.queryFactory = queryFactory;
@@ -172,6 +184,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional
     public User register(User user) throws Exception {
         if (this.userRepository.existsByEmail(user.getEmail())) {
             throw new ExistDataException("Email đã tồn tại");
@@ -180,7 +193,22 @@ public class UserServiceImpl implements UserService {
         user.setRole(role);
         String hashedPassword = passwordEncoder.encode(user.getPassword());
         user.setPassword(hashedPassword);
-        return this.userRepository.save(user);
+        User savedUser = this.userRepository.save(user);
+
+        Customer customer = new Customer();
+        customer.setUser(savedUser);
+        customer.setTotalOrder(0L);
+        customer.setTotalSpending(BigDecimal.ZERO);
+        customer.setCustomerLevel(CustomerLevel.BRONZE);
+        Customer savedCustomer = this.customerRepository.save(customer);
+        savedUser.setCustomer(savedCustomer);
+
+        Cart cart = new Cart();
+        cart.setCustomer(savedCustomer);
+        cart.setSum(0);
+        this.cartRepository.save(cart);
+
+        return savedUser;
     }
 
     @Override

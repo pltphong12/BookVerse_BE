@@ -79,6 +79,9 @@ public class AuthController {
     public ResponseEntity<ResUserDTO> register(@Valid @RequestBody User user) throws Exception {
         User newUser = this.userService.register(user);
         ResUserDTO userDTO = this.modelMapper.map(newUser, ResUserDTO.class);
+        if (newUser.getCustomer() != null) {
+            userDTO.setCustomerId(newUser.getCustomer().getId());
+        }
         return ResponseEntity.status(HttpStatus.CREATED).body(userDTO);
     }
 
