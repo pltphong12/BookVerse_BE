@@ -20,6 +20,7 @@ public class VnpayProperties {
     private String currCode = "VND";
     private String locale = "vn";
     private String orderType = "other";
+    private int paymentExpirationMinutes = 15;
 
     /**
      * Frontend URLs — backend redirect browser tới đây sau khi verify callback.

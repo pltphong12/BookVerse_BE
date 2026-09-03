@@ -56,6 +56,9 @@ public class Order {
     private double subtotal;
     private double shippingFee;
     private double discountTotal;
+    private double productDiscountTotal;
+    private double couponDiscountTotal;
+    private boolean stockReserved;
 
     private String receiverName;
     private String receiverAddress;

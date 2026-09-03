@@ -1,6 +1,7 @@
 package com.example.bookverse.service;
 
 import com.example.bookverse.dto.criteria.CriteriaFilterOrder;
+import com.example.bookverse.dto.request.ReqCheckoutFromCartDTO;
 import com.example.bookverse.dto.request.ReqCreateOrderDTO;
 import com.example.bookverse.dto.request.ReqUpdateOrderDTO;
 import com.example.bookverse.dto.response.ResOrderDTO;
@@ -11,6 +12,8 @@ import org.springframework.data.domain.Pageable;
 public interface OrderService {
 
     ResOrderDTO create(ReqCreateOrderDTO req) throws Exception;
+
+    ResOrderDTO checkoutFromCart(ReqCheckoutFromCartDTO req) throws Exception;
 
     ResOrderDTO update(ReqUpdateOrderDTO req) throws Exception;
 

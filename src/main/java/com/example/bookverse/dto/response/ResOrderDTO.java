@@ -27,6 +27,8 @@ public class ResOrderDTO {
     private double subtotal;
     private double shippingFee;
     private double discountTotal;
+    private double productDiscountTotal;
+    private double couponDiscountTotal;
     private String receiverName;
     private String receiverAddress;
     private String receiverPhone;
@@ -97,6 +99,8 @@ public class ResOrderDTO {
         resOrderDTO.setSubtotal(order.getSubtotal());
         resOrderDTO.setShippingFee(order.getShippingFee());
         resOrderDTO.setDiscountTotal(order.getDiscountTotal());
+        resOrderDTO.setProductDiscountTotal(order.getProductDiscountTotal());
+        resOrderDTO.setCouponDiscountTotal(order.getCouponDiscountTotal());
         resOrderDTO.setReceiverName(order.getReceiverName());
         resOrderDTO.setReceiverAddress(order.getReceiverAddress());
         resOrderDTO.setReceiverPhone(order.getReceiverPhone());

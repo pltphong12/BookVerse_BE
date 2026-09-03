@@ -1,6 +1,7 @@
 package com.example.bookverse.service.impl;
 
 import com.example.bookverse.config.VnpayProperties;
+import com.example.bookverse.domain.Book;
 import com.example.bookverse.domain.Order;
 import com.example.bookverse.domain.OrderDetail;
 import com.example.bookverse.domain.OrderPayment;
@@ -18,6 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.scheduling.annotation.Scheduled;
 
 import java.time.Instant;
 import java.util.HashMap;
@@ -87,7 +89,8 @@ public class VnpayPaymentServiceImpl implements VnpayPaymentService {
 
         // Idempotent: đã xử lý rồi
         if (payment.getStatus() == OrderPaymentStatus.SUCCESS
-                || payment.getStatus() == OrderPaymentStatus.FAILED) {
+                || payment.getStatus() == OrderPaymentStatus.FAILED
+                || payment.getStatus() == OrderPaymentStatus.CANCELLED) {
             log.info("IPN: đã xử lý trước đó, vnp_TxnRef={}, status={}", txnRef, payment.getStatus());
             return ipnResponse("00", "Confirm Success");
         }
@@ -114,7 +117,7 @@ public class VnpayPaymentServiceImpl implements VnpayPaymentService {
     private void confirmPayment(Map<String, String> params, boolean success) {
         String txnRef = params.get("vnp_TxnRef");
 
-        OrderPayment payment = orderPaymentRepository.findByProviderRef(txnRef).orElse(null);
+        OrderPayment payment = orderPaymentRepository.findByProviderRefForUpdate(txnRef).orElse(null);
         if (payment == null) {
             log.warn("confirmPayment: không tìm thấy OrderPayment, vnp_TxnRef={}", txnRef);
             return;
@@ -122,7 +125,8 @@ public class VnpayPaymentServiceImpl implements VnpayPaymentService {
 
         // Idempotent: đã xử lý rồi thì bỏ qua
         if (payment.getStatus() == OrderPaymentStatus.SUCCESS
-                || payment.getStatus() == OrderPaymentStatus.FAILED) {
+                || payment.getStatus() == OrderPaymentStatus.FAILED
+                || payment.getStatus() == OrderPaymentStatus.CANCELLED) {
             return;
         }
 
@@ -141,13 +145,14 @@ public class VnpayPaymentServiceImpl implements VnpayPaymentService {
             // Thực hiện việc cộng tiền
             customerService.updateTotalSpendingAndLevel(order.getCustomer().getId(), order.getTotalPrice());
 
-            deductStockForOrder(order);
+            confirmStockSaleForOrder(order);
 
             log.info("Thanh toán thành công: vnp_TxnRef={}, orderId={}", txnRef, order.getId());
         } else {
             payment.setStatus(OrderPaymentStatus.FAILED);
             order.setStatus(OrderStatus.CANCELLED);
             order.setPaymentStatus(PaymentStatus.FAILED);
+            releaseReservedStockForOrder(order);
             log.info("Thanh toán thất bại: vnp_TxnRef={}, responseCode={}", txnRef, params.get("vnp_ResponseCode"));
         }
 
@@ -155,16 +160,67 @@ public class VnpayPaymentServiceImpl implements VnpayPaymentService {
         orderRepository.save(order);
     }
 
-    // ─── Trừ kho khi thanh toán VNPAY thành công ────────────────────
+    // ─── Hoàn tất/giải phóng tồn kho VNPAY ─────────────────────────
 
-    private void deductStockForOrder(Order order) {
+    private void confirmStockSaleForOrder(Order order) {
         if (order.getOrderDetails() == null) return;
         for (OrderDetail detail : order.getOrderDetails()) {
             if (detail.getBook() != null) {
-                detail.getBook().setQuantity(detail.getBook().getQuantity() - detail.getQuantity());
-                detail.getBook().setSold(detail.getBook().getSold() + detail.getQuantity());
-                bookRepository.save(detail.getBook());
+                Book book = bookRepository.findByIdForUpdate(detail.getBook().getId()).orElse(null);
+                if (book == null) {
+                    throw new IllegalStateException("Không tìm thấy sách trong đơn hàng: " + detail.getBook().getId());
+                }
+                if (order.isStockReserved()) {
+                    if (book.getReservedQuantity() < detail.getQuantity()) {
+                        throw new IllegalStateException("Tồn kho giữ chỗ không hợp lệ cho sách: " + book.getId());
+                    }
+                    book.setReservedQuantity(book.getReservedQuantity() - detail.getQuantity());
+                } else {
+                    if (book.getQuantity() < detail.getQuantity()) {
+                        throw new IllegalStateException("Không đủ tồn kho cho đơn hàng: " + order.getId());
+                    }
+                    book.setQuantity(book.getQuantity() - detail.getQuantity());
+                }
+                book.setSold(book.getSold() + detail.getQuantity());
+                bookRepository.save(book);
             }
+        }
+        order.setStockReserved(false);
+    }
+
+    private void releaseReservedStockForOrder(Order order) {
+        if (!order.isStockReserved() || order.getOrderDetails() == null) return;
+        for (OrderDetail detail : order.getOrderDetails()) {
+            if (detail.getBook() == null) continue;
+            Book book = bookRepository.findByIdForUpdate(detail.getBook().getId()).orElse(null);
+            if (book == null) {
+                throw new IllegalStateException("Không tìm thấy sách trong đơn hàng: " + detail.getBook().getId());
+            }
+            if (book.getReservedQuantity() < detail.getQuantity()) {
+                throw new IllegalStateException("Tồn kho giữ chỗ không hợp lệ cho sách: " + book.getId());
+            }
+            book.setReservedQuantity(book.getReservedQuantity() - detail.getQuantity());
+            book.setQuantity(book.getQuantity() + detail.getQuantity());
+            bookRepository.save(book);
+        }
+        order.setStockReserved(false);
+    }
+
+    @Scheduled(fixedDelayString = "${bookverse.vnpay.expiration-check-ms:60000}")
+    @Transactional
+    public void expirePendingPayments() {
+        Instant cutoff = Instant.now().minusSeconds(vnpayProperties.getPaymentExpirationMinutes() * 60);
+        for (OrderPayment payment : orderPaymentRepository.findExpiredPaymentsForUpdate(
+                PaymentMethod.VNPAY, OrderPaymentStatus.INITIATED, cutoff)) {
+            Order order = payment.getOrder();
+            releaseReservedStockForOrder(order);
+            payment.setStatus(OrderPaymentStatus.CANCELLED);
+            payment.setCompletedAt(Instant.now());
+            order.setStatus(OrderStatus.CANCELLED);
+            order.setPaymentStatus(PaymentStatus.FAILED);
+            orderPaymentRepository.save(payment);
+            orderRepository.save(order);
+            log.info("Hết hạn thanh toán VNPAY: orderId={}", order.getId());
         }
     }
 

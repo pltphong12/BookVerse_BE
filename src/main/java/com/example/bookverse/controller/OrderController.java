@@ -1,6 +1,7 @@
 package com.example.bookverse.controller;
 
 import com.example.bookverse.dto.criteria.CriteriaFilterOrder;
+import com.example.bookverse.dto.request.ReqCheckoutFromCartDTO;
 import com.example.bookverse.dto.request.ReqCreateOrderDTO;
 import com.example.bookverse.dto.request.ReqUpdateOrderDTO;
 import com.example.bookverse.dto.response.ResOrderDTO;
@@ -31,14 +32,25 @@ public class OrderController {
     @PreAuthorize("hasAuthority('ORDER_CREATE')")
     public ResponseEntity<ResOrderDTO> createOrder(@Valid @RequestBody ReqCreateOrderDTO req,
                                                    HttpServletRequest httpRequest) throws Exception {
-        String ip = httpRequest.getHeader("X-Forwarded-For");
-        if (ip == null || ip.isBlank()) {
-            ip = httpRequest.getRemoteAddr();
-        }
-        req.setClientIpAddress(ip);
+        req.setClientIpAddress(getClientIp(httpRequest));
 
         ResOrderDTO created = orderService.create(req);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
+    }
+
+    @PostMapping("/orders/from-cart")
+    @PreAuthorize("hasAuthority('ORDER_CREATE')")
+    public ResponseEntity<ResOrderDTO> checkoutFromCart(@Valid @RequestBody ReqCheckoutFromCartDTO req,
+                                                         HttpServletRequest httpRequest) throws Exception {
+        req.setClientIpAddress(getClientIp(httpRequest));
+        return ResponseEntity.status(HttpStatus.CREATED).body(orderService.checkoutFromCart(req));
+    }
+
+    private String getClientIp(HttpServletRequest request) {
+        String forwardedFor = request.getHeader("X-Forwarded-For");
+        return forwardedFor == null || forwardedFor.isBlank()
+                ? request.getRemoteAddr()
+                : forwardedFor.split(",")[0].trim();
     }
 
     @PutMapping("/orders")

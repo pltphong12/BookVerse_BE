@@ -66,10 +66,14 @@ bookverse:
   vnpay:
     tmn-code: ${BOOKVERSE_VNPAY_TMN_CODE}
     hash-secret: ${BOOKVERSE_VNPAY_HASH_SECRET}
+    payment-expiration-minutes: ${BOOKVERSE_VNPAY_EXPIRATION_MINUTES:15}
     payment-url: ${BOOKVERSE_VNPAY_PAYMENT_URL}
     return-url: ${BOOKVERSE_VNPAY_RETURN_URL}
     frontend-success-url: ${BOOKVERSE_VNPAY_FRONTEND_SUCCESS_URL}
     frontend-fail-url: ${BOOKVERSE_VNPAY_FRONTEND_FAIL_URL}
+  shipping:
+    standard-fee: ${BOOKVERSE_SHIPPING_STANDARD_FEE:30000}
+    free-shipping-threshold: ${BOOKVERSE_SHIPPING_FREE_THRESHOLD:500000}
   chatbot:
     max-memory-messages: ${BOOKVERSE_CHATBOT_MAX_MEMORY_MESSAGES}
     top-k: ${BOOKVERSE_CHATBOT_TOP_K}

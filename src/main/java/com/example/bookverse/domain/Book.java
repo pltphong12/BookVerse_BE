@@ -40,6 +40,7 @@ public class Book {
     private String title;
     private double price;
     private long quantity;
+    private long reservedQuantity;
     private long sold;
     private int discount;
     // Thông tin chi tiết

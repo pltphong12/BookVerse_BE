@@ -2,10 +2,13 @@ package com.example.bookverse.service.impl;
 
 import java.time.Instant;
 import java.time.ZoneId;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 import com.example.bookverse.domain.*;
 import com.example.bookverse.service.CustomerService;
@@ -19,12 +22,15 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.example.bookverse.config.VnpayProperties;
+import com.example.bookverse.config.ShippingProperties;
 import com.example.bookverse.dto.criteria.CriteriaFilterOrder;
+import com.example.bookverse.dto.enums.CustomerLevel;
 import com.example.bookverse.dto.enums.OrderPaymentStatus;
 import com.example.bookverse.dto.enums.OrderStatus;
 import com.example.bookverse.dto.enums.PaymentMethod;
 import com.example.bookverse.dto.enums.PaymentStatus;
 import com.example.bookverse.dto.request.ReqCreateOrderDTO;
+import com.example.bookverse.dto.request.ReqCheckoutFromCartDTO;
 import com.example.bookverse.dto.request.ReqOrderLineDTO;
 import com.example.bookverse.dto.request.ReqUpdateOrderDTO;
 import com.example.bookverse.dto.response.ResOrderDTO;
@@ -33,7 +39,9 @@ import com.example.bookverse.dto.response.ResPagination;
 import com.example.bookverse.exception.global.IdInvalidException;
 import com.example.bookverse.repository.BookRepository;
 import com.example.bookverse.repository.CartDetailRepository;
+import com.example.bookverse.repository.CartRepository;
 import com.example.bookverse.repository.CustomerRepository;
+import com.example.bookverse.repository.CustomerAddressRepository;
 import com.example.bookverse.repository.OrderPaymentRepository;
 import com.example.bookverse.repository.OrderRepository;
 import com.example.bookverse.service.OrderService;
@@ -48,12 +56,6 @@ public class OrderServiceImpl implements OrderService {
 
     private static final String ORDER_VIEW_ALL_PAGED = "ORDER_VIEW_ALL_WITH_PAGINATION_AND_FILTER";
 
-    /**
-     * Phí ship do server quyết định (sau này có thể đọc từ cấu hình / đối tác vận
-     * chuyển).
-     */
-    private static final double DEFAULT_SHIPPING_FEE = 0;
-
     private final OrderRepository orderRepository;
     private final BookRepository bookRepository;
     private final CustomerRepository customerRepository;
@@ -62,7 +64,10 @@ public class OrderServiceImpl implements OrderService {
     private final JPAQueryFactory queryFactory;
     private final VnpayProperties vnpayProperties;
     private final CartDetailRepository cartDetailRepository;
+    private final CartRepository cartRepository;
     private final CustomerService customerService;
+    private final CustomerAddressRepository customerAddressRepository;
+    private final ShippingProperties shippingProperties;
 
     public OrderServiceImpl(OrderRepository orderRepository,
                             BookRepository bookRepository,
@@ -71,7 +76,8 @@ public class OrderServiceImpl implements OrderService {
                             CurrentCustomerAccessor currentCustomerAccessor,
                             JPAQueryFactory queryFactory,
                             VnpayProperties vnpayProperties,
-                            CartDetailRepository cartDetailRepository, CustomerService customerService) {
+                            CartDetailRepository cartDetailRepository, CartRepository cartRepository, CustomerService customerService,
+                            CustomerAddressRepository customerAddressRepository, ShippingProperties shippingProperties) {
         this.orderRepository = orderRepository;
         this.bookRepository = bookRepository;
         this.customerRepository = customerRepository;
@@ -80,7 +86,10 @@ public class OrderServiceImpl implements OrderService {
         this.queryFactory = queryFactory;
         this.vnpayProperties = vnpayProperties;
         this.cartDetailRepository = cartDetailRepository;
+        this.cartRepository = cartRepository;
         this.customerService = customerService;
+        this.customerAddressRepository = customerAddressRepository;
+        this.shippingProperties = shippingProperties;
     }
 
     private boolean hasAuthority(String authority) {
@@ -110,42 +119,48 @@ public class OrderServiceImpl implements OrderService {
     public ResOrderDTO create(ReqCreateOrderDTO req) throws Exception {
         Customer customer = getCurrentCustomer();
 
-        Map<Long, Long> qtyByBookId = new HashMap<>();
+        Map<Long, Long> qtyByBookId = new TreeMap<>();
         for (ReqOrderLineDTO line : req.getItems()) {
-            qtyByBookId.merge(line.getBookId(), line.getQuantity(), Long::sum);
+            long existingQuantity = qtyByBookId.getOrDefault(line.getBookId(), 0L);
+            qtyByBookId.put(line.getBookId(), existingQuantity + line.getQuantity());
         }
         for (Map.Entry<Long, Long> e : qtyByBookId.entrySet()) {
-            Book book = bookRepository.findById(e.getKey())
+            Book book = bookRepository.findByIdForUpdate(e.getKey())
                     .orElseThrow(() -> new IdInvalidException("Không tìm thấy sách id = " + e.getKey()));
             if (book.getQuantity() < e.getValue()) {
                 throw new IdInvalidException("Sách \"" + book.getTitle() + "\" không đủ tồn kho");
             }
         }
 
-        double subtotal = 0;
-        double discount = 0;
+        BigDecimal subtotal = BigDecimal.ZERO;
+        BigDecimal productDiscount = BigDecimal.ZERO;
         List<OrderDetail> details = new ArrayList<>();
 
         for (ReqOrderLineDTO line : req.getItems()) {
-            Book book = bookRepository.findById(line.getBookId())
+            Book book = bookRepository.findByIdForUpdate(line.getBookId())
                     .orElseThrow(() -> new IdInvalidException("Không tìm thấy sách id = " + line.getBookId()));
-            double unitAfterDiscount = book.getPrice() - book.getPrice() * book.getDiscount() / 100.0;
-            subtotal += book.getPrice() * line.getQuantity();
-            discount += (book.getDiscount() * book.getPrice() / 100.0) * line.getQuantity();
+            BigDecimal unitPrice = BigDecimal.valueOf(book.getPrice());
+            BigDecimal discountRate = BigDecimal.valueOf(book.getDiscount()).movePointLeft(2);
+            BigDecimal unitAfterDiscount = unitPrice.multiply(BigDecimal.ONE.subtract(discountRate));
+            subtotal = subtotal.add(unitPrice.multiply(BigDecimal.valueOf(line.getQuantity())));
+            productDiscount = productDiscount.add(unitPrice.multiply(discountRate)
+                    .multiply(BigDecimal.valueOf(line.getQuantity())));
             OrderDetail od = new OrderDetail();
             od.setBook(book);
             od.setQuantity(line.getQuantity());
-            od.setPrice(unitAfterDiscount);
+            od.setPrice(unitAfterDiscount.doubleValue());
             details.add(od);
         }
 
-        // COD: trừ kho ngay; VNPAY: trừ kho khi nhận xác nhận thanh toán thành công
+        // COD: trừ kho ngay; VNPAY: giữ kho cho đến khi gateway xác nhận thanh toán.
         if (req.getPaymentMethod() == PaymentMethod.COD) {
             deductStock(qtyByBookId);
         }
 
-        double shipping = DEFAULT_SHIPPING_FEE;
-        double total = subtotal + shipping - discount;
+        BigDecimal couponDiscount = BigDecimal.ZERO;
+        BigDecimal shipping = calculateShipping(customer, subtotal.subtract(productDiscount));
+        BigDecimal total = subtotal.subtract(productDiscount).subtract(couponDiscount).add(shipping)
+                .setScale(0, RoundingMode.HALF_UP);
 
         Order order = new Order();
         order.setCustomer(customer);
@@ -153,14 +168,20 @@ public class OrderServiceImpl implements OrderService {
         order.setReceiverAddress(req.getReceiverAddress());
         order.setReceiverPhone(req.getReceiverPhone());
         order.setReceiverEmail(req.getReceiverEmail());
-        order.setSubtotal(subtotal);
-        order.setShippingFee(shipping);
-        order.setDiscountTotal(discount);
-        order.setTotalPrice(total);
+        order.setSubtotal(subtotal.doubleValue());
+        order.setShippingFee(shipping.doubleValue());
+        order.setProductDiscountTotal(productDiscount.doubleValue());
+        order.setCouponDiscountTotal(couponDiscount.doubleValue());
+        order.setDiscountTotal(productDiscount.add(couponDiscount).doubleValue());
+        order.setTotalPrice(total.doubleValue());
         order.setNote(req.getNote());
         order.setPaymentMethod(req.getPaymentMethod());
         order.setPaymentStatus(PaymentStatus.PENDING);
         order.setStatus(OrderStatus.PENDING);
+        if (req.getPaymentMethod() == PaymentMethod.VNPAY) {
+            reserveStock(qtyByBookId);
+            order.setStockReserved(true);
+        }
 
         for (OrderDetail od : details) {
             od.setOrder(order);
@@ -185,6 +206,41 @@ public class OrderServiceImpl implements OrderService {
         return result;
     }
 
+    @Override
+    @Transactional
+    public ResOrderDTO checkoutFromCart(ReqCheckoutFromCartDTO req) throws Exception {
+        Customer customer = getCurrentCustomer();
+        CustomerAddress address = customerAddressRepository.findByIdAndCustomer(req.getShippingAddressId(), customer)
+                .orElseThrow(() -> new IdInvalidException("Không tìm thấy địa chỉ giao hàng"));
+        Cart cart = cartRepository.findByCustomerForUpdate(customer)
+                .orElseThrow(() -> new IdInvalidException("Giỏ hàng không tồn tại"));
+        List<CartDetail> cartDetails = cartDetailRepository.findAllByCartForUpdate(cart);
+        if (cartDetails.isEmpty()) {
+            throw new IdInvalidException("Giỏ hàng không có sản phẩm để thanh toán");
+        }
+
+        ReqCreateOrderDTO createRequest = new ReqCreateOrderDTO();
+        createRequest.setItems(cartDetails.stream()
+                .map(item -> new ReqOrderLineDTO(item.getBook().getId(), item.getQuantity()))
+                .toList());
+        createRequest.setReceiverName(address.getReceiverName());
+        createRequest.setReceiverAddress(address.getFullAddress());
+        createRequest.setReceiverPhone(address.getReceiverPhone());
+        createRequest.setReceiverEmail(customer.getUser() == null ? null : customer.getUser().getEmail());
+        createRequest.setPaymentMethod(req.getPaymentMethod());
+        createRequest.setNote(req.getNote());
+        createRequest.setClientIpAddress(req.getClientIpAddress());
+        return create(createRequest);
+    }
+
+    private BigDecimal calculateShipping(Customer customer, BigDecimal merchandiseTotal) {
+        if (customer.getCustomerLevel() == CustomerLevel.DIAMOND
+                || merchandiseTotal.compareTo(BigDecimal.valueOf(shippingProperties.getFreeShippingThreshold())) >= 0) {
+            return BigDecimal.ZERO;
+        }
+        return BigDecimal.valueOf(shippingProperties.getStandardFee());
+    }
+
     // remove cart
     private void removeCart(Customer customer) {
         Cart cart = customer.getCart();
@@ -201,10 +257,23 @@ public class OrderServiceImpl implements OrderService {
      */
     public void deductStock(Map<Long, Long> qtyByBookId) throws IdInvalidException {
         for (Map.Entry<Long, Long> e : qtyByBookId.entrySet()) {
-            Book book = bookRepository.findById(e.getKey())
+            Book book = bookRepository.findByIdForUpdate(e.getKey())
                     .orElseThrow(() -> new IdInvalidException("Không tìm thấy sách id = " + e.getKey()));
             book.setQuantity(book.getQuantity() - e.getValue());
             book.setSold(book.getSold() + e.getValue());
+            bookRepository.save(book);
+        }
+    }
+
+    private void reserveStock(Map<Long, Long> qtyByBookId) throws IdInvalidException {
+        for (Map.Entry<Long, Long> e : qtyByBookId.entrySet()) {
+            Book book = bookRepository.findByIdForUpdate(e.getKey())
+                    .orElseThrow(() -> new IdInvalidException("Không tìm thấy sách id = " + e.getKey()));
+            if (book.getQuantity() < e.getValue()) {
+                throw new IdInvalidException("Sách \"" + book.getTitle() + "\" không đủ tồn kho");
+            }
+            book.setQuantity(book.getQuantity() - e.getValue());
+            book.setReservedQuantity(book.getReservedQuantity() + e.getValue());
             bookRepository.save(book);
         }
     }
@@ -238,7 +307,7 @@ public class OrderServiceImpl implements OrderService {
         params.put("vnp_ReturnUrl", vnpayProperties.getReturnUrl());
         params.put("vnp_IpAddr", clientIp != null ? clientIp : "127.0.0.1");
         params.put("vnp_CreateDate", VnpayUtil.now());
-        params.put("vnp_ExpireDate", VnpayUtil.nowPlusMinutes(15));
+        params.put("vnp_ExpireDate", VnpayUtil.nowPlusMinutes(vnpayProperties.getPaymentExpirationMinutes()));
 
         return VnpayUtil.buildPaymentUrl(
                 vnpayProperties.getPaymentUrl(), params, vnpayProperties.getHashSecret());
@@ -450,18 +519,36 @@ public class OrderServiceImpl implements OrderService {
             throw new IdInvalidException("Đơn đã thanh toán, không thể hủy qua hệ thống");
         }
 
-        if (order.getOrderDetails() != null) {
+        if (order.isStockReserved() && order.getOrderDetails() != null) {
             for (OrderDetail detail : order.getOrderDetails()) {
-                Book book = detail.getBook();
-                if (book != null) {
-                    book.setQuantity(book.getQuantity() + detail.getQuantity());
-                    book.setSold(Math.max(0, book.getSold() - detail.getQuantity()));
-                    bookRepository.save(book);
+                Book book = bookRepository.findByIdForUpdate(detail.getBook().getId())
+                        .orElseThrow(() -> new IdInvalidException("Không tìm thấy sách trong đơn hàng"));
+                if (book.getReservedQuantity() < detail.getQuantity()) {
+                    throw new IdInvalidException("Tồn kho giữ chỗ không hợp lệ cho sách: " + book.getTitle());
                 }
+                book.setReservedQuantity(book.getReservedQuantity() - detail.getQuantity());
+                book.setQuantity(book.getQuantity() + detail.getQuantity());
+                bookRepository.save(book);
+            }
+            order.setStockReserved(false);
+        } else if (order.getOrderDetails() != null) {
+            for (OrderDetail detail : order.getOrderDetails()) {
+                Book book = bookRepository.findByIdForUpdate(detail.getBook().getId())
+                        .orElseThrow(() -> new IdInvalidException("Không tìm thấy sách trong đơn hàng"));
+                book.setQuantity(book.getQuantity() + detail.getQuantity());
+                book.setSold(Math.max(0, book.getSold() - detail.getQuantity()));
+                bookRepository.save(book);
             }
         }
 
         order.setStatus(OrderStatus.CANCELLED);
+        if (order.getPaymentMethod() == PaymentMethod.VNPAY) {
+            orderPaymentRepository.findByOrder(order).ifPresent(payment -> {
+                payment.setStatus(OrderPaymentStatus.CANCELLED);
+                payment.setCompletedAt(Instant.now());
+                orderPaymentRepository.save(payment);
+            });
+        }
         orderRepository.save(order);
     }
 }
