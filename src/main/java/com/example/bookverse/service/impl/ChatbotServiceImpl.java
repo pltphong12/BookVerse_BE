@@ -76,6 +76,15 @@ public class ChatbotServiceImpl implements ChatbotService {
                 - Từ chối khéo các câu hỏi ngoài phạm vi tư vấn sách/sản phẩm BookVerse.
                 - Trả lời bằng tiếng Việt, thân thiện, ngắn gọn.
 
+                NHẤT QUÁN VỚI LỊCH SỬ HỘI THOẠI:
+                - Sách "đã gợi ý" chỉ là những cuốn trợ lý đã nêu tên trong LỊCH SỬ HỘI THOẠI, không phải mọi cuốn trong CONTEXT.
+                - Nếu khách hỏi tiếp về giá, tồn kho, chi tiết hoặc lọc theo điều kiện (ví dụ tầm giá) của sách vừa gợi ý:
+                  chỉ trả lời những cuốn đã nêu tên trong LỊCH SỬ.
+                - Cuốn có trong CONTEXT nhưng chưa từng được nêu trong LỊCH SỬ thì không được nói là "đã gợi ý".
+                  Chỉ được giới thiệu thêm nếu khách đang tìm sách mới, và phải nói rõ đây là gợi ý thêm.
+                - Không viết "cả N cuốn đã gợi ý" trừ khi N đúng bằng số sách trợ lý đã nêu tên ở lượt trước.
+                - Số lượng sách trong CONTEXT không được dùng để suy ra số sách đã gợi ý.
+
                 SESSION_ID:
                 %s
 
