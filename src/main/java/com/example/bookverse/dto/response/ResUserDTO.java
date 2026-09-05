@@ -18,7 +18,6 @@ public class ResUserDTO {
     private Long customerId;
     private String fullName;
     private String email;
-    private String address;
     private String phone;
     private String avatar;
     private Role role;

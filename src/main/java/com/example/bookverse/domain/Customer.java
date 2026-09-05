@@ -31,7 +31,6 @@ public class Customer {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
     private String identityCard;
-    // private String address;
     private Long totalOrder;
     private BigDecimal totalSpending;
     @Enumerated(EnumType.STRING)

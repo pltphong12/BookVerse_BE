@@ -42,7 +42,6 @@ public class ResCustomerDTO {
         userDTO.setId(user.getId());
         userDTO.setFullName(user.getFullName());
         userDTO.setEmail(user.getEmail());
-        userDTO.setAddress(user.getAddress());
         userDTO.setPhone(user.getPhone());
         userDTO.setAvatar(user.getAvatar());
         userDTO.setRole(user.getRole());

@@ -94,7 +94,6 @@ public class CustomerAddressServiceImpl implements CustomerAddressService {
         target.setReceiverName(source.getReceiverName().trim());
         target.setReceiverPhone(source.getReceiverPhone().trim());
         target.setProvince(source.getProvince().trim());
-        target.setDistrict(source.getDistrict().trim());
         target.setWard(source.getWard().trim());
         target.setAddressLine(source.getAddressLine().trim());
     }

@@ -66,7 +66,6 @@ public class CustomerServiceImpl implements CustomerService {
         user.setPassword(reqCustomerDTO.getPassword());
         user.setFullName(reqCustomerDTO.getFullName());
         user.setEmail(reqCustomerDTO.getEmail());
-        user.setAddress(reqCustomerDTO.getAddress());
         user.setPhone(reqCustomerDTO.getPhone());
         user.setAvatar(reqCustomerDTO.getAvatar());
         user.setCreatedBy(

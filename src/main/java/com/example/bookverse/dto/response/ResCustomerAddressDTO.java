@@ -15,7 +15,6 @@ public class ResCustomerAddressDTO {
     private String receiverName;
     private String receiverPhone;
     private String province;
-    private String district;
     private String ward;
     private String addressLine;
     private String fullAddress;
@@ -27,7 +26,6 @@ public class ResCustomerAddressDTO {
         result.setReceiverName(address.getReceiverName());
         result.setReceiverPhone(address.getReceiverPhone());
         result.setProvince(address.getProvince());
-        result.setDistrict(address.getDistrict());
         result.setWard(address.getWard());
         result.setAddressLine(address.getAddressLine());
         result.setFullAddress(address.getFullAddress());

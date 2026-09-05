@@ -81,9 +81,6 @@ public class UserServiceImpl implements UserService {
         if (user.getFullName() != null && !user.getFullName().equals(userInDB.getFullName())) {
             userInDB.setFullName(user.getFullName());
         }
-        if (user.getAddress() != null && !user.getAddress().equals(userInDB.getAddress())) {
-            userInDB.setAddress(user.getAddress());
-        }
         if (user.getPhone() != null && !user.getPhone().equals(userInDB.getPhone())) {
             userInDB.setPhone(user.getPhone());
         }

@@ -12,10 +12,13 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 @Component
 @AllArgsConstructor
 public class DatabaseInitializer implements CommandLineRunner {
+
+    private static final Set<String> STAFF_EXCLUDED_DOMAINS = Set.of("ROLE", "PERMISSION");
 
     private final PermissionRepository permissionRepository;
     private final RoleRepository roleRepository;
@@ -28,14 +31,13 @@ public class DatabaseInitializer implements CommandLineRunner {
     public void run(String... args) {
         createPermissions();
         createRoles();
+        migrateManagerRoleToStaff();
         createUsers();
     }
 
     // ======================== PERMISSIONS ========================
 
     private void createPermissions() {
-        if (permissionRepository.count() > 0) return;
-
         List<Permission> permissions = new ArrayList<>();
 
         // Author
@@ -71,8 +73,14 @@ public class DatabaseInitializer implements CommandLineRunner {
         permissions.add(perm("CUSTOMER_VIEW_BY_ID", "CUSTOMER", "/api/v1/customers/{id}", "GET"));
         permissions.add(perm("CUSTOMER_VIEW_ALL_WITH_PAGINATION_AND_FILTER", "CUSTOMER", "/api/v1/customers/search", "GET"));
 
+        // Customer address
+        permissions.add(perm("ADDRESS_CREATE", "CUSTOMER_ADDRESS", "/api/v1/addresses", "POST"));
+        permissions.add(perm("ADDRESS_UPDATE", "CUSTOMER_ADDRESS", "/api/v1/addresses", "PUT"));
+        permissions.add(perm("ADDRESS_VIEW_MINE", "CUSTOMER_ADDRESS", "/api/v1/addresses/me", "GET"));
+        permissions.add(perm("ADDRESS_DELETE", "CUSTOMER_ADDRESS", "/api/v1/addresses/{id}", "DELETE"));
+
         // File
-        permissions.add(perm("FILE_UPLOAD", "FILE", "/api/v1/files", "POST"));
+        permissions.add(perm("FILE_UPLOAD", "FILE", "/api/v1/files/**", "POST"));
 
         // Order
         permissions.add(perm("ORDER_CREATE", "ORDER", "/api/v1/orders", "POST"));
@@ -121,82 +129,63 @@ public class DatabaseInitializer implements CommandLineRunner {
         permissions.add(perm("USER_VIEW_ALL_WITH_PAGINATION_AND_FILTER", "USER", "/api/v1/users/search", "GET"));
 
         // Dashboard
-        permissions.add(perm("DASHBOARD_VIEW", "DASHBOARD", "/api/v1/dashboard", "GET"));
+        permissions.add(perm("DASHBOARD_VIEW", "DASHBOARD", "/api/v1/dashboard/overview", "GET"));
 
         permissionRepository.saveAll(permissions);
-        System.out.println(">>> Created " + permissions.size() + " permissions");
+        System.out.println(">>> Synchronized " + permissions.size() + " permissions");
     }
 
     private Permission perm(String name, String domain, String apiPath, String method) {
-        Permission p = new Permission();
-        p.setName(name);
+        Permission p = permissionRepository.findByName(name);
+        if (p == null) {
+            p = new Permission();
+            p.setName(name);
+        }
         p.setDomain(domain);
         p.setApiPath(apiPath);
         p.setMethod(method);
-        p.setCreatedAt(Instant.now());
-        p.setCreatedBy("system");
         return p;
     }
 
     // ======================== ROLES ========================
 
     private void createRoles() {
-        if (roleRepository.count() > 0) return;
-
         List<Permission> all = permissionRepository.findAll();
 
         // ADMIN — toàn quyền
-        Role admin = role("ADMIN", "Quản trị viên hệ thống — toàn quyền");
+        Role admin = getOrCreateRole("ADMIN", "Quản trị viên hệ thống — toàn quyền");
         admin.setPermissions(new ArrayList<>(all));
         roleRepository.save(admin);
 
-        // MANAGER — quản lý sách, tác giả, NXB, thể loại, nhà cung cấp, xem đơn hàng/khách hàng, upload file
-        Role manager = role("MANAGER", "Quản lý — quản lý sản phẩm, xem đơn hàng và khách hàng");
-        manager.setPermissions(findPermissions(
-                "BOOK_CREATE", "BOOK_UPDATE", "BOOK_DELETE", "BOOK_VIEW_ALL", "BOOK_VIEW_ALL_WITH_PAGINATION_AND_FILTER",
-                "AUTHOR_CREATE", "AUTHOR_UPDATE", "AUTHOR_DELETE", "AUTHOR_VIEW_ALL", "AUTHOR_VIEW_BY_ID", "AUTHOR_VIEW_ALL_WITH_PAGINATION_AND_FILTER",
-                "PUBLISHER_CREATE", "PUBLISHER_UPDATE", "PUBLISHER_DELETE", "PUBLISHER_VIEW_BY_ID", "PUBLISHER_VIEW_ALL_WITH_PAGINATION_AND_FILTER",
-                "CATEGORY_CREATE", "CATEGORY_UPDATE", "CATEGORY_DELETE", "CATEGORY_VIEW_BY_ID", "CATEGORY_VIEW_ALL_WITH_PAGINATION_AND_FILTER",
-                "SUPPLIER_CREATE", "SUPPLIER_UPDATE", "SUPPLIER_DELETE", "SUPPLIER_VIEW_BY_ID", "SUPPLIER_VIEW_ALL_WITH_PAGINATION_AND_FILTER",
-                "CUSTOMER_VIEW_BY_ID", "CUSTOMER_VIEW_ALL_WITH_PAGINATION_AND_FILTER",
-                "ORDER_VIEW_ALL_WITH_PAGINATION_AND_FILTER", "ORDER_VIEW_BY_ID", "ORDER_VIEW_MINE", "ORDER_UPDATE", "ORDER_CANCEL", "ORDER_DETAIL_UPDATE",
-                "FILE_UPLOAD"
-        ));
-        roleRepository.save(manager);
-
-        // STAFF — xem sản phẩm, quản lý khách hàng và đơn hàng, upload file
-        Role staff = role("STAFF", "Nhân viên — quản lý khách hàng và đơn hàng");
-        staff.setPermissions(findPermissions(
-                "BOOK_VIEW_ALL", "BOOK_VIEW_ALL_WITH_PAGINATION_AND_FILTER",
-                "AUTHOR_VIEW_ALL", "AUTHOR_VIEW_BY_ID", "AUTHOR_VIEW_ALL_WITH_PAGINATION_AND_FILTER",
-                "PUBLISHER_VIEW_BY_ID", "PUBLISHER_VIEW_ALL_WITH_PAGINATION_AND_FILTER",
-                "CATEGORY_VIEW_BY_ID", "CATEGORY_VIEW_ALL_WITH_PAGINATION_AND_FILTER",
-                "SUPPLIER_VIEW_BY_ID", "SUPPLIER_VIEW_ALL_WITH_PAGINATION_AND_FILTER",
-                "CUSTOMER_CREATE", "CUSTOMER_UPDATE", "CUSTOMER_DELETE", "CUSTOMER_VIEW_BY_ID", "CUSTOMER_VIEW_ALL_WITH_PAGINATION_AND_FILTER",
-                "ORDER_CREATE", "ORDER_UPDATE", "ORDER_CANCEL", "ORDER_VIEW_ALL_WITH_PAGINATION_AND_FILTER", "ORDER_VIEW_BY_ID",
-                "ORDER_DETAIL_CREATE", "ORDER_DETAIL_UPDATE", "ORDER_DETAIL_DELETE",
-                "FILE_UPLOAD"
-        ));
+        // STAFF — toàn quyền trên các endpoint nghiệp vụ, ngoại trừ role và permission
+        Role staff = getOrCreateRole("STAFF",
+                "Nhân viên — quản lý toàn bộ dữ liệu, ngoại trừ role và permission");
+        staff.setPermissions(all.stream()
+                .filter(permission -> !STAFF_EXCLUDED_DOMAINS.contains(permission.getDomain()))
+                .toList());
         roleRepository.save(staff);
 
-        // CUSTOMER — giỏ hàng, đặt hàng, xem đơn hàng
-        Role customer = role("CUSTOMER", "Khách hàng — mua sắm, giỏ hàng, đặt hàng");
+        // CUSTOMER — catalog là public; các quyền dưới đây chỉ cho dữ liệu thuộc khách hàng hiện tại
+        Role customer = getOrCreateRole("CUSTOMER",
+                "Khách hàng — quản lý giỏ hàng, địa chỉ và đơn hàng của chính mình");
         customer.setPermissions(findPermissions(
                 "CART_ADD_TO_CART", "CART_VIEW_BY_ID",
+                "ADDRESS_CREATE", "ADDRESS_UPDATE", "ADDRESS_VIEW_MINE", "ADDRESS_DELETE",
                 "ORDER_CREATE", "ORDER_VIEW_BY_ID", "ORDER_VIEW_MINE", "ORDER_UPDATE", "ORDER_CANCEL"
         ));
         roleRepository.save(customer);
 
-        System.out.println(">>> Created 4 roles: ADMIN, MANAGER, STAFF, CUSTOMER");
+        System.out.println(">>> Synchronized 3 roles: ADMIN, STAFF, CUSTOMER");
     }
 
-    private Role role(String name, String description) {
-        Role r = new Role();
-        r.setName(name);
-        r.setDescription(description);
-        r.setCreatedAt(Instant.now());
-        r.setCreatedBy("system");
-        return r;
+    private Role getOrCreateRole(String name, String description) {
+        Role role = roleRepository.findByName(name);
+        if (role == null) {
+            role = new Role();
+            role.setName(name);
+        }
+        role.setDescription(description);
+        return role;
     }
 
     private List<Permission> findPermissions(String... names) {
@@ -208,66 +197,74 @@ public class DatabaseInitializer implements CommandLineRunner {
         return result;
     }
 
+    private void migrateManagerRoleToStaff() {
+        Role manager = roleRepository.findByName("MANAGER");
+        if (manager == null) {
+            return;
+        }
+        Role staff = roleRepository.findByName("STAFF");
+        List<User> managerUsers = userRepository.findAll().stream()
+                .filter(user -> user.getRole() != null && user.getRole().getId() == manager.getId())
+                .toList();
+        managerUsers.forEach(user -> user.setRole(staff));
+        userRepository.saveAll(managerUsers);
+        roleRepository.delete(manager);
+        System.out.println(">>> Migrated MANAGER users to STAFF and removed the MANAGER role");
+    }
+
     // ======================== USERS ========================
 
     private void createUsers() {
         if (userRepository.count() > 0) return;
 
         Role adminRole = roleRepository.findByName("ADMIN");
-        Role managerRole = roleRepository.findByName("MANAGER");
         Role staffRole = roleRepository.findByName("STAFF");
         Role customerRole = roleRepository.findByName("CUSTOMER");
 
         // 1 Admin
-        createUser("admin@bookverse.com", "Nguyễn Văn Admin", "0900000001", "TP. Hồ Chí Minh", adminRole);
-
-        // 2 Managers
-        createUser("manager1@bookverse.com", "Trần Thị Manager", "0900000002", "Hà Nội", managerRole);
-        createUser("manager2@bookverse.com", "Lê Văn Manager", "0900000003", "Đà Nẵng", managerRole);
+        createUser("admin@bookverse.com", "Nguyễn Văn Admin", "0900000001", adminRole);
 
         // 5 Staff
-        createUser("staff1@bookverse.com", "Phạm Thị Nhân Viên", "0900000004", "TP. Hồ Chí Minh", staffRole);
-        createUser("staff2@bookverse.com", "Hoàng Văn Nhân Viên", "0900000005", "Hà Nội", staffRole);
-        createUser("staff3@bookverse.com", "Ngô Thị Nhân Viên", "0900000006", "Đà Nẵng", staffRole);
-        createUser("staff4@bookverse.com", "Đỗ Văn Nhân Viên", "0900000007", "Cần Thơ", staffRole);
-        createUser("staff5@bookverse.com", "Vũ Thị Nhân Viên", "0900000008", "Hải Phòng", staffRole);
+        createUser("staff1@bookverse.com", "Phạm Thị Nhân Viên", "0900000004", staffRole);
+        createUser("staff2@bookverse.com", "Hoàng Văn Nhân Viên", "0900000005", staffRole);
+        createUser("staff3@bookverse.com", "Ngô Thị Nhân Viên", "0900000006", staffRole);
+        createUser("staff4@bookverse.com", "Đỗ Văn Nhân Viên", "0900000007", staffRole);
+        createUser("staff5@bookverse.com", "Vũ Thị Nhân Viên", "0900000008", staffRole);
 
         // 10 Customers — mỗi customer được liên kết với bảng customers + tạo cart
-        createCustomerUser("customer1@bookverse.com", "Bùi Văn Khách", "0900000009", "TP. Hồ Chí Minh", customerRole, "079200001001");
-        createCustomerUser("customer2@bookverse.com", "Đặng Thị Khách", "0900000010", "Hà Nội", customerRole, "079200001002");
-        createCustomerUser("customer3@bookverse.com", "Lý Văn Khách", "0900000011", "Đà Nẵng", customerRole, "079200001003");
-        createCustomerUser("customer4@bookverse.com", "Mai Thị Khách", "0900000012", "Cần Thơ", customerRole, "079200001004");
-        createCustomerUser("customer5@bookverse.com", "Tô Văn Khách", "0900000013", "Hải Phòng", customerRole, "079200001005");
-        createCustomerUser("customer6@bookverse.com", "Phan Thị Khách", "0900000014", "Huế", customerRole, "079200001006");
-        createCustomerUser("customer7@bookverse.com", "Trịnh Văn Khách", "0900000015", "Nha Trang", customerRole, "079200001007");
-        createCustomerUser("customer8@bookverse.com", "Cao Thị Khách", "0900000016", "Vũng Tàu", customerRole, "079200001008");
-        createCustomerUser("customer9@bookverse.com", "Hồ Văn Khách", "0900000017", "Biên Hòa", customerRole, "079200001009");
-        createCustomerUser("customer10@bookverse.com", "Dương Thị Khách", "0900000018", "Thủ Đức", customerRole, "079200001010");
+        createCustomerUser("customer1@bookverse.com", "Bùi Văn Khách", "0900000009", customerRole, "079200001001");
+        createCustomerUser("customer2@bookverse.com", "Đặng Thị Khách", "0900000010", customerRole, "079200001002");
+        createCustomerUser("customer3@bookverse.com", "Lý Văn Khách", "0900000011", customerRole, "079200001003");
+        createCustomerUser("customer4@bookverse.com", "Mai Thị Khách", "0900000012", customerRole, "079200001004");
+        createCustomerUser("customer5@bookverse.com", "Tô Văn Khách", "0900000013", customerRole, "079200001005");
+        createCustomerUser("customer6@bookverse.com", "Phan Thị Khách", "0900000014", customerRole, "079200001006");
+        createCustomerUser("customer7@bookverse.com", "Trịnh Văn Khách", "0900000015", customerRole, "079200001007");
+        createCustomerUser("customer8@bookverse.com", "Cao Thị Khách", "0900000016", customerRole, "079200001008");
+        createCustomerUser("customer9@bookverse.com", "Hồ Văn Khách", "0900000017", customerRole, "079200001009");
+        createCustomerUser("customer10@bookverse.com", "Dương Thị Khách", "0900000018", customerRole, "079200001010");
 
-        System.out.println(">>> Created 18 users: 1 admin, 2 managers, 5 staff, 10 customers");
+        System.out.println(">>> Created 16 users: 1 admin, 5 staff, 10 customers");
     }
 
-    private User createUser(String email, String fullName, String phone, String address, Role role) {
+    private User createUser(String email, String fullName, String phone, Role role) {
         User user = new User();
         user.setEmail(email);
         user.setPassword(passwordEncoder.encode("123456"));
         user.setFullName(fullName);
         user.setPhone(phone);
-        user.setAddress(address);
         user.setRole(role);
         user.setCreatedAt(Instant.now());
         user.setCreatedBy("system");
         return userRepository.save(user);
     }
 
-    private void createCustomerUser(String email, String fullName, String phone, String address,
+    private void createCustomerUser(String email, String fullName, String phone,
                                     Role role, String identityCard) {
         User user = new User();
         user.setEmail(email);
         user.setPassword(passwordEncoder.encode("123456"));
         user.setFullName(fullName);
         user.setPhone(phone);
-        user.setAddress(address);
         user.setRole(role);
         user.setCreatedAt(Instant.now());
         user.setCreatedBy("system");

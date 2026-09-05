@@ -119,7 +119,7 @@ class OrderServiceImplTest {
         verify(orderRepository).save(orderCaptor.capture());
         Order saved = orderCaptor.getValue();
         assertEquals("Nguyễn Văn A", saved.getReceiverName());
-        assertEquals("12 Nguyễn Huệ, Phường Bến Nghé, Quận 1, Hồ Chí Minh", saved.getReceiverAddress());
+        assertEquals("12 Nguyễn Huệ, Phường Bến Nghé, Hồ Chí Minh", saved.getReceiverAddress());
         assertEquals("0900000000", saved.getReceiverPhone());
         assertEquals(200000, saved.getSubtotal());
         assertEquals(20000, saved.getProductDiscountTotal());
@@ -208,7 +208,6 @@ class OrderServiceImplTest {
         address.setReceiverPhone("0900000000");
         address.setAddressLine("12 Nguyễn Huệ");
         address.setWard("Phường Bến Nghé");
-        address.setDistrict("Quận 1");
         address.setProvince("Hồ Chí Minh");
         return address;
     }

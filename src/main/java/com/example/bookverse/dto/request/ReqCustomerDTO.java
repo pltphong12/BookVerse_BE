@@ -19,7 +19,6 @@ public class ReqCustomerDTO {
     private String password;
     private String fullName;
     private String email;
-    private String address;
     private String phone;
     private String avatar;
     private CustomerLevel customerLevel;

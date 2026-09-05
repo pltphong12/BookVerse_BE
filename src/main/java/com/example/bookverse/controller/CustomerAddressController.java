@@ -20,7 +20,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/addresses")
-@PreAuthorize("hasAuthority('ORDER_CREATE')")
 public class CustomerAddressController {
     private final CustomerAddressService customerAddressService;
 
@@ -29,23 +28,27 @@ public class CustomerAddressController {
     }
 
     @PostMapping
+    @PreAuthorize("hasAuthority('ADDRESS_CREATE')")
     public ResponseEntity<ResCustomerAddressDTO> create(@Valid @RequestBody ReqCustomerAddressDTO request)
             throws Exception {
         return ResponseEntity.status(HttpStatus.CREATED).body(customerAddressService.create(request));
     }
 
     @PutMapping
+    @PreAuthorize("hasAuthority('ADDRESS_UPDATE')")
     public ResponseEntity<ResCustomerAddressDTO> update(@Valid @RequestBody ReqCustomerAddressDTO request)
             throws Exception {
         return ResponseEntity.ok(customerAddressService.update(request));
     }
 
     @GetMapping("/me")
+    @PreAuthorize("hasAuthority('ADDRESS_VIEW_MINE')")
     public ResponseEntity<List<ResCustomerAddressDTO>> listMine() throws Exception {
         return ResponseEntity.ok(customerAddressService.listMine());
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasAuthority('ADDRESS_DELETE')")
     public ResponseEntity<Void> delete(@PathVariable long id) throws Exception {
         customerAddressService.delete(id);
         return ResponseEntity.noContent().build();

@@ -23,9 +23,6 @@ public class ReqCustomerAddressDTO {
     @NotBlank(message = "province không được để trống")
     private String province;
 
-    @NotBlank(message = "district không được để trống")
-    private String district;
-
     @NotBlank(message = "ward không được để trống")
     private String ward;
 

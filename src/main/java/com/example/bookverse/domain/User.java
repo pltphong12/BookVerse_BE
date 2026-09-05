@@ -33,7 +33,6 @@ public class User {
 
     @NotBlank(message = "fullName isn't blank")
     private String fullName;
-    private String address;
     @NotBlank(message = "Email không được để trống")
     @Email(message = "Email không hợp lệ")
     private String email;

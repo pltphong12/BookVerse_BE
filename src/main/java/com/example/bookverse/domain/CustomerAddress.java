@@ -40,9 +40,6 @@ public class CustomerAddress {
     private String province;
 
     @Column(nullable = false, length = 100)
-    private String district;
-
-    @Column(nullable = false, length = 100)
     private String ward;
 
     @Column(nullable = false, length = 255)
@@ -60,7 +57,7 @@ public class CustomerAddress {
     private String updatedBy;
 
     public String getFullAddress() {
-        return String.join(", ", addressLine, ward, district, province);
+        return String.join(", ", addressLine, ward, province);
     }
 
     @jakarta.persistence.PrePersist
